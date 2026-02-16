@@ -15,13 +15,25 @@ A secure, RAG-enhanced chat application for querying climate observation data us
 - 🎨 **Modern UI**: Clean, ChatGPT-inspired interface
 - 📊 **SPARQL Transparency**: See the actual queries being executed
 
-### ✨ New in v2.1.0 (January 2026)
+### ✨ New in v2.2.0 (February 2026)
 - 🔧 **Smart Typo Correction**: Automatically fixes common climate term typos (e.g., "temprature" → "temperature")
-- 📅 **Strict Date Validation**: Enforces 1950-1951 data range with helpful error messages
-- 👥 **Dual Response Formats**: Auto-detects and provides layman or technical responses
+- 📅 **Advanced Date Validation**: 
+  - Strict YYYY-MM-DD format validation (catches invalid dates like Feb 30)
+  - Auto-finds nearest available date when requested date missing
+  - Clear messages: "Data for 1950-05-15 not available. Showing 1950-05-16 instead."
+  - Enforces 1950-01-01 to 1951-12-31 data range only
+- 🌍 **Location-Based Filtering**:
+  - Support for 50+ European/Mediterranean country names (Germany, France, Italy, etc.)
+  - Coordinate parsing (3 formats: "lat: 52.5, lon: 13.4", "52.5, 13.4", "52.5°N 13.4°E")
+  - Clear error messages for unavailable countries (USA, China, etc.)
+  - Session memory persists location context
+- 👥 **Dual Response Formats**: 
+  - Primary: Layman-friendly response (simple language, emojis, comparisons)
+  - Secondary: Collapsible technical details (SPARQL query, debug info, timings)
+  - Auto-detects user preference from keywords
 - 💡 **Helpful Error Messages**: Polite rejections with contextual suggestions
 - 🎯 **Query Suggestions**: Smart alternatives when queries fail
-- 🔄 **Progressive Disclosure**: Layered responses (summary → details → technical)
+- 🔄 **Progressive Disclosure**: Main answer + expandable technical details
 
 ## 🏗️ Architecture (RAG Flow)
 
@@ -75,7 +87,17 @@ cp .env.example .env
 # Edit .env to set LLM provider and credentials
 ```
 
-3. **For Ollama (local):**
+⚠️ **Security**: Never commit `.env` file! It contains your API keys.
+
+3. **For OpenAI (default):**
+```bash
+# Set in .env:
+LLM_BACKEND=openai
+OPENAI_API_KEY=your-openai-api-key-here
+OPENAI_MODEL=gpt-4o-mini
+```
+
+4. **For Ollama (local):**
 ```bash
 # Pull model
 ollama pull llama3.2
@@ -84,16 +106,8 @@ ollama pull llama3.2
 ollama serve
 
 # Set in .env:
-LLM_PROVIDER=ollama
+LLM_BACKEND=ollama
 OLLAMA_MODEL=llama3.2
-```
-
-4. **For SAIA (cloud):**
-```bash
-# Set in .env:
-LLM_PROVIDER=saia
-SAIA_API_KEY=your-api-key-here
-SAIA_MODEL=gpt-4
 ```
 
 5. **Run the server**
@@ -111,23 +125,31 @@ http://127.0.0.1:8000
 ### LLM Provider Selection
 
 ```bash
-# Choose provider: ollama | saia
-LLM_PROVIDER=ollama
+# Choose backend: openai | ollama | anthropic
+LLM_BACKEND=openai
+
+# OpenAI Configuration (Default - Recommended)
+OPENAI_API_KEY=your-key-here  # ⚠️ NEVER commit this!
+OPENAI_MODEL=gpt-4o-mini      # Fast and cost-effective
 
 # Ollama (local LLM)
-OLLAMA_URL=http://localhost:11434/api/chat
+OLLAMA_URL=http://localhost:11434
 OLLAMA_MODEL=llama3.2
 
-# SAIA (OpenAI-compatible cloud API)
-SAIA_URL=https://chat-ai.academiccloud.de/v1/chat/completions
-SAIA_API_KEY=sk-proj-YOUR-KEY-HERE
-SAIA_MODEL=gpt-4
+# Legacy LLM Provider
+LLM_PROVIDER=openai
 
 # LLM parameters
-LLM_TEMPERATURE=0.1      # Lower = more focused
+LLM_TEMPERATURE=0.1      # Lower = more focused (0.0 for deterministic)
 LLM_MAX_TOKENS=1000      # Maximum response length
-LLM_TIMEOUT=30           # Request timeout
+LLM_TIMEOUT=30           # Request timeout in seconds
 ```
+
+⚠️ **API Key Security**:
+- Never commit `.env` to git (already in `.gitignore`)
+- Use `.env.example` for templates
+- Rotate keys immediately if exposed
+- GitHub will block pushes with exposed keys
 
 ### RAG Mode
 
@@ -158,13 +180,32 @@ MAX_REQUESTS_PER_MINUTE=30      # Rate limit per session
 
 ## 💬 Usage Examples
 
-Try asking:
-
+### Basic Queries
 - "What variables are available?"
 - "Show me temperature data"
-- "What was the average temperature in March 1950?"
-- "Show me the highest humidity values"
 - "List all locations"
+
+### Time-Based Queries
+- "What was the average temperature in March 1950?"
+- "Show temperature for 1950-03-15" (specific date)
+- "Climate overview for 1950" (all variables)
+- "Daily temperature in January 1951"
+
+### Location-Based Queries (New!)
+- "Show temperature for Germany in 1950"
+- "Climate data for France"
+- "Temperature at lat: 52.5, lon: 13.4"
+- "Weather in Italy during 1951"
+
+### Statistical Queries
+- "Show me the highest humidity values"
+- "Average precipitation in 1950"
+- "Temperature statistics for 1951"
+
+### Response Formats
+- "Explain simply: what was the temperature in 1950?" (layman response)
+- "Technical details for temperature in March 1950" (technical response)
+- Default: Auto-detects based on your question
 
 ### RAG vs Fast Mode
 
@@ -261,6 +302,62 @@ Response:
 - Graceful error messages
 - Detailed logging for debugging
 - Health check endpoint
+
+## 🎯 Advanced Features (v2.2.0)
+
+### 1. Date Validation & Fallback
+```python
+# User: "Show temperature for 2020"
+# Response: "Sorry, I only have data from 1950-01-01 to 1951-12-31."
+
+# User: "Show temperature for 1950-05-15"
+# If 1950-05-15 doesn't exist:
+# Response: "Data for 1950-05-15 not available. Showing 1950-05-16 instead."
+```
+
+### 2. Location-Based Filtering
+```python
+# Supported: 50+ European/Mediterranean countries
+Available: Germany, France, Italy, Spain, UK, Greece, Poland...
+
+# Three coordinate formats:
+"lat: 52.5, lon: 13.4"      # Explicit labels
+"52.5, 13.4"                # Decimal pairs
+"52.5°N 13.4°E"             # Degrees with direction
+
+# Unavailable countries get helpful message:
+# "Sorry, 'USA' is not available. This dataset contains European
+# and Mediterranean regions for 1950-1951 only. You can provide
+# specific coordinates if you have data points in 'USA'."
+```
+
+### 3. Dual Response System
+```python
+# Primary Response (Layman):
+"The average temperature in Germany in 1950 was 15.3°C 🌡️
+That's about 59.5°F - a mild year overall!"
+
+# Technical Details (Collapsible):
+🔧 Show Technical Details
+  ├─ Query Template: timeseries_statistics
+  ├─ Property: Air Temperature
+  ├─ Time Range: 1950-01-01 to 1951-01-01
+  ├─ Location: Germany
+  ├─ Rows Retrieved: 8760
+  ├─ Execution Time: 0.234s
+  └─ SPARQL Query: [Full query shown]
+```
+
+### 4. Typo Correction
+```python
+# Automatically fixes:
+"temprature" → "temperature"
+"humdity" → "humidity"
+"percipitation" → "precipitation"
+
+# Shows friendly message:
+"I noticed you wrote 'temprature' and corrected it to 'temperature'."
+```
 
 ## 📚 API Endpoints
 
@@ -395,9 +492,62 @@ MIT License - see LICENSE file for details
 - Virtuoso for the SPARQL endpoint
 - FastAPI for the web framework
 
+## \ud83d\udcda Quick Reference
+
+### Data Constraints
+- **Time Period**: 1950-01-01 to 1951-12-31 only (2 years)
+- **Geographic Coverage**: European and Mediterranean regions
+- **Available Countries**: Germany, France, Italy, Spain, UK, Greece, Poland, and 40+ more
+- **Date Formats**: YYYY-MM-DD, "March 1950", "in 1950"
+- **Coordinate Formats**: lat:X lon:Y, decimal pairs, degrees N/S E/W
+
+### Example Queries by Category
+
+**Variables & Locations**
+```
+What variables are available?
+List all locations
+```
+
+**Simple Queries**
+```
+Show temperature in 1950
+Average humidity in March 1950
+Climate overview for 1951
+```
+
+**Location-Based**
+```
+Temperature for Germany in 1950
+Climate in France during 1951
+Data at lat: 52.5, lon: 13.4
+```
+
+**Advanced**
+```
+Daily temperature statistics for January 1950
+Monthly precipitation averages in 1951
+Highest temperature values in 1950
+Explain simply: what was the climate like in 1950?
+```
+
+### Response Format Keywords
+- **Layman**: explain, simply, easy, basic
+- **Technical**: detailed, technical, advanced, debug
+
+### Troubleshooting
+| Issue | Solution |
+|-------|----------|
+| Rate limit exceeded | Wait 1 minute or increase MAX_REQUESTS_PER_MINUTE |
+| SPARQL timeout | Increase SPARQL_TIMEOUT or simplify query |
+| Date out of range | Use dates between 1950-01-01 and 1951-12-31 |
+| Country not found | Use European/Mediterranean countries or coordinates |
+| API key error | Check OPENAI_API_KEY in .env (never commit!) |
+
 ---
 
-**Version 2.0.0** - Secure, cached, rate-limited architecture with multi-chat support
+**Version 2.2.0** - Location filtering, date validation, dual responses, typo correction
+**Last Updated**: February 16, 2026
 
 **Response:**
 ```json
