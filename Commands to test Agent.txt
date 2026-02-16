@@ -1,0 +1,98 @@
+Commands to test Agent
+
+
+ 1️⃣ Valid Date Queries (Standard Format)
+
+1. Show temperature data for 1950-06-15
+2. What was the humidity on 1951-12-25?
+3. Give me precipitation for 1950-01-01
+4. Show data for 1951-06-30
+
+
+
+ 2️⃣ Valid Date Queries (Different Date Formats)
+
+5. Show data for 15/06/1950
+6. What happened on June 15, 1950?
+7. Show me data for 15-06-1950
+8. Give data for 1950/6/15
+
+
+
+ 3️⃣ Out-of-Range or Boundary Dates
+
+9. Show temperature for 2023-05-15
+10. What was the weather on 1949-12-31?
+11. Give me data for 2024-01-01
+12. Show climate for 1940-06-15
+
+
+
+ 4️⃣ Invalid or Edge Case Dates
+
+13. Show data for 1950-02-29 (leap year edge case)
+14. Give temperature for 1951-13-01 (invalid month)
+
+
+
+ 5️⃣ Technical / Explanation / Debug Requests
+
+15. Show technical details for temperature on 1950-06-15
+16. Simply explain climate data for 2023-01-01 (should handle out-of-range + layman)
+17. Debug info for 1951-12-31 humidity
+
+
+
+ 6️⃣ General / Year-Level Queries
+
+18. Tell me about climate in 1950
+19. What happened weather-wise in 1951?
+20. Simply explain climate data
+21. Overview of 1950 weather
+
+
+
+ 7️⃣ Multi-Variable / Comparison Queries
+
+22. Show all climate variables for 1950-06-15
+23. Compare temperature and humidity in June 1950
+24. Climate summary for 1951
+
+
+
+ 8️⃣ Filtering & Conditional Queries
+
+25. Show days in 1950 where temperature was above 30°C
+26. Give me dates in 1951 with precipitation greater than 10 mm
+27. Show humidity values below 40% in June 1950
+28. Find the hottest day in 1950
+29. Show the coldest day in 1951
+30. List days with no precipitation in 1950
+
+
+
+ 9️⃣ Time Series / Range Queries
+
+31. Show temperature from 1950-06-01 to 1950-06-30
+32. Give me humidity time series for 1951
+33. Show precipitation trend for 1950
+34. Plot climate data between January and March 1951
+35. Show monthly temperature for 1950
+36. Give daily weather data for June 1950
+
+
+
+ 🔟 Statistical / Aggregation Queries
+
+37. What is the average temperature in 1950?
+38. Calculate mean humidity for June 1951
+39. Show total precipitation for 1950
+40. What is the maximum temperature recorded in 1951?
+41. Give the minimum humidity in 1950
+42. Compute temperature variance for 1950
+43. Show median precipitation for 1951
+
+44. Show data for invalid-date-format
+45. Give me temperature for year 3000
+46. What's the weather on 1800-01-01?
+
