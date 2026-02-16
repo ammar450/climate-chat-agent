@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Data Chat</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-button" onclick="createNewChat()">
+                    <span>➕</span>
+                    <span>New Chat</span>
+                </button>
+            </div>
+            <div class="chat-list" id="chatList">
+                <!-- Chat history will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+                ☰
+            </button>
+
+            <div class="header">
+                <h1>🌍 Climate Data Chat</h1>
+                <div class="header-buttons">
+                    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+                    <select class="model-selector" id="modelSelector">
+                        <option value="">Loading models...</option>
+                    </select>
+                    <button class="debug-toggle" id="debugToggle">Show Debug</button>
+                    <button class="reset-button" id="resetButton">Clear Chat</button>
+                </div>
+            </div>
+
+            <div class="chat-container" id="chatContainer">
+                <div class="welcome-screen" id="welcomeScreen">
+                    <h2>Climate Data Assistant</h2>
+                    <p class="welcome-subtitle">Ask me anything about climate data and observations</p>
+                    <div class="examples">
+                        <div class="example-card" onclick="sendExample('What variables are available?')">
+                            <div class="example-title">📊 Variables</div>
+                            <div class="example-text">What variables are available?</div>
+                        </div>
+                        <div class="example-card" onclick="sendExample('Show me some sample observations')">
+                            <div class="example-title">🔍 Sample Data</div>
+                            <div class="example-text">Show me some sample observations</div>
+                        </div>
+                        <div class="example-card" onclick="sendExample('What is the temperature data?')">
+                            <div class="example-title">🌡️ Temperature</div>
+                            <div class="example-text">What is the temperature data?</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea 
+                        class="input-box" 
+                        id="messageInput" 
+                        placeholder="Ask about climate data..."
+                        rows="1"
+                    ></textarea>
+                    <button class="send-button" id="sendButton" onclick="sendMessage()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
+

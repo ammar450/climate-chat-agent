@@ -1,0 +1,86 @@
+// Climate Chat Agent Flow
+digraph {
+	dpi=300 rankdir=TB size="12,16"
+	node [fontname=Arial fontsize=10 shape=box style="rounded,filled"]
+	start [label="User Sends
+Message" fillcolor="#e1f5e1" shape=ellipse]
+	end [label="Return Final
+Answer" fillcolor="#e1f5e1" shape=ellipse]
+	load_memory [label="Load Memory
+
+• Load from Redis/Memory
+• Restore property/feature/time" fillcolor="#e3f2fd" width=2.5]
+	validation [label="Validation
+
+• Fix typos
+• Detect format (layman/technical)
+• Store original message" fillcolor="#fff3e0" width=2.5]
+	resolve [label="Resolve Entities
+
+• Extract property
+• Extract feature/location
+• Parse time expressions
+• Validate date range (1950-2100)" fillcolor="#f3e5f5" width=2.5]
+	planner [label="Planner
+
+• Pattern match intent
+• Select template
+• Extract parameters
+• Check if followup needed" fillcolor="#e8f5e9" width=2.5]
+	build_query [label="Build SPARQL Query
+
+• Render template
+• Apply time filters
+• Handle aggregation" fillcolor="#e0f2f1" width=2.5]
+	execute [label="Execute SPARQL
+
+• Query knowledge graph
+• Security checks
+• Timeout protection
+• Parse results" fillcolor="#fce4ec" width=2.5]
+	format_evidence [label="Format Evidence
+
+• Calculate statistics
+• Mean, min, max, std dev
+• Structure data for LLM" fillcolor="#f3e5f5" width=2.5]
+	explainer [label="Generate Answer
+
+• Use LLM
+• Apply response format
+• Include typo corrections
+• Add context & insights" fillcolor="#e8eaf6" width=2.5]
+	save_memory [label="Save Memory
+
+• Store property URI
+• Store feature URI
+• Store time range
+• Update Redis/Memory" fillcolor="#e3f2fd" width=2.5]
+	resolve_router [label="Date
+Valid?" fillcolor="#fff9c4" height=1.2 shape=diamond width=1.2]
+	route_node [label="Followup
+or Query?" fillcolor="#fff9c4" height=1.2 shape=diamond width=1.2]
+	date_error [label="Date Error
+
+• Generate error message
+• Explain valid range" fillcolor="#ffebee" width=2]
+	followup [label="Followup Question
+
+• Ask clarifying question
+• Preserve context" fillcolor="#e0f7fa" width=2]
+	start -> load_memory
+	load_memory -> validation
+	validation -> resolve
+	resolve -> resolve_router
+	resolve_router -> date_error [label=Error]
+	resolve_router -> planner [label=Valid]
+	planner -> route_node
+	route_node -> followup [label=Followup]
+	route_node -> build_query [label=Query]
+	build_query -> execute
+	execute -> format_evidence
+	format_evidence -> explainer
+	date_error -> save_memory
+	followup -> save_memory
+	explainer -> save_memory
+	save_memory -> end
+}
