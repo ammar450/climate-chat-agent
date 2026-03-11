@@ -26,13 +26,10 @@ Commands to test Agent
 11. Give me data for 2024-01-01
 12. Show climate for 1940-06-15
 
-
-
  4️⃣ Invalid or Edge Case Dates
 
 13. Show data for 1950-02-29 (leap year edge case)
 14. Give temperature for 1951-13-01 (invalid month)
-
 
 
  5️⃣ Technical / Explanation / Debug Requests
@@ -40,7 +37,6 @@ Commands to test Agent
 15. Show technical details for temperature on 1950-06-15
 16. Simply explain climate data for 2023-01-01 (should handle out-of-range + layman)
 17. Debug info for 1951-12-31 humidity
-
 
 
  6️⃣ General / Year-Level Queries
@@ -96,3 +92,9 @@ Commands to test Agent
 45. Give me temperature for year 3000
 46. What's the weather on 1800-01-01?
 
+Geographical Queries
+ "what was temperature of berlin or its nearest area in 1950 january"
+"temperature in paris or nearest area in 1950 january"
+ "what was the temperature at lat: 51.5, lon: -0.13 in January 1950"
+ "what was temperature in germany in 1950 january"
+ "what was temprature of berlin..." (with typo correction)

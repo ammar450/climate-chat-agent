@@ -28,10 +28,11 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# Add CORS middleware (restrict in production)
+# Add CORS middleware — restrict origins via CORS_ORIGINS env var in production
+_cors_origins = os.getenv("CORS_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify exact origins
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -245,7 +246,7 @@ def health_check():
     Health check endpoint.
     Verifies LLM provider and SPARQL endpoint are reachable.
     """
-    from llm_provider import llm, LLM_BACKEND
+    from src.llm.llm_provider import llm, LLM_BACKEND
     
     health_status = {
         "status": "healthy",
@@ -317,8 +318,8 @@ def chat(request: ChatRequest):
         # Use model from request, or default to environment config
         model = request.model
         if not model:
-            provider = os.getenv("LLM_PROVIDER", "ollama")
-            model_name = os.getenv("OLLAMA_MODEL" if provider == "ollama" else "SAIA_MODEL", "llama3.2")
+            provider = os.getenv("LLM_BACKEND", os.getenv("LLM_PROVIDER", "ollama"))
+            model_name = os.getenv("OLLAMA_MODEL" if provider == "ollama" else "OPENAI_MODEL", "llama3.2")
             model = f"{provider}:{model_name}"
         
         print(f"\n[CHAT] Session: {request.session_id}")
@@ -336,14 +337,14 @@ def chat(request: ChatRequest):
         
         print(f"[CHAT] Success! Answer length: {len(result.get('answer', ''))}")
         
-        # Return response
+        # Return response — coerce None to safe defaults to prevent Pydantic errors
         return ChatResponse(
-            answer=result.get("answer", "Sorry, I couldn't generate a response."),
-            technical_details=result.get("technical_details"),  # Include technical details
-            context=result.get("evidence"),  # Evidence text for context
-            sparql=result.get("sparql", ""),
-            rows=result.get("rows", [])[:20],  # Limit to 20 rows
-            used_template=result.get("used_template", "unknown")
+            answer=result.get("answer") or "Sorry, I couldn't generate a response.",
+            technical_details=result.get("technical_details"),
+            context=result.get("evidence") or None,
+            sparql=result.get("sparql") or "",
+            rows=result.get("rows") or [],
+            used_template=result.get("used_template") or "unknown"
         )
         
     except HTTPException:
@@ -363,22 +364,16 @@ def chat(request: ChatRequest):
 def reset_session(request: dict):
     """
     Reset a session's conversation context.
-    
+
     Args:
         request: Dict with session_id
-        
+
     Returns:
         Success message
     """
     session_id = request.get("session_id", "default")
     session_store.reset(session_id)
     return {"status": "success", "message": f"Session {session_id} has been reset"}
-
-
-@app.get("/")
-def read_root():
-    """Serve the main HTML page."""
-    return FileResponse("static/index.html")
 
 
 if __name__ == "__main__":

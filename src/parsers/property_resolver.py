@@ -274,3 +274,198 @@ LIMIT 100"""
 
 # Global property resolver
 property_resolver = PropertyResolver()
+
+
+# ============================================================================
+# LOCATION RESOLVER
+# ============================================================================
+
+class LocationResolver:
+    """Resolve location names to coordinates and feature URIs."""
+    
+    # Major European cities with their coordinates (lat, lon)
+    # This dataset primarily covers European region from 1950-1951
+    CITY_COORDINATES = {
+        # Germany
+        "berlin": (52.52, 13.40),
+        "munich": (48.14, 11.58),
+        "hamburg": (53.55, 10.00),
+        "cologne": (50.94, 6.96),
+        "frankfurt": (50.11, 8.68),
+        
+        # France
+        "paris": (48.86, 2.35),
+        "marseille": (43.30, 5.37),
+        "lyon": (45.76, 4.84),
+        "toulouse": (43.60, 1.44),
+        
+        # UK
+        "london": (51.51, -0.13),
+        "manchester": (53.48, -2.24),
+        "birmingham": (52.48, -1.90),
+        "edinburgh": (55.95, -3.19),
+        
+        # Italy
+        "rome": (41.90, 12.50),
+        "milan": (45.46, 9.19),
+        "naples": (40.85, 14.27),
+        "turin": (45.07, 7.69),
+        "florence": (43.77, 11.26),
+        
+        # Spain
+        "madrid": (40.42, -3.70),
+        "barcelona": (41.39, 2.17),
+        "valencia": (39.47, -0.38),
+        "seville": (37.39, -5.98),
+        
+        # Netherlands
+        "amsterdam": (52.37, 4.89),
+        "rotterdam": (51.92, 4.48),
+        "the hague": (52.08, 4.31),
+        
+        # Belgium
+        "brussels": (50.85, 4.35),
+        "antwerp": (51.22, 4.40),
+        
+        # Other major European cities
+        "vienna": (48.21, 16.37),
+        "zurich": (47.37, 8.54),
+        "geneva": (46.20, 6.14),
+        "prague": (50.08, 14.44),
+        "warsaw": (52.23, 21.01),
+        "budapest": (47.50, 19.04),
+        "athens": (37.98, 23.73),
+        "lisbon": (38.72, -9.14),
+        "copenhagen": (55.68, 12.57),
+        "oslo": (59.91, 10.75),
+        "stockholm": (59.33, 18.07),
+        "helsinki": (60.17, 24.94),
+        "dublin": (53.35, -6.26),
+    }
+    
+    @staticmethod
+    def get_coordinates(location_name: str) -> Optional[tuple]:
+        """
+        Get coordinates for a location name.
+        
+        Args:
+            location_name: City or location name
+            
+        Returns:
+            (lat, lon) tuple or None if not found
+        """
+        location_lower = location_name.lower().strip()
+        return LocationResolver.CITY_COORDINATES.get(location_lower)
+    
+    @staticmethod
+    def find_nearest_feature(lat: float, lon: float, sparql_client_func) -> Optional[str]:
+        """
+        Find the nearest feature URI given coordinates.
+        
+        Args:
+            lat: Latitude
+            lon: Longitude
+            sparql_client_func: Function to execute SPARQL queries
+            
+        Returns:
+            Feature URI of nearest station or None
+        """
+        from src.query.query_templates import GRAPH
+        
+        # Query to get all features with their geometries
+        query = f"""PREFIX sosa: <http://www.w3.org/ns/sosa/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT DISTINCT ?feature ?wkt
+FROM <{GRAPH}>
+WHERE {{
+  ?obs a sosa:Observation ;
+       sosa:hasFeatureOfInterest ?feature .
+  OPTIONAL {{
+    ?feature geo:hasGeometry ?geom .
+    ?geom geo:asWKT ?wkt .
+  }}
+}}
+LIMIT 1000"""
+        
+        try:
+            result = sparql_client_func(query)
+            features = result.get("results", {}).get("bindings", [])
+            
+            if not features:
+                print(f"[LOCATION] No features found with geometries")
+                return None
+            
+            # Calculate distances and find nearest
+            nearest_feature = None
+            min_distance = float('inf')
+            
+            for feature_row in features:
+                feature_uri = feature_row.get("feature", {}).get("value")
+                wkt = feature_row.get("wkt", {}).get("value", "")
+                
+                # Parse WKT to get coordinates
+                # Format: POINT(lon lat) or similar
+                if "POINT" in wkt.upper():
+                    try:
+                        coords_str = wkt.split("(")[1].split(")")[0]
+                        parts = coords_str.strip().split()
+                        feature_lon = float(parts[0])
+                        feature_lat = float(parts[1])
+                        
+                        # Calculate Haversine distance
+                        distance = LocationResolver._haversine_distance(
+                            lat, lon, feature_lat, feature_lon
+                        )
+                        
+                        if distance < min_distance:
+                            min_distance = distance
+                            nearest_feature = feature_uri
+                    except Exception as e:
+                        print(f"[LOCATION] Error parsing WKT '{wkt}': {e}")
+                        continue
+            
+            if nearest_feature:
+                print(f"[LOCATION] Found nearest feature: {nearest_feature} (distance: {min_distance:.2f} km)")
+                return nearest_feature
+            else:
+                print(f"[LOCATION] No valid feature geometries found")
+                return None
+                
+        except Exception as e:
+            print(f"[LOCATION] Error finding nearest feature: {e}")
+            return None
+    
+    @staticmethod
+    def _haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+        """
+        Calculate the great circle distance between two points on Earth.
+        
+        Args:
+            lat1, lon1: First point coordinates
+            lat2, lon2: Second point coordinates
+            
+        Returns:
+            Distance in kilometers
+        """
+        import math
+        
+        # Convert to radians
+        lat1_rad = math.radians(lat1)
+        lon1_rad = math.radians(lon1)
+        lat2_rad = math.radians(lat2)
+        lon2_rad = math.radians(lon2)
+        
+        # Haversine formula
+        dlat = lat2_rad - lat1_rad
+        dlon = lon2_rad - lon1_rad
+        a = math.sin(dlat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon/2)**2
+        c = 2 * math.asin(math.sqrt(a))
+        
+        # Earth radius in kilometers
+        r = 6371
+        
+        return c * r
+
+
+# Global location resolver
+location_resolver = LocationResolver()

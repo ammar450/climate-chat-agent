@@ -132,6 +132,27 @@ WHERE {{
   FILTER(?time >= "{start}"^^xsd:dateTime && ?time < "{end}"^^xsd:dateTime)
 }}""",
 
+    "timeseries_statistics_with_feature": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
+PREFIX qudt: <http://qudt.org/schema/qudt/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT 
+  (AVG(?value) AS ?mean) 
+  (MIN(?value) AS ?min) 
+  (MAX(?value) AS ?max) 
+  (COUNT(?value) AS ?count)
+  (SAMPLE(?unit) AS ?unit)
+FROM <{graph}>
+WHERE {{
+  ?obs a sosa:Observation ;
+       sosa:phenomenonTime ?time ;
+       sosa:observedProperty <{property_uri}> ;
+       sosa:hasFeatureOfInterest <{feature_uri}> ;
+       sosa:hasResult ?result .
+  ?result qudt:numericValue ?value .
+  OPTIONAL {{ ?result qudt:unit ?unit }}
+  FILTER(?time >= "{start}"^^xsd:dateTime && ?time < "{end}"^^xsd:dateTime)
+}}""",
+
     "timeseries_statistics_by_feature": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
 PREFIX qudt: <http://qudt.org/schema/qudt/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
@@ -200,6 +221,31 @@ GROUP BY (SUBSTR(STR(?time), 1, 10))
 ORDER BY ?date
 LIMIT 500""",
 
+    "daily_aggregates_with_feature": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
+PREFIX qudt: <http://qudt.org/schema/qudt/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT 
+  (SUBSTR(STR(?time), 1, 10) AS ?date)
+  (AVG(?value) AS ?mean)
+  (MIN(?value) AS ?min)
+  (MAX(?value) AS ?max)
+  (COUNT(?value) AS ?count)
+  (SAMPLE(?unit) AS ?unit)
+FROM <{graph}>
+WHERE {{
+  ?obs a sosa:Observation ;
+       sosa:phenomenonTime ?time ;
+       sosa:observedProperty <{property_uri}> ;
+       sosa:hasFeatureOfInterest <{feature_uri}> ;
+       sosa:hasResult ?result .
+  ?result qudt:numericValue ?value .
+  OPTIONAL {{ ?result qudt:unit ?unit }}
+  FILTER(?time >= "{start}"^^xsd:dateTime && ?time < "{end}"^^xsd:dateTime)
+}}
+GROUP BY (SUBSTR(STR(?time), 1, 10))
+ORDER BY ?date
+LIMIT 500""",
+
     "monthly_aggregates": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
 PREFIX qudt: <http://qudt.org/schema/qudt/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
@@ -215,6 +261,31 @@ WHERE {{
   ?obs a sosa:Observation ;
        sosa:phenomenonTime ?time ;
        sosa:observedProperty <{property_uri}> ;
+       sosa:hasResult ?result .
+  ?result qudt:numericValue ?value .
+  OPTIONAL {{ ?result qudt:unit ?unit }}
+  FILTER(?time >= "{start}"^^xsd:dateTime && ?time < "{end}"^^xsd:dateTime)
+}}
+GROUP BY (SUBSTR(STR(?time), 1, 7))
+ORDER BY ?month
+LIMIT 500""",
+
+    "monthly_aggregates_with_feature": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
+PREFIX qudt: <http://qudt.org/schema/qudt/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT 
+  (SUBSTR(STR(?time), 1, 7) AS ?month)
+  (AVG(?value) AS ?mean)
+  (MIN(?value) AS ?min)
+  (MAX(?value) AS ?max)
+  (COUNT(?value) AS ?count)
+  (SAMPLE(?unit) AS ?unit)
+FROM <{graph}>
+WHERE {{
+  ?obs a sosa:Observation ;
+       sosa:phenomenonTime ?time ;
+       sosa:observedProperty <{property_uri}> ;
+       sosa:hasFeatureOfInterest <{feature_uri}> ;
        sosa:hasResult ?result .
   ?result qudt:numericValue ?value .
   OPTIONAL {{ ?result qudt:unit ?unit }}

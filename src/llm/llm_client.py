@@ -56,8 +56,6 @@ def chat(
     temperature = temperature if temperature is not None else DEFAULT_TEMPERATURE
     max_tokens = max_tokens if max_tokens is not None else DEFAULT_MAX_TOKENS
     
-    print(f"[LLM] Provider: {provider}, Model: {model or 'default'}")
-    
     if provider == "openai":
         return _chat_openai(messages, model, temperature, max_tokens)
     elif provider == "ollama":

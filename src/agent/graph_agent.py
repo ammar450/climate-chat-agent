@@ -6,16 +6,16 @@ Enhanced with typo correction, date validation, and dual response formats.
 
 import json
 import os
+import re
 import time
 from typing import TypedDict, Optional, List, Dict, Any, Literal
 from langgraph.graph import StateGraph, END
-from langchain_core.messages import HumanMessage, AIMessage
 
 from src.llm.llm_provider import chat
-from src.parsers.property_resolver import property_resolver
+from src.parsers.property_resolver import property_resolver, location_resolver
 from src.parsers.time_parser import TimeParser, DateValidationError
 from src.parsers.typo_corrector import TypoCorrector
-from src.formatting.response_formatter import ResponseFormatDetector, DualFormatResponder, ResponseFormat
+from src.formatting.response_formatter import ResponseFormatDetector, ResponseFormat
 from src.utils.error_handler import QuerySuggestionEngine
 from src.query.query_templates import render_template, TEMPLATES
 from src.query.sparql_client import run_sparql, SPARQLSecurityError
@@ -191,9 +191,6 @@ def validation_node(state: AgentState) -> AgentState:
     return state
 
 
-# Cache for property keyword lookups
-_property_keyword_cache = {}
-
 def resolve_node(state: AgentState) -> AgentState:
     """Resolve property, feature, and time from user message."""
     start_time = time.time()
@@ -266,8 +263,8 @@ def resolve_node(state: AgentState) -> AgentState:
         state["date_validation_error"] = str(e)
         state["final_answer"] = str(e)
         print(f"[RESOLVE] Invalid date format: {e}")
-        # Set empty plan to avoid None errors downstream
         state["plan"] = {"template": None, "params": {}, "followup": None}
+        state["sparql_query"] = ""
         state["debug"]["resolve_time"] = round(time.time() - start_time, 3)
         return state
     
@@ -283,13 +280,12 @@ def resolve_node(state: AgentState) -> AgentState:
         if e.suggested_query:
             state["debug"]["date_suggestion"] = e.suggested_query
         print(f"[RESOLVE] Date validation error: {e}")
-        # Set final answer and skip to end
         error_message = str(e)
         if e.suggested_query:
             error_message += f"\n\nSuggestion: {e.suggested_query}"
         state["final_answer"] = error_message
-        # Set empty plan to avoid None errors downstream
         state["plan"] = {"template": None, "params": {}, "followup": None}
+        state["sparql_query"] = ""
         state["debug"]["resolve_time"] = round(time.time() - start_time, 3)
         return state
     
@@ -319,8 +315,6 @@ def resolve_node(state: AgentState) -> AgentState:
             print(f"[RESOLVE] Feature: {state['selected_feature_uri']}")
     
     # Parse location: country name or coordinates
-    import re
-    
     # European and Mediterranean countries (dataset contains primarily European data from 1950-1951)
     available_countries = [
         # Western Europe
@@ -340,6 +334,9 @@ def resolve_node(state: AgentState) -> AgentState:
         # Middle East (limited)
         "turkey", "israel", "lebanon", "syria", "jordan"
     ]
+    
+    # Get city names from location resolver for detection
+    available_cities = list(location_resolver.CITY_COORDINATES.keys())
     
     # Countries likely NOT in the 1950-1951 European dataset
     unavailable_countries = [
@@ -361,6 +358,22 @@ def resolve_node(state: AgentState) -> AgentState:
             print(f"[RESOLVE] Location detected: {state['location_name']}")
             break
     
+    # Check for city names if no country detected
+    if not country_detected:
+        for city in available_cities:
+            if city in msg_lower:
+                country_detected = city.title()
+                state["location_name"] = country_detected
+                print(f"[RESOLVE] City detected: {state['location_name']}")
+                break
+    
+    # If location detected, try to resolve to coordinates and feature URI
+    if country_detected and not state.get("coordinates"):
+        coords = location_resolver.get_coordinates(country_detected)
+        if coords:
+            state["coordinates"] = {"lat": coords[0], "lon": coords[1]}
+            print(f"[RESOLVE] Location mapped to coordinates: lat={coords[0]}, lon={coords[1]}")
+    
     # Check if user mentioned a country not in the dataset
     if not country_detected:
         for country in unavailable_countries:
@@ -369,6 +382,7 @@ def resolve_node(state: AgentState) -> AgentState:
                 error_msg = f"Sorry, '{country_name}' is not available in this dataset. This dataset contains climate observations from European and Mediterranean regions for 1950-1951 only.\n\nAvailable regions: Germany, France, Italy, Spain, UK, Greece, Poland, and other European countries.\n\nYou can provide specific coordinates (lat/lon) if you have data points in '{country_name}'."
                 state["final_answer"] = error_msg
                 state["plan"] = {"template": None, "params": {}, "followup": None}
+                state["sparql_query"] = ""
                 state["debug"]["resolve_time"] = round(time.time() - start_time, 3)
                 state["debug"]["country_not_available"] = country_name
                 print(f"[RESOLVE] Country not in dataset: {country_name}")
@@ -400,6 +414,23 @@ def resolve_node(state: AgentState) -> AgentState:
                 print(f"[RESOLVE] Invalid coordinates: lat={lat}, lon={lon} (out of range)")
         except ValueError:
             print(f"[RESOLVE] Failed to parse coordinates")
+    
+    # If we have coordinates but no feature URI, try to find nearest feature
+    if state.get("coordinates") and not state.get("selected_feature_uri"):
+        coords = state["coordinates"]
+        try:
+            feature_uri = location_resolver.find_nearest_feature(
+                coords["lat"], 
+                coords["lon"],
+                run_sparql
+            )
+            if feature_uri:
+                state["selected_feature_uri"] = feature_uri
+                print(f"[RESOLVE] Resolved to feature URI: {feature_uri}")
+            else:
+                print(f"[RESOLVE] Could not find nearest feature for coordinates")
+        except Exception as e:
+            print(f"[RESOLVE] Error resolving feature from coordinates: {e}")
     
     state["debug"]["resolve_time"] = round(time.time() - start_time, 3)
     return state
@@ -548,11 +579,10 @@ For filtering data:
 - Use filtered_timeseries with min_value and max_value parameters
 
 LOCATION HANDLING:
-- If user mentions a country name or coordinates (lat/lon), these will be in session context
-- Location info is provided as "Location: [country]" or "Coordinates: lat=X, lon=Y"
-- For location-based queries, suggest the user can filter by providing coordinates if not already present
-- Note: Location filtering works best with coordinates (lat/lon format)
-- Example follow-up if country name without coords: "I detected you're interested in [country]. For precise location filtering, you can provide coordinates like 'lat: 52.5, lon: 13.4'"
+- If session context shows "Location: [name]", "Coordinates: lat=X, lon=Y", or "Current feature: [URI]", the location is RESOLVED
+- When location is resolved, DO NOT ask for coordinates - proceed with the query using appropriate template
+- If no location info in context but user mentions a place, suggest providing coordinates
+- Location filtering is automatic when feature URI is in context
   
 OUTPUT STRICT JSON ONLY (no markdown, no explanation):
 {{
@@ -618,14 +648,11 @@ If you need clarification, set "followup" to your question and "template" to nul
     except Exception as e:
         print(f"[PLAN] LLM error: {e}, falling back to list_properties")
         state["debug"]["plan_error"] = str(e)
-        # Fallback to safe template that doesn't require LLM
         state["plan"] = {
             "template": "list_properties",
             "params": {},
             "followup": None
         }
-        state["debug"]["plan_time"] = round(time.time() - start_time, 3)
-        state["debug"]["plan_error"] = str(e)
         state["debug"]["plan_time"] = round(time.time() - start_time, 3)
     
     return state
@@ -671,7 +698,7 @@ def build_query_node(state: AgentState) -> AgentState:
     if not isinstance(plan, dict) or not plan.get("template"):
         state["debug"]["build_query_error"] = "No valid plan available"
         state["final_answer"] = "I encountered an error processing your query. Please try rephrasing."
-        state["sparql_query"] = None
+        state["sparql_query"] = ""
         return state
     
     template_name = plan["template"]
@@ -684,6 +711,17 @@ def build_query_node(state: AgentState) -> AgentState:
     
     if state.get("selected_feature_uri"):
         params["feature_uri"] = state["selected_feature_uri"]
+        print(f"[BUILD_QUERY] Using feature URI from state: {state['selected_feature_uri']}")
+        
+        # Switch to feature-specific template if available
+        feature_templates = {
+            "timeseries_statistics": "timeseries_statistics_with_feature",
+            "daily_aggregates": "daily_aggregates_with_feature",
+            "monthly_aggregates": "monthly_aggregates_with_feature",
+        }
+        if template_name in feature_templates:
+            template_name = feature_templates[template_name]
+            print(f"[BUILD_QUERY] Switched to feature-specific template: {template_name}")
     
     if state.get("time_range"):
         params["start"] = state["time_range"]["start"]
@@ -702,10 +740,11 @@ def build_query_node(state: AgentState) -> AgentState:
         # Safety checks
         query_upper = sparql_query.upper()
         
-        # Block dangerous operations
+        # Block dangerous operations - use word boundaries to avoid false positives
         forbidden = ["INSERT", "DELETE", "LOAD", "CLEAR", "CREATE", "DROP", "MOVE", "COPY", "ADD"]
         for keyword in forbidden:
-            if keyword in query_upper.split():
+            # Use word boundary regex to match whole words only
+            if re.search(r'\b' + keyword + r'\b', query_upper):
                 raise SPARQLSecurityError(f"Forbidden keyword: {keyword}")
         
         # Ensure SELECT only
@@ -726,7 +765,7 @@ def build_query_node(state: AgentState) -> AgentState:
     except Exception as e:
         state["debug"]["build_query_error"] = str(e)
         state["final_answer"] = f"Error building query: {str(e)}"
-        state["sparql_query"] = None
+        state["sparql_query"] = ""
     
     return state
 
@@ -1275,6 +1314,20 @@ def create_graph() -> StateGraph:
 compiled_graph = create_graph()
 
 
+def _friendly_unable_to_answer_message() -> str:
+    """
+    Standard friendly message returned to users when the agent cannot answer
+    due to unusual queries, missing data, or internal errors. Keep this
+    user-facing and avoid exposing technical details or tracebacks.
+    """
+    return (
+        "I'm sorry — I don't have enough information to answer that question. "
+        "I may not have the required data or the question is outside my scope. "
+        "This system only contains climate observations for 1950-01-01 to 1951-12-31. "
+        "Could you please rephrase your question or ask about a date within 1950-1951?"
+    )
+
+
 # ============================================================================
 # CONVENIENCE FUNCTION
 # ============================================================================
@@ -1329,23 +1382,66 @@ def run_agent(
         # Run the graph
         result = compiled_graph.invoke(initial_state)
         
+        # Check if result is None
+        if result is None:
+            # Provide helpful error message with available date range
+            error_answer = (
+                "I'm sorry, but I don't have data available for that date. "
+                "The climate data in this system is only available from **1950-01-01 to 1951-12-31**.\n\n"
+                "Please try asking about a date within this range. For example:\n"
+                "- 'Show temperature for 1950-06-15'\n"
+                "- 'What was the humidity on 1951-12-25?'\n"
+                "- 'Give me precipitation for 1950-01-01'"
+            )
+            return {
+                "answer": error_answer,
+                "technical_details": "Error: Graph execution returned None. The requested date may be outside the available data range (1950-01-01 to 1951-12-31).",
+                "used_template": "error",
+                "sparql": "",
+                "rows": [],
+                "evidence": "",
+                "typo_corrections": {},
+                "response_format": "auto",
+                "debug": {"error": "Graph returned None", "available_range": "1950-01-01 to 1951-12-31"}
+            }
+        
         # Safely extract plan template
         plan = result.get("plan")
         template_used = "unknown"
         if plan and isinstance(plan, dict):
             template_used = plan.get("template", "unknown") or "unknown"
         
-        # Format response
+        # Safely get sparql_rows with default empty list
+        sparql_rows = result.get("sparql_rows") or []
+        rows_to_return = sparql_rows[:10] if isinstance(sparql_rows, list) else []
+        
+        # Format response and sanitize technical errors into friendly user messages
+        raw_answer = result.get("final_answer") or ""
+        raw_tech = result.get("technical_details") or "No technical details available."
+
+        # Only suppress the answer if it looks like a raw Python exception/traceback,
+        # not if it naturally contains words like 'error' or 'not available'.
+        _TECHNICAL_ERROR_PATTERN = re.compile(
+            r"(Traceback \(most recent call|Exception:|SPARQLSecurityError:|Query execution failed:|Error building query:)",
+            re.IGNORECASE,
+        )
+        if _TECHNICAL_ERROR_PATTERN.search(raw_answer):
+            user_answer = _friendly_unable_to_answer_message()
+            tech_details = "Internal error (logged)."
+        else:
+            user_answer = raw_answer
+            tech_details = raw_tech
+
         return {
-            "answer": result.get("final_answer", "No answer generated."),
-            "technical_details": result.get("technical_details", "No technical details available."),
+            "answer": user_answer or "No answer generated.",
+            "technical_details": tech_details,
             "used_template": template_used,
-            "sparql": result.get("sparql_query", ""),
-            "rows": result.get("sparql_rows", [])[:10],  # First 10 rows only
-            "evidence": result.get("evidence_text", ""),
-            "typo_corrections": result.get("typo_corrections", {}),
-            "response_format": result.get("response_format", "auto"),
-            "debug": result.get("debug", {})
+            "sparql": result.get("sparql_query") or "",
+            "rows": rows_to_return,
+            "evidence": result.get("evidence_text") or "",
+            "typo_corrections": result.get("typo_corrections") or {},
+            "response_format": result.get("response_format") or "auto",
+            "debug": result.get("debug") or {}
         }
     except Exception as e:
         # Catch any unexpected errors and return a safe response
@@ -1355,8 +1451,8 @@ def run_agent(
         print(error_trace)
         
         return {
-            "answer": f"I encountered an error processing your request. Please try rephrasing your question or contact support if the issue persists.",
-            "technical_details": f"Error: {str(e)}\n\nTraceback:\n{error_trace}",
+            "answer": _friendly_unable_to_answer_message(),
+            "technical_details": "Internal error (logged).",
             "used_template": "error",
             "sparql": "",
             "rows": [],
