@@ -1,0 +1,43 @@
+# Never bake secrets into the image
+.env
+.env.local
+.env.*.local
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Docs & tests (not needed at runtime)
+docs/
+tests/
+Presenttaions/
+*.md
+!README.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+dump.rdb

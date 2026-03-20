@@ -11,6 +11,10 @@ services:
     environment:
       # Override PORT if needed; app reads os.getenv("PORT", "8000")
       PORT: "8000"
+    # Makes host.docker.internal resolve to the host machine on Linux too
+    # (Docker Desktop on Windows/Mac does this automatically)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
