@@ -292,55 +292,169 @@ class LocationResolver:
         "hamburg": (53.55, 10.00),
         "cologne": (50.94, 6.96),
         "frankfurt": (50.11, 8.68),
-        
+        "dresden": (51.05, 13.74),
+        "stuttgart": (48.78, 9.18),
+        "dusseldorf": (51.22, 6.78),
+        "dortmund": (51.51, 7.47),
+        "essen": (51.46, 7.01),
+        "leipzig": (51.34, 12.38),
+        "bremen": (53.08, 8.80),
+        "hannover": (52.37, 9.73),
+        "nuremberg": (49.45, 11.08),
+        "nürnberg": (49.45, 11.08),
+        "bonn": (50.74, 7.10),
+        "mannheim": (49.49, 8.47),
+        "karlsruhe": (49.01, 8.40),
+        "freiburg": (47.99, 7.84),
+        "augsburg": (48.37, 10.90),
+        "wiesbaden": (50.08, 8.24),
+        "kiel": (54.32, 10.14),
+        "rostock": (54.09, 12.14),
+        "erfurt": (50.98, 11.03),
+        "mainz": (49.99, 8.27),
+        "saarbrücken": (49.24, 7.00),
         # France
         "paris": (48.86, 2.35),
         "marseille": (43.30, 5.37),
         "lyon": (45.76, 4.84),
         "toulouse": (43.60, 1.44),
-        
+        "nice": (43.70, 7.27),
+        "nantes": (47.22, -1.55),
+        "strasbourg": (48.57, 7.75),
+        "montpellier": (43.61, 3.88),
+        "bordeaux": (44.84, -0.58),
+        "lille": (50.63, 3.07),
+        "rennes": (48.11, -1.68),
+        "reims": (49.26, 4.03),
+        "dijon": (47.32, 5.04),
+        "grenoble": (45.19, 5.72),
+        "tours": (47.39, 0.69),
         # UK
         "london": (51.51, -0.13),
         "manchester": (53.48, -2.24),
         "birmingham": (52.48, -1.90),
         "edinburgh": (55.95, -3.19),
-        
+        "glasgow": (55.86, -4.25),
+        "liverpool": (53.41, -2.98),
+        "bristol": (51.45, -2.59),
+        "leeds": (53.80, -1.55),
+        "sheffield": (53.38, -1.47),
+        "cardiff": (51.48, -3.18),
+        "belfast": (54.60, -5.93),
+        "newcastle": (54.97, -1.61),
+        "nottingham": (52.95, -1.15),
+        "oxford": (51.75, -1.25),
+        "cambridge": (52.21, 0.12),
         # Italy
         "rome": (41.90, 12.50),
         "milan": (45.46, 9.19),
         "naples": (40.85, 14.27),
         "turin": (45.07, 7.69),
         "florence": (43.77, 11.26),
-        
+        "venice": (45.44, 12.33),
+        "bologna": (44.50, 11.34),
+        "genoa": (44.41, 8.93),
+        "palermo": (38.12, 13.36),
+        "catania": (37.50, 15.09),
+        "bari": (41.13, 16.87),
+        "verona": (45.44, 10.99),
+        "padua": (45.41, 11.88),
+        "trieste": (45.65, 13.78),
+        "messina": (38.19, 15.55),
         # Spain
         "madrid": (40.42, -3.70),
         "barcelona": (41.39, 2.17),
         "valencia": (39.47, -0.38),
         "seville": (37.39, -5.98),
-        
+        "zaragoza": (41.65, -0.88),
+        "malaga": (36.72, -4.42),
+        "bilbao": (43.26, -2.93),
+        "alicante": (38.35, -0.48),
+        "cordoba": (37.89, -4.78),
+        "valladolid": (41.65, -4.72),
+        "granada": (37.18, -3.60),
         # Netherlands
         "amsterdam": (52.37, 4.89),
         "rotterdam": (51.92, 4.48),
         "the hague": (52.08, 4.31),
-        
+        "utrecht": (52.09, 5.12),
+        "eindhoven": (51.44, 5.48),
+        "groningen": (53.22, 6.57),
         # Belgium
         "brussels": (50.85, 4.35),
         "antwerp": (51.22, 4.40),
-        
+        "ghent": (51.05, 3.72),
+        "bruges": (51.21, 3.22),
+        "liège": (50.64, 5.57),
         # Other major European cities
         "vienna": (48.21, 16.37),
+        "graz": (47.07, 15.44),
+        "linz": (48.31, 14.29),
+        "salzburg": (47.80, 13.05),
         "zurich": (47.37, 8.54),
         "geneva": (46.20, 6.14),
+        "bern": (46.95, 7.45),
+        "basel": (47.56, 7.59),
         "prague": (50.08, 14.44),
+        "brno": (49.20, 16.61),
         "warsaw": (52.23, 21.01),
+        "krakow": (50.06, 19.94),
+        "lodz": (51.77, 19.46),
+        "wroclaw": (51.11, 17.04),
+        "poznan": (52.41, 16.93),
         "budapest": (47.50, 19.04),
+        "debrecen": (47.53, 21.63),
         "athens": (37.98, 23.73),
+        "thessaloniki": (40.64, 22.94),
         "lisbon": (38.72, -9.14),
+        "porto": (41.15, -8.61),
         "copenhagen": (55.68, 12.57),
+        "aarhus": (56.16, 10.21),
         "oslo": (59.91, 10.75),
+        "bergen": (60.39, 5.32),
+        "trondheim": (63.43, 10.39),
         "stockholm": (59.33, 18.07),
+        "gothenburg": (57.71, 11.97),
+        "malmo": (55.61, 13.00),
+        "malmö": (55.61, 13.00),
         "helsinki": (60.17, 24.94),
+        "tampere": (61.50, 23.77),
         "dublin": (53.35, -6.26),
+        "cork": (51.90, -8.47),
+        "bucharest": (44.43, 26.10),
+        "cluj-napoca": (46.77, 23.59),
+        "sofia": (42.70, 23.32),
+        "belgrade": (44.82, 20.46),
+        "zagreb": (45.81, 15.98),
+        "sarajevo": (43.85, 18.36),
+        "skopje": (41.99, 21.43),
+        "tirana": (41.33, 19.83),
+        "riga": (56.95, 24.11),
+        "tallinn": (59.44, 24.75),
+        "vilnius": (54.69, 25.28),
+        "minsk": (53.90, 27.57),
+        "kyiv": (50.45, 30.52),
+        "istanbul": (41.01, 28.95),
+        "ankara": (39.93, 32.86),
+        "izmir": (38.42, 27.14),
+        "bratislava": (48.15, 17.11),
+        "luxembourg": (49.61, 6.13),
+        "reykjavik": (64.13, -21.94),
+        "nicosia": (35.17, 33.37),
+        "valletta": (35.90, 14.51),
+        "monaco": (43.74, 7.41),
+        "podgorica": (42.44, 19.26),
+        # North Africa / Mediterranean
+        "algiers": (36.74, 3.06),
+        "tunis": (36.82, 10.17),
+        "tripoli": (32.90, 13.18),
+        "cairo": (30.06, 31.25),
+        "casablanca": (33.59, -7.62),
+        # Middle East
+        "beirut": (33.89, 35.50),
+        "damascus": (33.51, 36.29),
+        "tel aviv": (32.09, 34.79),
+        "amman": (31.96, 35.95),
     }
     
     @staticmethod
@@ -361,21 +475,37 @@ class LocationResolver:
     def find_nearest_feature(lat: float, lon: float, sparql_client_func) -> Optional[str]:
         """
         Find the nearest feature URI given coordinates.
-        
-        Args:
-            lat: Latitude
-            lon: Longitude
-            sparql_client_func: Function to execute SPARQL queries
-            
+        Returns just the URI (backward-compatible); see find_nearest_feature_with_distance
+        for the full result including distance.
+        """
+        result = LocationResolver.find_nearest_feature_with_distance(lat, lon, sparql_client_func)
+        if result:
+            return result[0]
+        return None
+
+    @staticmethod
+    def find_nearest_feature_with_distance(
+        lat: float, lon: float, sparql_client_func
+    ) -> Optional[tuple]:
+        """
+        Find the nearest EOBS feature URI for the given coordinates.
+
+        Tries multiple coordinate vocabularies in order:
+          1. GeoSPARQL  (geo:hasGeometry / geo:asWKT POINT)
+          2. WGS84      (wgs84:lat / wgs84:long)
+          3. Schema.org (schema:latitude / schema:longitude)
+
         Returns:
-            Feature URI of nearest station or None
+            (feature_uri: str, distance_km: float) or None if nothing found.
         """
         from src.query.query_templates import GRAPH
-        
-        # Query to get all features with their geometries
+
+        # Single query that fetches all three vocabularies in one round-trip.
         query = f"""PREFIX sosa: <http://www.w3.org/ns/sosa/>
-PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-SELECT DISTINCT ?feature ?wkt
+PREFIX geo:    <http://www.opengis.net/ont/geosparql#>
+PREFIX wgs84:  <http://www.w3.org/2003/01/geo/wgs84_pos#>
+PREFIX schema: <http://schema.org/>
+SELECT DISTINCT ?feature ?wkt ?wlat ?wlon ?slat ?slon
 FROM <{GRAPH}>
 WHERE {{
   ?obs a sosa:Observation ;
@@ -384,56 +514,132 @@ WHERE {{
     ?feature geo:hasGeometry ?geom .
     ?geom geo:asWKT ?wkt .
   }}
+  OPTIONAL {{
+    ?feature wgs84:lat  ?wlat ;
+             wgs84:long ?wlon .
+  }}
+  OPTIONAL {{
+    ?feature schema:latitude  ?slat ;
+             schema:longitude ?slon .
+  }}
 }}
-LIMIT 1000"""
-        
+LIMIT 2000"""
+
         try:
             result = sparql_client_func(query)
             features = result.get("results", {}).get("bindings", [])
-            
+
             if not features:
-                print(f"[LOCATION] No features found with geometries")
+                print(f"[LOCATION] No features returned from EOBS")
                 return None
-            
-            # Calculate distances and find nearest
+
             nearest_feature = None
             min_distance = float('inf')
-            
+
             for feature_row in features:
                 feature_uri = feature_row.get("feature", {}).get("value")
+                if not feature_uri:
+                    continue
+
+                feature_lat = None
+                feature_lon = None
+
+                # --- Priority 1: GeoSPARQL WKT POINT ---
                 wkt = feature_row.get("wkt", {}).get("value", "")
-                
-                # Parse WKT to get coordinates
-                # Format: POINT(lon lat) or similar
                 if "POINT" in wkt.upper():
                     try:
                         coords_str = wkt.split("(")[1].split(")")[0]
                         parts = coords_str.strip().split()
-                        feature_lon = float(parts[0])
+                        feature_lon = float(parts[0])   # WKT is lon lat
                         feature_lat = float(parts[1])
-                        
-                        # Calculate Haversine distance
-                        distance = LocationResolver._haversine_distance(
-                            lat, lon, feature_lat, feature_lon
-                        )
-                        
-                        if distance < min_distance:
-                            min_distance = distance
-                            nearest_feature = feature_uri
-                    except Exception as e:
-                        print(f"[LOCATION] Error parsing WKT '{wkt}': {e}")
-                        continue
-            
+                    except Exception:
+                        pass
+
+                # --- Priority 2: WGS84 lat/long ---
+                if feature_lat is None:
+                    wlat = feature_row.get("wlat", {}).get("value")
+                    wlon = feature_row.get("wlon", {}).get("value")
+                    if wlat and wlon:
+                        try:
+                            feature_lat = float(wlat)
+                            feature_lon = float(wlon)
+                        except ValueError:
+                            pass
+
+                # --- Priority 3: Schema.org latitude/longitude ---
+                if feature_lat is None:
+                    slat = feature_row.get("slat", {}).get("value")
+                    slon = feature_row.get("slon", {}).get("value")
+                    if slat and slon:
+                        try:
+                            feature_lat = float(slat)
+                            feature_lon = float(slon)
+                        except ValueError:
+                            pass
+
+                if feature_lat is None or feature_lon is None:
+                    continue
+
+                distance = LocationResolver._haversine_distance(
+                    lat, lon, feature_lat, feature_lon
+                )
+                if distance < min_distance:
+                    min_distance = distance
+                    nearest_feature = feature_uri
+
             if nearest_feature:
-                print(f"[LOCATION] Found nearest feature: {nearest_feature} (distance: {min_distance:.2f} km)")
-                return nearest_feature
-            else:
-                print(f"[LOCATION] No valid feature geometries found")
-                return None
-                
+                print(
+                    f"[LOCATION] Nearest feature: {nearest_feature} "
+                    f"(distance: {min_distance:.2f} km)"
+                )
+                return nearest_feature, min_distance
+
+            # No geometry found via any vocabulary — try coordinate-in-URI heuristic
+            print(f"[LOCATION] No geometry triples found; attempting URI coordinate extraction")
+            return LocationResolver._nearest_feature_from_uri(
+                lat, lon, [r.get("feature", {}).get("value") for r in features if r.get("feature")]
+            )
+
         except Exception as e:
             print(f"[LOCATION] Error finding nearest feature: {e}")
             return None
+
+    @staticmethod
+    def _nearest_feature_from_uri(
+        lat: float, lon: float, uris: list
+    ) -> Optional[tuple]:
+        """
+        Last-resort: try to parse coordinates encoded in feature URIs.
+        Patterns supported: /feature/51.5_-0.1, /feature/51.5N0.1W, /51.5/-0.1
+        """
+        import re
+        pattern = re.compile(
+            r'([\-\+]?\d+\.?\d*)[\s_,]+([\-\+]?\d+\.?\d*)'
+        )
+        nearest_feature = None
+        min_distance = float('inf')
+        for uri in uris:
+            if not uri:
+                continue
+            tail = uri.split('/')[-1]
+            m = pattern.search(tail)
+            if m:
+                try:
+                    f_lat, f_lon = float(m.group(1)), float(m.group(2))
+                    if not (-90 <= f_lat <= 90 and -180 <= f_lon <= 180):
+                        continue
+                    distance = LocationResolver._haversine_distance(lat, lon, f_lat, f_lon)
+                    if distance < min_distance:
+                        min_distance = distance
+                        nearest_feature = uri
+                except ValueError:
+                    continue
+        if nearest_feature:
+            print(f"[LOCATION] Nearest feature (URI heuristic): {nearest_feature} "
+                  f"({min_distance:.2f} km)")
+            return nearest_feature, min_distance
+        print(f"[LOCATION] URI coordinate extraction yielded nothing")
+        return None
     
     @staticmethod
     def _haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:

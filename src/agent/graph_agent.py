@@ -19,6 +19,7 @@ from src.formatting.response_formatter import ResponseFormatDetector, ResponseFo
 from src.utils.error_handler import QuerySuggestionEngine
 from src.query.query_templates import render_template, TEMPLATES
 from src.query.sparql_client import run_sparql, SPARQLSecurityError
+from src.query.wikidata_client import enrich_from_wikidata, resolve_place_to_coordinates
 
 
 # ============================================================================
@@ -40,6 +41,8 @@ class AgentState(TypedDict):
     date_validation_error: Optional[str]  # Date out of range message
     date_availability_message: Optional[str]  # Message when using nearest available date
     response_format: Optional[str]  # "layman" or "technical"
+    nearest_grid_message: Optional[str]  # Shown when nearest EOBS grid point used
+    location_resolution_method: Optional[str]  # "static_dict" | "wikidata" | "coordinates"
     
     # Session memory
     selected_property_uri: Optional[str]
@@ -53,6 +56,7 @@ class AgentState(TypedDict):
     sparql_query: Optional[str]
     sparql_rows: Optional[List[Dict[str, Any]]]
     evidence_text: Optional[str]
+    wikidata_context: Optional[Dict[str, Any]]  # Enrichment from Wikidata (secondary source only)
     final_answer: Optional[str]
     technical_details: Optional[str]  # Technical response with debug info
     
@@ -306,12 +310,12 @@ def resolve_node(state: AgentState) -> AgentState:
         print(f"[RESOLVE] Year set to: {year_update} (1950-1951 available)")
     
     # Extract feature URI if pasted (basic detection)
-    if "http://hyobs.nfdi4earth.de/resource/feature/" in user_message:
+    if "http://obs.nfdi4earth.de/resource/feature/" in user_message:
         # Extract feature URI
-        parts = user_message.split("http://hyobs.nfdi4earth.de/resource/feature/")
+        parts = user_message.split("http://obs.nfdi4earth.de/resource/feature/")
         if len(parts) > 1:
             feature_id = parts[1].split()[0].strip()
-            state["selected_feature_uri"] = f"http://hyobs.nfdi4earth.de/resource/feature/{feature_id}"
+            state["selected_feature_uri"] = f"http://obs.nfdi4earth.de/resource/feature/{feature_id}"
             print(f"[RESOLVE] Feature: {state['selected_feature_uri']}")
     
     # Parse location: country name or coordinates
@@ -357,22 +361,77 @@ def resolve_node(state: AgentState) -> AgentState:
             state["location_name"] = country_detected
             print(f"[RESOLVE] Location detected: {state['location_name']}")
             break
-    
-    # Check for city names if no country detected
+
+    # Check for city names — first exact, then fuzzy (handles typos like 'lipzieg'→'leipzig')
     if not country_detected:
+        # 1. Exact match
         for city in available_cities:
             if city in msg_lower:
                 country_detected = city.title()
                 state["location_name"] = country_detected
-                print(f"[RESOLVE] City detected: {state['location_name']}")
+                print(f"[RESOLVE] City detected (exact): {state['location_name']}")
                 break
+
+        # 2. Fuzzy match — check each word token against city list
+        if not country_detected:
+            words = re.findall(r'[a-z]+', msg_lower)
+            best_city = None
+            best_dist = 999
+            for word in words:
+                if len(word) < 3:  # skip very short tokens
+                    continue
+                for city in available_cities:
+                    # Allow 1 edit for short names (≤6), 2 edits for longer
+                    max_edits = 1 if len(city) <= 6 else 2
+                    if abs(len(word) - len(city)) > max_edits:
+                        continue
+                    # Compute Levenshtein inline
+                    s1, s2 = word, city
+                    if len(s1) < len(s2):
+                        s1, s2 = s2, s1
+                    if len(s2) == 0:
+                        d = len(s1)
+                    else:
+                        prev = list(range(len(s2) + 1))
+                        for i, c1 in enumerate(s1):
+                            curr = [i + 1]
+                            for j, c2 in enumerate(s2):
+                                curr.append(min(prev[j+1]+1, curr[j]+1, prev[j]+(c1 != c2)))
+                            prev = curr
+                        d = prev[-1]
+                    if d <= max_edits and d < best_dist:
+                        best_dist = d
+                        best_city = city
+            if best_city:
+                country_detected = best_city.title()
+                state["location_name"] = country_detected
+                print(f"[RESOLVE] City detected (fuzzy, dist={best_dist}): {state['location_name']}")
     
     # If location detected, try to resolve to coordinates and feature URI
     if country_detected and not state.get("coordinates"):
         coords = location_resolver.get_coordinates(country_detected)
         if coords:
             state["coordinates"] = {"lat": coords[0], "lon": coords[1]}
-            print(f"[RESOLVE] Location mapped to coordinates: lat={coords[0]}, lon={coords[1]}")
+            state["location_resolution_method"] = "static_dict"
+            print(f"[RESOLVE] Location mapped via static dict: lat={coords[0]}, lon={coords[1]}")
+        else:
+            # Static dict missed — try Wikidata for coordinate resolution
+            print(f"[RESOLVE] '{country_detected}' not in static dict, trying Wikidata...")
+            try:
+                wikidata_result = resolve_place_to_coordinates(country_detected)
+                if wikidata_result:
+                    wd_lat, wd_lon, wd_label, wd_id = wikidata_result
+                    state["coordinates"] = {"lat": wd_lat, "lon": wd_lon}
+                    state["location_resolution_method"] = "wikidata"
+                    # Update location name to the canonical Wikidata label
+                    state["location_name"] = wd_label
+                    state["debug"]["wikidata_place_id"] = wd_id
+                    print(f"[RESOLVE] '{country_detected}' resolved via Wikidata to '{wd_label}' "
+                          f"({wd_id}): lat={wd_lat:.4f}, lon={wd_lon:.4f}")
+                else:
+                    print(f"[RESOLVE] Wikidata could not resolve '{country_detected}'")
+            except Exception as exc:
+                print(f"[RESOLVE] Wikidata place-resolution error (non-fatal): {exc}")
     
     # Check if user mentioned a country not in the dataset
     if not country_detected:
@@ -419,19 +478,57 @@ def resolve_node(state: AgentState) -> AgentState:
     if state.get("coordinates") and not state.get("selected_feature_uri"):
         coords = state["coordinates"]
         try:
-            feature_uri = location_resolver.find_nearest_feature(
-                coords["lat"], 
+            result = location_resolver.find_nearest_feature_with_distance(
+                coords["lat"],
                 coords["lon"],
                 run_sparql
             )
-            if feature_uri:
+            if result:
+                feature_uri, dist_km = result
                 state["selected_feature_uri"] = feature_uri
-                print(f"[RESOLVE] Resolved to feature URI: {feature_uri}")
+                resolution_method = state.get("location_resolution_method", "coordinates")
+                loc_label = state.get("location_name", f"{coords['lat']:.4f},{coords['lon']:.4f}")
+
+                if resolution_method == "wikidata":
+                    wd_id = state.get("debug", {}).get("wikidata_place_id", "")
+                    wd_note = f" (resolved via Wikidata{' QID: ' + wd_id if wd_id else ''})" 
+                    state["nearest_grid_message"] = (
+                        f"No exact EOBS match for '{loc_label}'{wd_note}. "
+                        f"Using nearest observation grid point ({dist_km:.1f} km away). "
+                        f"[Source: EOBS]"
+                    )
+                elif dist_km > 25:
+                    state["nearest_grid_message"] = (
+                        f"No exact EOBS grid point for '{loc_label}'. "
+                        f"Showing nearest observation point ({dist_km:.1f} km away). "
+                        f"[Source: EOBS]"
+                    )
+                else:
+                    state["nearest_grid_message"] = None
+
+                print(f"[RESOLVE] Resolved to feature URI: {feature_uri} "
+                      f"({dist_km:.1f} km from '{loc_label}')")
             else:
-                print(f"[RESOLVE] Could not find nearest feature for coordinates")
+                # EOBS has no geometry data for this endpoint — proceed without feature filter.
+                # The query will run globally; we note this in the grid message.
+                loc_label = state.get("location_name", "requested location")
+                state["nearest_grid_message"] = (
+                    f"Could not resolve a grid point for '{loc_label}' from EOBS geometry data. "
+                    f"Showing dataset-wide statistics. [Source: EOBS]"
+                )
+                print(f"[RESOLVE] No feature geometry found in EOBS; will run global query")
         except Exception as e:
+            loc_label = state.get("location_name", "requested location")
+            state["nearest_grid_message"] = (
+                f"Grid-point lookup failed for '{loc_label}' ({e}). "
+                f"Showing dataset-wide statistics. [Source: EOBS]"
+            )
             print(f"[RESOLVE] Error resolving feature from coordinates: {e}")
-    
+
+    # If coordinate lookup was direct (not via place name) and no resolution_method set yet
+    if state.get("coordinates") and not state.get("location_resolution_method"):
+        state["location_resolution_method"] = "coordinates"
+
     state["debug"]["resolve_time"] = round(time.time() - start_time, 3)
     return state
 
@@ -446,17 +543,44 @@ def resolve_router(state: AgentState) -> Literal["planner", "date_error"]:
 def plan_node(state: AgentState) -> AgentState:
     """Use LLM to plan query - outputs strict JSON."""
     start_time = time.time()
-    
+
     # If we already have a final answer (e.g., from date error), skip planning
     if state.get("final_answer"):
         state["plan"] = {"template": None, "params": {}, "followup": None}
         state["debug"]["plan_time"] = 0
         state["debug"]["skipped"] = "answer_already_set"
         return state
-    
+
+    # -----------------------------------------------------------------------
+    # FAST-PATH: skip the LLM when property + time_range are already resolved.
+    # This handles "temperature in Leipzig in 1950"-style queries directly.
+    # -----------------------------------------------------------------------
+    has_property = bool(state.get("selected_property_uri"))
+    has_time = bool(state.get("time_range"))
+    has_feature = bool(state.get("selected_feature_uri"))
+
+    if has_property and has_time:
+        tr = state["time_range"]
+        template = "timeseries_statistics_with_feature" if has_feature else "timeseries_statistics"
+        state["plan"] = {
+            "template": template,
+            "params": {
+                "property_uri": state["selected_property_uri"],
+                "start": tr["start"],
+                "end": tr["end"],
+            },
+            "followup": None,
+        }
+        state["debug"]["plan_time"] = 0
+        state["debug"]["fast_path"] = True
+        state["debug"]["fast_path_reason"] = "property+time already resolved"
+        print(f"[PLAN] Fast path: {template} (property+time already resolved, "
+              f"feature={'yes' if has_feature else 'no'})")
+        return state
+
     user_message = state["user_message"]
     msg_lower = user_message.lower()
-    
+
     # Fast path for common queries (skip LLM)
     if any(phrase in msg_lower for phrase in ["what variables", "list variables", "available variables", "what properties", "variables are"]):
         state["plan"] = {"template": "list_properties", "params": {}, "followup": None}
@@ -1005,6 +1129,54 @@ def format_evidence_node(state: AgentState) -> AgentState:
     return state
 
 
+def wikidata_enrich_node(state: AgentState) -> AgentState:
+    """
+    Optionally enrich EOBS results with Wikidata context.
+
+    Rules:
+    - Runs AFTER EOBS data is already fetched and formatted.
+    - Only queries Wikidata when a location name or known property is present.
+    - NEVER replaces EOBS observation values.
+    - If Wikidata fails or returns nothing, state is unchanged.
+    - Source is tagged as 'Wikidata (enrichment)' in output.
+    """
+    start_time = time.time()
+
+    # Only enrich when EOBS returned data
+    if not state.get("sparql_rows") and not state.get("evidence_text"):
+        state["wikidata_context"] = {}
+        return state
+
+    location_name = state.get("location_name")
+    property_uri = state.get("selected_property_uri")
+    property_display_name = None
+    if property_uri:
+        property_display_name = property_resolver.get_property_display_name(property_uri)
+
+    # Skip if nothing to look up
+    if not location_name and not property_display_name:
+        state["wikidata_context"] = {}
+        state["debug"]["wikidata_time"] = 0
+        state["debug"]["wikidata_skipped"] = "no location or property to look up"
+        return state
+
+    try:
+        enrichment = enrich_from_wikidata(
+            location_name=location_name,
+            property_display_name=property_display_name,
+        )
+        state["wikidata_context"] = enrichment
+        state["debug"]["wikidata_time"] = round(time.time() - start_time, 3)
+        state["debug"]["wikidata_enriched"] = bool(enrichment)
+    except Exception as exc:
+        # Always non-fatal — EOBS data is unaffected
+        print(f"[WIKIDATA] Enrichment error (non-fatal): {exc}")
+        state["wikidata_context"] = {}
+        state["debug"]["wikidata_error"] = str(exc)
+
+    return state
+
+
 def explain_node(state: AgentState) -> AgentState:
     """Generate final answer using LLM with evidence, applying response format."""
     start_time = time.time()
@@ -1067,16 +1239,39 @@ RULES:
 - NO asterisks (*) or markdown bold (**)
 - Use clean numbered lists or simple text
 - Use simple language, emojis, everyday comparisons
+- If WIKIDATA CONTEXT is provided, use it only for background/geographic info, never to replace EOBS numbers.
+- When mixing EOBS data with Wikidata background, state the source: e.g. "(Source: EOBS)" or "(Background: Wikidata)"
 
-DATA: 1950-1951 only
+DATA: 1950-1951 only (Source: EOBS)
 
-EVIDENCE:
+EVIDENCE (from EOBS — primary source):
 {evidence}
 
 Answer the question briefly and directly in a friendly, layman-friendly way."""
     
     user_prompt = f"Question: {user_message}"
-    
+
+    # Append Wikidata enrichment context if available
+    wikidata_ctx = state.get("wikidata_context") or {}
+    if wikidata_ctx:
+        wikidata_lines = ["\nWIKIDATA CONTEXT (background/enrichment only — do NOT override EOBS values):"]
+        geo = wikidata_ctx.get("geo")
+        if geo:
+            parts = []
+            if geo.get("description"):
+                parts.append(geo["description"])
+            if geo.get("country"):
+                parts.append(f"Country: {geo['country']}")
+            if geo.get("lat") and geo.get("lon"):
+                parts.append(f"Coordinates: {geo['lat']}, {geo['lon']}")
+            if geo.get("population"):
+                parts.append(f"Population: {geo['population']}")
+            wikidata_lines.append(f"  Location ({geo.get('label', '')}): {' | '.join(parts)}")
+        prop_ctx = wikidata_ctx.get("property")
+        if prop_ctx and prop_ctx.get("description"):
+            wikidata_lines.append(f"  Property ({prop_ctx.get('label', '')}): {prop_ctx['description']}")
+        layman_system_prompt += "\n".join(wikidata_lines) + "\n"
+
     messages = [
         {"role": "system", "content": layman_system_prompt},
         {"role": "user", "content": user_prompt}
@@ -1095,7 +1290,11 @@ Answer the question briefly and directly in a friendly, layman-friendly way."""
         # Prepend date availability message if present
         if state.get("date_availability_message"):
             layman_answer = state["date_availability_message"] + "\n\n" + layman_answer
-        
+
+        # Prepend nearest-grid transparency message if present
+        if state.get("nearest_grid_message"):
+            layman_answer = state["nearest_grid_message"] + "\n\n" + layman_answer
+
         # Prepend typo correction message if any
         if state.get("typo_message"):
             layman_answer = state["typo_message"] + "\n\n" + layman_answer
@@ -1128,6 +1327,10 @@ Answer the question briefly and directly in a friendly, layman-friendly way."""
         # Add location info
         if state.get("location_name"):
             technical_lines.append(f"Location: {state['location_name']}")
+        if state.get("location_resolution_method"):
+            technical_lines.append(f"Location Resolution: {state['location_resolution_method']}")
+        if state.get("nearest_grid_message"):
+            technical_lines.append(f"Grid Match: {state['nearest_grid_message']}")
         if state.get("coordinates"):
             coords = state["coordinates"]
             technical_lines.append(f"Coordinates: lat={coords['lat']}, lon={coords['lon']}")
@@ -1262,6 +1465,7 @@ def create_graph() -> StateGraph:
     workflow.add_node("build_query", build_query_node)
     workflow.add_node("execute_sparql", execute_sparql_node)
     workflow.add_node("format_evidence", format_evidence_node)
+    workflow.add_node("wikidata_enrich", wikidata_enrich_node)  # Wikidata enrichment (secondary source)
     workflow.add_node("explainer", explain_node)  # Renamed for clarity
     workflow.add_node("save_memory", save_memory_node)
     
@@ -1301,7 +1505,8 @@ def create_graph() -> StateGraph:
     # Main execution path
     workflow.add_edge("build_query", "execute_sparql")
     workflow.add_edge("execute_sparql", "format_evidence")
-    workflow.add_edge("format_evidence", "explainer")
+    workflow.add_edge("format_evidence", "wikidata_enrich")  # Enrich AFTER EOBS data fetched
+    workflow.add_edge("wikidata_enrich", "explainer")
     workflow.add_edge("explainer", "save_memory")
     
     # End
@@ -1363,6 +1568,8 @@ def run_agent(
             "date_validation_error": None,
             "date_availability_message": None,
             "response_format": None,
+            "nearest_grid_message": None,
+            "location_resolution_method": None,
             # Session memory
             "selected_property_uri": None,
             "selected_feature_uri": None,
@@ -1374,6 +1581,7 @@ def run_agent(
             "sparql_query": None,
             "sparql_rows": None,
             "evidence_text": None,
+            "wikidata_context": None,
             "final_answer": None,
             "technical_details": None,
             "debug": {}
