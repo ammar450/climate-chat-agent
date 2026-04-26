@@ -92,9 +92,9 @@ Commands to test Agent
 45. Give me temperature for year 3000
 46. What's the weather on 1800-01-01?
 
-Geographical Queries
- "what was temperature of berlin or its nearest area in 1950 january"
-"temperature in paris or nearest area in 1950 january"
- "what was the temperature at lat: 51.5, lon: -0.13 in January 1950"
- "what was temperature in germany in 1950 january"
- "what was temprature of berlin..." (with typo correction)
+ 11 Geographical Queries
+47. What was temperature of berlin or its nearest area in 1950 january?
+48. Temperature in paris or nearest area in 1950 january?
+49. What was the temperature at lat: 51.5, lon: -0.13 in January 1950?
+50. What was temperature in germany in 1950 january?
+51. What was temprature of berlin...? (with typo correction)
