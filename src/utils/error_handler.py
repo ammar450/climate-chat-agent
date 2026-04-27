@@ -11,16 +11,16 @@ class QuerySuggestionEngine:
     
     # Available data years
     MIN_YEAR = 1950
-    MAX_YEAR = 1951
+    MAX_YEAR = 2024
     
     # Common query templates
     EXAMPLE_QUERIES = [
         "What was the temperature in 1950?",
-        "Show me 1951 precipitation patterns",
-        "Compare 1950 vs 1951 temperature",
+        "Show me 2024 precipitation patterns",
+        "Compare 2020 vs 2024 temperature",
         "What variables are available?",
-        "Show me daily averages for January 1950",
-        "What was the rainfall in 1951?",
+        "Show me daily averages for January 2024",
+        "What was the rainfall in 2023?",
     ]
     
     @classmethod
@@ -46,18 +46,18 @@ class QuerySuggestionEngine:
         property_part = f" {property_name}" if property_name else ""
         
         error_msg = f"I notice you asked about {requested_year}"
-        explanation = f"I only have climate data for 1950 and 1951. Your requested year ({requested_year}) is {comparison} my available data."
+        explanation = f"I only have climate data from 1950 to 2024. Your requested year ({requested_year}) is {comparison} my available data."
         
         # Generate suggestions
         suggestions = []
         
         if property_name:
             suggestions.append(f"Would you like to see{property_part} data for {closest_year} instead?")
-            suggestions.append(f"I can show you{property_part} for the entire 1950-1951 period")
+            suggestions.append(f"I can show you{property_part} for the entire 1950-2024 period")
             suggestions.append(f"Try: 'What was the{property_part} in {closest_year}?'")
         else:
             suggestions.append(f"Would you like to see data for {closest_year} instead?")
-            suggestions.append(f"I can compare 1950 vs 1951 for you")
+            suggestions.append(f"I can compare 2020 vs 2024 for you")
             suggestions.append(f"Try: 'Show me climate data from {closest_year}'")
         
         return {
@@ -94,7 +94,7 @@ class QuerySuggestionEngine:
         
         suggestions = [
             "Try listing available variables: 'What variables are available?'",
-            "Try a broader time range: 'Show me 1950 data'",
+            "Try a broader time range: 'Show me 2024 data'",
             "Check available locations: 'List all stations'"
         ]
         
@@ -148,9 +148,9 @@ class QuerySuggestionEngine:
                 "Show me observation locations"
             ],
             'invalid_date': [
-                "What was the temperature in 1950?",
-                "Show me 1951 data",
-                "Compare 1950 and 1951"
+                "What was the temperature in 2024?",
+                "Show me 2023 data",
+                "Compare 2020 and 2024"
             ],
             'general': cls.EXAMPLE_QUERIES
         }
@@ -207,17 +207,17 @@ class QuerySuggestionEngine:
         query_lower = user_query.lower()
         
         # Check for common issues
-        if any(word in query_lower for word in ['recent', 'latest', 'current', 'today', '2020', '2021', '2022', '2023', '2024', '2025']):
+        if any(word in query_lower for word in ['recent', 'latest', 'current', 'today', '2026', '2027', '2028', '2029', '2030']):
             return (
-                "💡 Note: I only have historical climate data for 1950 and 1951. "
-                "I cannot provide recent or current data.\n\n"
-                "Try asking about 1950 or 1951 instead!"
+                "💡 Note: I have historical climate data from 1950 to 2024. "
+                "I cannot provide data beyond 2024.\n\n"
+                "Try asking about any year from 1950 to 2024 instead!"
             )
         
         if 'help' in query_lower or 'how' in query_lower:
             return (
                 "I can help you with:\n"
-                "1. Climate data from 1950-1951\n"
+                "1. Climate data from 1950-2024\n"
                 "2. Temperature, precipitation, humidity, and more\n"
                 "3. Daily, monthly, or yearly averages\n"
                 "4. Comparisons between time periods\n\n"

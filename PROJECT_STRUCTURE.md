@@ -60,6 +60,14 @@ climate-chat-agent/
 │   ├── test_temp_query.py    # Temperature query tests
 │   └── test_saia.py          # SAIA integration tests
 │
+├── evaluation/                # Evaluation framework
+│   ├── __init__.py
+│   ├── test_questions.json   # 30 test questions covering all 18 templates
+│   ├── evaluate_agent.py     # Evaluation script with reporting
+│   ├── examples.py           # Example usage and custom analysis
+│   ├── run_evaluation.bat    # Windows batch script (interactive menu)
+│   └── README.md             # Evaluation documentation
+│
 └── docs/                      # Documentation
     ├── AGGREGATION_FIXES.md  # Daily/monthly aggregation fixes
     ├── ARCHITECTURE.md       # System architecture
@@ -104,7 +112,7 @@ climate-chat-agent/
 - **time_parser.py**: Time range extraction with strict validation
   - Parses: "January 1950", "in 1950", "1950-03-15" (YYYY-MM-DD)
   - Exclusive end bounds (YYYY-MM-01T00:00:00 → next month at 00:00:00)
-  - Data period validation (1950-01-01 to 1951-12-31 ONLY)
+  - Data period validation (1950-01-01 to 2024-12-31)
   - Auto-clipping to available data with user notification
   - Invalid date detection (month 13, day 32, Feb 30)
   - Nearest available date fallback with clear messaging
@@ -238,7 +246,7 @@ GRAPH_IRI=http://hyobs.nfdi4earth.de/graph/climateobservations
 
 ### Intelligence (v2.2.0)
 7. **Smart Typo Correction**: Automatically fixes common climate term typos
-8. **Strict Date Validation**: Enforces 1950-1951 data range with helpful messages
+8. **Strict Date Validation**: Enforces 1950-2024 data range with helpful messages
 9. **Dual Response Formats**: Auto-detects and provides layman or technical responses
 10. **Location-Based Filtering**: Supports country names and lat/lon coordinates
 11. **Country Availability Validation**: Clear messages for unavailable regions

@@ -3,7 +3,13 @@ SPARQL query templates for climate observations.
 All templates are pre-validated and safe.
 """
 
-GRAPH = "http://hyobs.nfdi4earth.de/graph/climateobservations"
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Load graph IRI from environment
+GRAPH = os.getenv("GRAPH_IRI", "http://hyobs.nfdi4earth.de/graph/climateobservations")
 
 TEMPLATES = {
     "list_properties": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
@@ -34,18 +40,21 @@ SELECT ?time ?value ?property ?feature ?unit
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
+       sosa:resultTime ?time ;
        sosa:observedProperty ?property ;
        sosa:hasFeatureOfInterest ?feature ;
        sosa:hasResult ?result .
   ?result qudt:numericValue ?value .
   OPTIONAL {{ ?result qudt:unit ?unit }}
+  {property_filter}
+  {feature_filter}
 }}
 ORDER BY ?time
-LIMIT 20""",
+LIMIT {limit}""",
 
     "all_properties_summary": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
 PREFIX qudt: <http://qudt.org/schema/qudt/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT ?property 
        (AVG(?value) AS ?avg_value) 
        (MIN(?value) AS ?min_value) 
@@ -54,13 +63,19 @@ SELECT ?property
        (SAMPLE(?unit) AS ?unit)
 FROM <{graph}>
 WHERE {{
-  ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
-       sosa:observedProperty ?property ;
-       sosa:hasResult ?result .
-  ?result qudt:numericValue ?value .
-  OPTIONAL {{ ?result qudt:unit ?unit }}
-  FILTER (?time >= \"{start}\"^^xsd:dateTime && ?time < \"{end}\"^^xsd:dateTime)
+  {{
+    SELECT ?property ?value ?unit
+    WHERE {{
+      ?obs a sosa:Observation ;
+           sosa:resultTime ?time ;
+           sosa:observedProperty ?property ;
+           sosa:hasResult ?result .
+      ?result qudt:numericValue ?value .
+      OPTIONAL {{ ?result qudt:unit ?unit }}
+      FILTER (?time >= \"{start}\"^^xsd:dateTime && ?time < \"{end}\"^^xsd:dateTime)
+    }}
+    LIMIT 50000
+  }}
 }}
 GROUP BY ?property
 ORDER BY ?property""",
@@ -71,7 +86,7 @@ SELECT ?time ?value ?unit
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
+       sosa:resultTime ?time ;
        sosa:observedProperty <{property_uri}> ;
        sosa:hasFeatureOfInterest <{feature_uri}> ;
        sosa:hasResult ?result .
@@ -88,7 +103,7 @@ SELECT (AVG(?value) AS ?average) (COUNT(*) AS ?count) (SAMPLE(?unit) AS ?unit)
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
+       sosa:resultTime ?time ;
        sosa:observedProperty <{property_uri}> ;
        sosa:hasResult ?result .
   ?result qudt:numericValue ?value .
@@ -102,7 +117,7 @@ SELECT ?time ?feature ?value ?unit
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
+       sosa:resultTime ?time ;
        sosa:observedProperty <{property_uri}> ;
        sosa:hasFeatureOfInterest ?feature ;
        sosa:hasResult ?result .
@@ -124,7 +139,7 @@ SELECT
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
+       sosa:resultTime ?time ;
        sosa:observedProperty <{property_uri}> ;
        sosa:hasResult ?result .
   ?result qudt:numericValue ?value .
@@ -144,7 +159,7 @@ SELECT
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
+       sosa:resultTime ?time ;
        sosa:observedProperty <{property_uri}> ;
        sosa:hasFeatureOfInterest <{feature_uri}> ;
        sosa:hasResult ?result .
@@ -166,7 +181,7 @@ SELECT
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
+       sosa:resultTime ?time ;
        sosa:observedProperty <{property_uri}> ;
        sosa:hasFeatureOfInterest ?feature ;
        sosa:hasResult ?result .
@@ -185,7 +200,7 @@ SELECT ?time ?value ?feature ?unit
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
+       sosa:resultTime ?time ;
        sosa:observedProperty <{property_uri}> ;
        sosa:hasFeatureOfInterest ?feature ;
        sosa:hasResult ?result .
@@ -210,7 +225,7 @@ SELECT
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
+       sosa:resultTime ?time ;
        sosa:observedProperty <{property_uri}> ;
        sosa:hasResult ?result .
   ?result qudt:numericValue ?value .
@@ -234,7 +249,7 @@ SELECT
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
+       sosa:resultTime ?time ;
        sosa:observedProperty <{property_uri}> ;
        sosa:hasFeatureOfInterest <{feature_uri}> ;
        sosa:hasResult ?result .
@@ -259,7 +274,7 @@ SELECT
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
+       sosa:resultTime ?time ;
        sosa:observedProperty <{property_uri}> ;
        sosa:hasResult ?result .
   ?result qudt:numericValue ?value .
@@ -283,7 +298,7 @@ SELECT
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
+       sosa:resultTime ?time ;
        sosa:observedProperty <{property_uri}> ;
        sosa:hasFeatureOfInterest <{feature_uri}> ;
        sosa:hasResult ?result .
@@ -313,7 +328,7 @@ WHERE {{
       (SAMPLE(?unit) AS ?unit)
     WHERE {{
       ?obs a sosa:Observation ;
-           sosa:phenomenonTime ?time ;
+           sosa:resultTime ?time ;
            sosa:observedProperty <{property_uri}> ;
            sosa:hasResult ?result .
       ?result qudt:numericValue ?value .
@@ -353,7 +368,7 @@ SELECT ?property
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
-       sosa:phenomenonTime ?time ;
+       sosa:resultTime ?time ;
        sosa:observedProperty ?property ;
        sosa:hasFeatureOfInterest ?feature ;
        sosa:hasResult ?result .
@@ -393,6 +408,23 @@ def render_template(template_name: str, params: dict) -> str:
     
     template = TEMPLATES[template_name]
     params_with_graph = {"graph": GRAPH, **params}
+    
+    # Add filter parameters for optional filtering
+    if "property_filter" not in params_with_graph:
+        if "property_uri" in params_with_graph and params_with_graph["property_uri"]:
+            params_with_graph["property_filter"] = f'FILTER(?property = <{params_with_graph["property_uri"]}>)'
+        else:
+            params_with_graph["property_filter"] = ""
+    
+    if "feature_filter" not in params_with_graph:
+        if "feature_uri" in params_with_graph and params_with_graph["feature_uri"]:
+            params_with_graph["feature_filter"] = f'FILTER(?feature = <{params_with_graph["feature_uri"]}>)'
+        else:
+            params_with_graph["feature_filter"] = ""
+    
+    # Ensure limit is set and reasonable
+    if "limit" not in params_with_graph:
+        params_with_graph["limit"] = 20
     
     return template.format(**params_with_graph)
 
@@ -461,5 +493,5 @@ def parse_date_hint(date_hint: str) -> tuple:
                 end = end_dt.strftime("%Y-%m-%dT%H:%M:%S")
                 return start, end
     
-    # Default: use 1950-1951 range (available data)
-    return "1950-01-01T00:00:00", "1952-01-01T00:00:00"
+    # Default: use 1950-2024 range (available data)
+    return "1950-01-01T00:00:00", "2025-01-01T00:00:00"

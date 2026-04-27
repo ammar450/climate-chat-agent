@@ -277,9 +277,9 @@ def resolve_node(state: AgentState) -> AgentState:
         time_range = TimeParser.parse(user_message, strict=True)
         if time_range:
             state["time_range"] = {"start": time_range[0], "end": time_range[1]}
-            print(f"[RESOLVE] Time range: {time_range} (validated for 1950-1951)")
+            print(f"[RESOLVE] Time range: {time_range} (validated for 1950-2024)")
     except DateValidationError as e:
-        # Date is outside 1950-1951 range
+        # Date is outside 1950-2024 range
         state["date_validation_error"] = str(e)
         if e.suggested_query:
             state["debug"]["date_suggestion"] = e.suggested_query
@@ -296,18 +296,18 @@ def resolve_node(state: AgentState) -> AgentState:
     # Check for year/month updates
     year_update = TimeParser.extract_year_update(user_message)
     if year_update:
-        # Clip to 1950-1951
+        # Clip to 1950-2024
         if year_update < 1950:
             year_update = 1950
-        elif year_update > 1951:
-            year_update = 1951
+        elif year_update > 2024:
+            year_update = 2024
         
         # For a full year, end date should be start of next year
         state["time_range"] = {
             "start": f"{year_update}-01-01T00:00:00",
             "end": f"{year_update + 1}-01-01T00:00:00"
         }
-        print(f"[RESOLVE] Year set to: {year_update} (1950-1951 available)")
+        print(f"[RESOLVE] Year set to: {year_update} (1950-2024 available)")
     
     # Extract feature URI if pasted (basic detection)
     if "http://obs.nfdi4earth.de/resource/feature/" in user_message:
@@ -319,7 +319,7 @@ def resolve_node(state: AgentState) -> AgentState:
             print(f"[RESOLVE] Feature: {state['selected_feature_uri']}")
     
     # Parse location: country name or coordinates
-    # European and Mediterranean countries (dataset contains primarily European data from 1950-1951)
+    # European and Mediterranean countries (dataset contains primarily European data from 1950-2024)
     available_countries = [
         # Western Europe
         "germany", "france", "italy", "spain", "portugal", "netherlands", "belgium", 
@@ -342,7 +342,7 @@ def resolve_node(state: AgentState) -> AgentState:
     # Get city names from location resolver for detection
     available_cities = list(location_resolver.CITY_COORDINATES.keys())
     
-    # Countries likely NOT in the 1950-1951 European dataset
+    # Countries likely NOT in the 1950-2024 European dataset
     unavailable_countries = [
         "usa", "united states", "america", "canada", "mexico", "brazil", "argentina",
         "chile", "peru", "colombia", "venezuela",
@@ -438,7 +438,7 @@ def resolve_node(state: AgentState) -> AgentState:
         for country in unavailable_countries:
             if country in msg_lower:
                 country_name = country.replace("usa", "USA").replace("uae", "UAE").title()
-                error_msg = f"Sorry, '{country_name}' is not available in this dataset. This dataset contains climate observations from European and Mediterranean regions for 1950-1951 only.\n\nAvailable regions: Germany, France, Italy, Spain, UK, Greece, Poland, and other European countries.\n\nYou can provide specific coordinates (lat/lon) if you have data points in '{country_name}'."
+                error_msg = f"Sorry, '{country_name}' is not available in this dataset. This dataset contains climate observations from European and Mediterranean regions for 1950-2024.\n\nAvailable regions: Germany, France, Italy, Spain, UK, Greece, Poland, and other European countries.\n\nYou can provide specific coordinates (lat/lon) if you have data points in '{country_name}'."
                 state["final_answer"] = error_msg
                 state["plan"] = {"template": None, "params": {}, "followup": None}
                 state["sparql_query"] = ""
@@ -615,24 +615,24 @@ def plan_node(state: AgentState) -> AgentState:
             state["debug"]["fast_path"] = True
             print("[PLAN] Fast path: all_properties_summary for vague query")
             return state
-        # If no time range, default to 1950-1951 full range for overview
+        # If no time range, default to 1950-2024 full range for overview
         else:
             state["time_range"] = {
                 "start": "1950-01-01T00:00:00",
-                "end": "1952-01-01T00:00:00"  # Exclusive end for full 1950-1951
+                "end": "2025-01-01T00:00:00"  # Exclusive end for full 1950-2024
             }
             state["plan"] = {
                 "template": "all_properties_summary",
                 "params": {
                     "start": "1950-01-01T00:00:00",
-                    "end": "1952-01-01T00:00:00"
+                    "end": "2025-01-01T00:00:00"
                 },
                 "followup": None
             }
             state["debug"]["plan_time"] = round(time.time() - start_time, 3)
             state["debug"]["fast_path"] = True
-            state["debug"]["default_time_range"] = "1950-1951"
-            print("[PLAN] Fast path: all_properties_summary with default 1950-1951 range")
+            state["debug"]["default_time_range"] = "1950-2024"
+            print("[PLAN] Fast path: all_properties_summary with default 1950-2024 range")
             return state
     
     # Build context
@@ -657,17 +657,17 @@ def plan_node(state: AgentState) -> AgentState:
     system_prompt = f"""You are a SPARQL query planner for climate observation data.
 
 ⚠️ CRITICAL: DATA AVAILABILITY CONSTRAINT ⚠️
-This dataset contains ONLY data from 1950-01-01 to 1951-12-31 (2 years of historical climate observations)
+This dataset contains data from 1950-01-01 to 2024-12-31 (75 years of historical climate observations)
 
 RULES FOR HANDLING DATE QUERIES:
-1. If user asks about ANY year outside 1950-1951:
+1. If user asks about ANY year outside 1950-2024:
    - Set followup to politely explain the limitation
-   - Suggest using 1950 or 1951 instead
-   - Example: "I only have data for 1950 and 1951. Would you like to see [property] data from 1950 instead?"
+   - Suggest using a year within 1950-2024 instead
+   - Example: "I only have data from 1950 to 2024. Would you like to see [property] data from 2024 instead?"
 
-2. If no year is specified, default to the full 1950-1951 range
+2. If no year is specified, default to the full 1950-2024 range
 
-3. NEVER generate queries for years outside 1950-1951
+3. NEVER generate queries for years outside 1950-2024
 
 Available templates:
 - list_properties: List all available climate variables
@@ -685,8 +685,8 @@ Available templates:
 - monthly_aggregates: Monthly mean, min, max (needs property_uri, start, end)
 - monthly_mean_from_daily: Overall mean computed from daily means (needs property_uri, start, end)
 
-IMPORTANT: When user asks about recent data or doesn't specify year, use 1950 or 1951 as the default years.
-If user asks for data outside 1950-1951, inform them via followup that only 1950-1951 data is available.
+IMPORTANT: When user asks about recent data or doesn't specify year, use any year from 1950-2024 as appropriate.
+If user asks for data outside 1950-2024, inform them via followup that only 1950-2024 data is available.
 
 Session context:
 {session_context}
@@ -1242,7 +1242,7 @@ RULES:
 - If WIKIDATA CONTEXT is provided, use it only for background/geographic info, never to replace EOBS numbers.
 - When mixing EOBS data with Wikidata background, state the source: e.g. "(Source: EOBS)" or "(Background: Wikidata)"
 
-DATA: 1950-1951 only (Source: EOBS)
+DATA: 1950-2024 (Source: EOBS)
 
 EVIDENCE (from EOBS — primary source):
 {evidence}
@@ -1528,8 +1528,8 @@ def _friendly_unable_to_answer_message() -> str:
     return (
         "I'm sorry — I don't have enough information to answer that question. "
         "I may not have the required data or the question is outside my scope. "
-        "This system only contains climate observations for 1950-01-01 to 1951-12-31. "
-        "Could you please rephrase your question or ask about a date within 1950-1951?"
+        "This system only contains climate observations for 1950-01-01 to 2024-12-31. "
+        "Could you please rephrase your question or ask about a date within 1950-2024?"
     )
 
 

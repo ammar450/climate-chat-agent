@@ -21,7 +21,7 @@ A secure, RAG-enhanced chat application for querying climate observation data us
   - Strict YYYY-MM-DD format validation (catches invalid dates like Feb 30)
   - Auto-finds nearest available date when requested date missing
   - Clear messages: "Data for 1950-05-15 not available. Showing 1950-05-16 instead."
-  - Enforces 1950-01-01 to 1951-12-31 data range only
+  - Enforces 1950-01-01 to 2024-12-31 data range
 - 🌍 **Location-Based Filtering**:
   - Support for 50+ European/Mediterranean country names (Germany, France, Italy, etc.)
   - Coordinate parsing (3 formats: "lat: 52.5, lon: 13.4", "52.5, 13.4", "52.5°N 13.4°E")
@@ -65,7 +65,53 @@ User Interface
 
 **Key Principle:** The LLM NEVER invents numbers. All facts come from the knowledge graph (SPARQL results).
 
-## 🚀 Quick Start
+## � Dataset Information
+
+### E-OBS Gridded Climate Data
+
+This application queries the **E-OBS (European Observations)** gridded climate dataset, a comprehensive collection of daily climate observations across Europe and the Mediterranean region.
+
+**Dataset Specifications:**
+- **Temporal Coverage:** January 1, 1950 - December 31, 2024 (75 years)
+- **Total Observations:** 328+ million SOSA observations
+- **Knowledge Graph Size:** 3.38 billion RDF triples
+- **Geographic Coverage:** European and Mediterranean gridded points
+- **Temporal Resolution:** Daily observations
+- **Format:** Semantic sensor data using SOSA/SSN ontology
+
+**Available Climate Variables (5):**
+1. **Air Temperature** (`air_temperature`)
+   - ~167 million observations
+   - Unit: degrees Celsius (°C)
+   
+2. **Precipitation Amount** (`precipitation_amount`)
+   - ~67 million observations
+   - Unit: millimeters (mm)
+   
+3. **Relative Humidity** (`relative_humidity`)
+   - ~51 million observations
+   - Unit: percentage (%)
+   
+4. **Wind Speed** (`wind_speed`)
+   - ~24 million observations
+   - Unit: meters per second (m/s)
+   
+5. **Solar Radiation** (`surface_downwelling_shortwave_flux_in_air`)
+   - ~43 million observations
+   - Unit: watts per square meter (W/m²)
+
+**Data Quality:**
+- Gridded interpolation from weather station networks
+- Quality-controlled by E-OBS project
+- Regular updates with latest observations
+- Compliant with CF (Climate and Forecast) conventions
+
+**Access:**
+- SPARQL endpoint: `http://141.76.19.254:8890/sparql/`
+- Named graph: `<http://eobs/gridded>`
+- Query timeout: 400 seconds (Virtuoso limit)
+
+## �🚀 Quick Start
 
 ### Prerequisites
 
@@ -165,8 +211,9 @@ ENABLE_FAST_MODE=false   # true = no LLM calls (instant)
 
 ### SPARQL Endpoint
 ```bash
-SPARQL_ENDPOINT=https://hyobs.webapps.nfdi4earth.de/sparql/
-GRAPH_IRI=http://hyobs.nfdi4earth.de/graph/climateobservations
+# Current E-OBS gridded dataset endpoint
+SPARQL_ENDPOINT=http://141.76.19.254:8890/sparql/
+GRAPH_IRI=http://eobs/gridded
 ```
 
 ### Security & Performance
@@ -189,18 +236,18 @@ MAX_REQUESTS_PER_MINUTE=30      # Rate limit per session
 - "What was the average temperature in March 1950?"
 - "Show temperature for 1950-03-15" (specific date)
 - "Climate overview for 1950" (all variables)
-- "Daily temperature in January 1951"
+- "Daily temperature in January 2024"
 
 ### Location-Based Queries (New!)
 - "Show temperature for Germany in 1950"
 - "Climate data for France"
 - "Temperature at lat: 52.5, lon: 13.4"
-- "Weather in Italy during 1951"
+- "Weather in Italy during 2023"
 
 ### Statistical Queries
 - "Show me the highest humidity values"
 - "Average precipitation in 1950"
-- "Temperature statistics for 1951"
+- "Temperature statistics for 2024"
 
 ### Response Formats
 - "Explain simply: what was the temperature in 1950?" (layman response)
@@ -240,14 +287,17 @@ LLM outputs:
 
 ### 2. SPARQL Retrieval
 ```sparql
-SELECT (AVG(?value) as ?avg) ?unit
-FROM <http://hyobs.nfdi4earth.de/graph/climateobservations>
+SELECT (AVG(?value) as ?avg) (SAMPLE(?unit) as ?unit)
+FROM <http://eobs/gridded>
 WHERE {
-  ?obs sosa:observedProperty <http://...air_temperature> ;
+  ?obs sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/air_temperature> ;
        sosa:resultTime ?time ;
-       sosa:hasSimpleResult ?value .
+       sosa:hasResult ?result .
+  ?result qudt:numericValue ?value .
+  OPTIONAL { ?result qudt:unit ?unit }
   FILTER(?time >= "1950-03-01"^^xsd:dateTime && 
          ?time < "1950-04-01"^^xsd:dateTime)
+}
 }
 ```
 
@@ -308,7 +358,7 @@ Response:
 ### 1. Date Validation & Fallback
 ```python
 # User: "Show temperature for 2020"
-# Response: "Sorry, I only have data from 1950-01-01 to 1951-12-31."
+# Response: "Sorry, I only have data from 1950-01-01 to 2024-12-31."
 
 # User: "Show temperature for 1950-05-15"
 # If 1950-05-15 doesn't exist:
@@ -327,7 +377,7 @@ Available: Germany, France, Italy, Spain, UK, Greece, Poland...
 
 # Unavailable countries get helpful message:
 # "Sorry, 'USA' is not available. This dataset contains European
-# and Mediterranean regions for 1950-1951 only. You can provide
+# and Mediterranean regions for 1950-2024.
 # specific coordinates if you have data points in 'USA'."
 ```
 
@@ -408,24 +458,97 @@ The system uses predefined SPARQL templates for safety:
 
 ```
 climate-chat-agent/
-├── main.py                 # FastAPI app with caching & rate limiting
-├── agent.py                # Pattern-based query planning
-├── sparql_client.py        # Secure SPARQL client (ONLY component that calls endpoint)
-├── query_templates.py      # Safe SPARQL templates
-├── property_resolver.py    # Maps natural language → property URIs
-├── time_parser.py          # Extracts dates from natural language
-├── answer_formatter.py     # Formats results for display
-├── state.py                # Session state management
-├── requirements.txt        # Python dependencies
-├── .env.example            # Configuration template
-└── static/
-    └── index.html          # Frontend UI (multi-chat interface)
+├── main.py                          # FastAPI app with caching & rate limiting
+├── .env                             # Environment configuration (DO NOT COMMIT!)
+├── .env.example                     # Configuration template
+├── requirements.txt                  # Python dependencies
+├── docker-compose.yml               # Docker configuration
+├── Dockerfile                       # Container definition
+├── README.md                        # This file
+├── PROJECT_STRUCTURE.md             # Detailed architecture documentation
+│
+├── src/                             # Source code
+│   ├── agent/
+│   │   ├── graph_agent.py          # LangGraph-based agent workflow
+│   │   └── state.py                # Session state management
+│   ├── formatting/
+│   │   ├── answer_formatter.py     # Formats results for display
+│   │   └── response_formatter.py   # Response formatting utilities
+│   ├── llm/
+│   │   ├── llm_client.py           # LLM interaction (legacy)
+│   │   └── llm_provider.py         # Multi-provider LLM support
+│   ├── parsers/
+│   │   ├── property_resolver.py    # Maps natural language → property URIs
+│   │   ├── time_parser.py          # Extracts dates from natural language (1950-2024 validation)
+│   │   └── typo_corrector.py       # Auto-corrects common climate term typos
+│   ├── query/
+│   │   ├── query_templates.py      # Safe SPARQL templates (uses sosa:resultTime)
+│   │   ├── sparql_client.py        # Secure SPARQL client (backend only)
+│   │   └── wikidata_client.py      # Wikidata enrichment (labels, locations)
+│   └── utils/
+│       └── error_handler.py        # Helpful error messages & suggestions
+│
+├── static/                          # Frontend assets
+│   ├── index.html                  # Multi-chat web UI
+│   ├── style.css                   # Styling
+│   └── script.js                   # Chat interface logic
+│
+├── tests/                           # Test suite
+│   ├── test_graph.py               # Agent workflow tests
+│   ├── test_typos.py               # Typo correction tests
+│   ├── test_vague_queries.py       # Vague query handling
+│   └── ...
+│
+└── docs/                            # Documentation
+    ├── ARCHITECTURE.md             # System architecture
+    ├── RAG_IMPLEMENTATION.md       # RAG design details
+    ├── TEST_PROMPTS.md            # Example test queries
+    └── ...
 ```
 
-## 🔄 Swapping SPARQL Endpoints
+**Key Components:**
 
-To use a different SPARQL endpoint, update `.env`:
+- **graph_agent.py**: LangGraph workflow for query planning, execution, and answer generation
+- **query_templates.py**: 15+ predefined SPARQL templates (all use `sosa:resultTime` for E-OBS compatibility)
+- **time_parser.py**: Validates dates within 1950-2024 range, handles date formats
+- **property_resolver.py**: Resolves "temperature" → `http://vocab.nerc.ac.uk/standard_name/air_temperature`
+- **sparql_client.py**: Security-first SPARQL execution (SELECT only, enforces LIMIT, timeout protection)
 
+## 🔄 SPARQL Configuration
+
+**Current Configuration:**
+```bash
+# E-OBS Gridded Climate Dataset (1950-2024)
+SPARQL_ENDPOINT=http://141.76.19.254:8890/sparql/
+GRAPH_IRI=http://eobs/gridded
+```
+
+**Dataset Details:**
+- **Source:** E-OBS (European Observations) gridded climate dataset
+- **Coverage:** 1950-01-01 to 2024-12-31 (75 years)
+- **Format:** SOSA (Sensor Observation, Sample, and Actuator) ontology
+- **Time Property:** `sosa:resultTime` (observation timestamp)
+- **Result Structure:** `sosa:hasResult` → `qudt:numericValue`
+- **Scale:** 3.38 billion triples, 328 million observations
+- **Variables:** 5 climate properties (temperature, precipitation, humidity, wind, solar)
+- **Geographic Coverage:** European and Mediterranean regions (gridded)
+
+**Data Structure Example:**
+```turtle
+<observation/temp_48.62_43.62_20240101T000000>
+  a sosa:Observation ;
+  sosa:resultTime "2024-01-01T00:00:00"^^xsd:dateTime ;
+  sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/air_temperature> ;
+  sosa:hasFeatureOfInterest <http://www.w3.org/2003/01/geo/wgs84_pos#grid_48.62_43.62> ;
+  sosa:hasResult [
+    qudt:numericValue 15.3 ;
+    qudt:unit <http://qudt.org/vocab/unit/DEG_C>
+  ] .
+```
+
+**To use a different SPARQL endpoint:**
+
+Update `.env`:
 ```bash
 SPARQL_ENDPOINT=https://your-endpoint.com/sparql/
 GRAPH_IRI=http://your-graph-iri.com/data
@@ -439,12 +562,17 @@ No code changes required! The backend will automatically use the new endpoint.
 
 The agent prints debug information:
 ```
-[DEBUG] Planning query for: 'what variables are present'
-[DEBUG] Found keyword: variable
-[DEBUG] Resolver returned: uri=..., confidence=...
-[SECURITY] Added default LIMIT 200
-[SPARQL] Executing query against https://...
+[LLM PROVIDER] Backend: OpenAI
+[LLM PROVIDER] Model: gpt-4o-mini
+[STARTUP] Initializing Climate Chat Agent...
+[CONFIG] SPARQL Endpoint: http://141.76.19.254:8890/sparql/
+[CONFIG] Graph IRI: http://eobs/gridded
+[RESOLVE] Starting resolution for: what variables are available?
+[PLAN] Fast path: list_properties
+[SPARQL] Executing query against http://141.76.19.254:8890/sparql/
 [CACHE HIT] template:list_properties
+[SECURITY] Added default LIMIT 200
+Cached 5 properties from endpoint
 ```
 
 ### Health Check
@@ -488,14 +616,18 @@ MIT License - see LICENSE file for details
 
 ## 🙏 Acknowledgments
 
-- NFDI4Earth for the climate observation dataset
-- Virtuoso for the SPARQL endpoint
-- FastAPI for the web framework
+- **E-OBS Project** for the comprehensive European gridded climate dataset (1950-2024)
+- **European Climate Assessment & Dataset (ECA&D)** for data curation
+- **NFDI4Earth** for data infrastructure and semantic web support
+- **Virtuoso** for the high-performance SPARQL triple store
+- **FastAPI** for the modern web framework
+- **SOSA/SSN Ontology** (W3C) for semantic sensor observation modeling
+- **QUDT** for units and quantities representation
 
 ## \ud83d\udcda Quick Reference
 
 ### Data Constraints
-- **Time Period**: 1950-01-01 to 1951-12-31 only (2 years)
+- **Time Period**: 1950-01-01 to 2024-12-31 (75 years)
 - **Geographic Coverage**: European and Mediterranean regions
 - **Available Countries**: Germany, France, Italy, Spain, UK, Greece, Poland, and 40+ more
 - **Date Formats**: YYYY-MM-DD, "March 1950", "in 1950"
@@ -513,20 +645,20 @@ List all locations
 ```
 Show temperature in 1950
 Average humidity in March 1950
-Climate overview for 1951
+Climate overview for 2024
 ```
 
 **Location-Based**
 ```
 Temperature for Germany in 1950
-Climate in France during 1951
+Climate in France during 2023
 Data at lat: 52.5, lon: 13.4
 ```
 
 **Advanced**
 ```
 Daily temperature statistics for January 1950
-Monthly precipitation averages in 1951
+Monthly precipitation averages in 2024
 Highest temperature values in 1950
 Explain simply: what was the climate like in 1950?
 ```
@@ -540,84 +672,132 @@ Explain simply: what was the climate like in 1950?
 |-------|----------|
 | Rate limit exceeded | Wait 1 minute or increase MAX_REQUESTS_PER_MINUTE |
 | SPARQL timeout | Increase SPARQL_TIMEOUT or simplify query |
-| Date out of range | Use dates between 1950-01-01 and 1951-12-31 |
+| Date out of range | Use dates between 1950-01-01 and 2024-12-31 |
 | Country not found | Use European/Mediterranean countries or coordinates |
 | API key error | Check OPENAI_API_KEY in .env (never commit!) |
 
 ---
 
-**Version 2.2.0** - Location filtering, date validation, dual responses, typo correction
-**Last Updated**: February 16, 2026
+**Version 2.3.0** - E-OBS Full Dataset Integration (1950-2024)  
+**Last Updated**: April 26, 2026
 
-**Response:**
-```json
-{
-  "answer": "The dataset contains the following variables...",
-  "sparql": "PREFIX sosa: ...",
-  "rows": [...],
-  "used_template": "list_properties"
-}
-```
+### Changelog v2.3.0 (April 2026)
+- ✅ **Updated SPARQL endpoint** to E-OBS gridded dataset (http://141.76.19.254:8890/sparql/)
+- ✅ **Extended data coverage** from 2 years to 75 years (1950-2024)
+- ✅ **Massive dataset** with 328M+ observations, 3.38B triples
+- ✅ **Fixed time property** from `phenomenonTime` to `resultTime` for E-OBS compatibility
+- ✅ **All climate variables** available: temperature, precipitation, humidity, wind speed, solar radiation
+- ✅ **Gridded coverage** across European and Mediterranean regions
+- ✅ **Improved query templates** optimized for large-scale dataset
 
-## Project Structure
+### Previous Versions
+- **v2.2.0** (Feb 2026) - Location filtering, date validation, dual responses, typo correction
+- **v2.1.0** (Jan 2026) - Multi-session chat, caching, rate limiting
+- **v2.0.0** (Dec 2025) - RAG implementation, LLM integration
 
-```
-climate-chat-agent/
-├── main.py                 # FastAPI application
-├── agent.py               # LLM planning and explanation
-├── sparql_client.py       # SPARQL execution and safety
-├── query_templates.py     # Template definitions
-├── static/
-│   └── index.html        # Chat UI
-├── requirements.txt       # Python dependencies
-├── .env.example          # Environment variables template
-└── README.md             # This file
-```
+## 🚀 Development
 
-## Configuration
+### Running in Development Mode
 
-Environment variables (in `.env`):
-
-- `OLLAMA_MODEL`: Ollama model to use (default: `llama3.2`)
-- `PORT`: Server port (default: `8000`)
-
-## Troubleshooting
-
-### Ollama not reachable
-
-Make sure Ollama is running:
 ```bash
-ollama serve
+# With auto-reload
+uvicorn main:app --reload --log-level debug
+
+# Or using Python directly
+python main.py
 ```
 
-Check if model is downloaded:
+### Running with Docker
+
 ```bash
-ollama list
+# Build and run
+docker-compose up --build
+
+# Or manually
+docker build -t climate-chat-agent .
+docker run -p 8000:8000 climate-chat-agent
 ```
 
-### SPARQL endpoint unreachable
+### Port Configuration
 
-Check `/health` endpoint to verify connectivity to the Virtuoso endpoint.
-
-### Port already in use
-
-Change the port:
+If port 8000 is already in use:
 ```bash
+# Update .env
+PORT=8001
+
+# Or override in command
 uvicorn main:app --port 8001
 ```
 
-## Development
+## 🧪 Testing & Evaluation
 
-To run in development mode with auto-reload:
+### Evaluation Framework
 
+The project includes a comprehensive evaluation framework with 30 test questions covering all 18 SPARQL query templates. This ensures the agent correctly handles various query types across the 1950-2024 E-OBS dataset.
+
+**Quick Start:**
 ```bash
-uvicorn main:app --reload --log-level debug
+# Run all 30 evaluation tests
+python evaluation/evaluate_agent.py --report
+
+# Run specific test by ID (1-30)
+python evaluation/evaluate_agent.py --question-id 5
+
+# Run tests by category
+python evaluation/evaluate_agent.py --category statistics
+
+# Save detailed report
+python evaluation/evaluate_agent.py --output evaluation_report.json
+
+# Windows users - interactive menu
+evaluation\run_evaluation.bat
 ```
 
-## License
+**Test Coverage:**
+- ✅ All 18 query templates validated
+- ✅ 30 questions across 11 categories (discovery, statistics, aggregation, spatial, etc.)
+- ✅ 3 difficulty levels (6 easy, 10 medium, 14 hard)
+- ✅ Automated template matching validation
+- ✅ Execution time and success rate metrics
 
-MIT License
+**Evaluation Metrics:**
+- Template Match Rate: % of correct template selections
+- Success Rate: % of queries executing without errors
+- Execution Time: Average query performance
+- Category/Difficulty Breakdown: Performance by question type
 
-## Contributing
+For detailed documentation, see [evaluation/README.md](evaluation/README.md)
 
-Contributions welcome! Please feel free to submit a Pull Request.
+### Unit Tests
+
+Individual component tests are available in the `tests/` directory:
+```bash
+# Run specific tests
+python tests/test_typos.py
+python tests/test_property_resolver.py
+python tests/test_vague_queries.py
+```
+
+## 📜 License
+
+MIT License - see LICENSE file for details
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a Pull Request
+
+**Areas for contribution:**
+- Additional SPARQL query templates
+- Support for more climate variables
+- Enhanced natural language understanding
+- Improved visualization options
+- Documentation improvements
+
+---
+
+For more details, see [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) and documentation in the `docs/` folder.

@@ -16,11 +16,11 @@ class DateValidationError(Exception):
 
 
 class TimeParser:
-    # Data availability: 1950-1951 ONLY
+    # Data availability: 1950-2024
     DATA_START = "1950-01-01T00:00:00"
-    DATA_END = "1952-01-01T00:00:00"
+    DATA_END = "2025-01-01T00:00:00"
     MIN_YEAR = 1950
-    MAX_YEAR = 1951
+    MAX_YEAR = 2024
     """Parse natural language time expressions with strict validation."""
     
     MONTH_NAMES = {
@@ -49,14 +49,14 @@ class TimeParser:
         if year < cls.MIN_YEAR:
             return {
                 'valid': False,
-                'message': f"I notice you asked about {year}, but I only have climate data for 1950 and 1951.",
+                'message': f"I notice you asked about {year}, but I only have climate data from 1950 to 2024.",
                 'suggestion': f"Try asking about 1950 instead. For example: 'What was the temperature in 1950?'"
             }
         elif year > cls.MAX_YEAR:
             return {
                 'valid': False,
-                'message': f"I notice you asked about {year}, but I only have climate data for 1950 and 1951.",
-                'suggestion': f"Try asking about 1951 instead. For example: 'Show me 1951 precipitation patterns'"
+                'message': f"I notice you asked about {year}, but I only have climate data from 1950 to 2024.",
+                'suggestion': f"Try asking about 2024 instead. For example: 'Show me 2024 precipitation patterns'"
             }
         return {'valid': True, 'message': '', 'suggestion': ''}
     
@@ -90,13 +90,13 @@ class TimeParser:
         
         # First, validate the date format (month 1-12, day 1-31)
         if month < 1 or month > 12:
-            error_msg = f"Invalid date format: {requested_date_str}. Month must be between 01 and 12. I have data from 1950-01-01 to 1951-12-31."
+            error_msg = f"Invalid date format: {requested_date_str}. Month must be between 01 and 12. I have data from 1950-01-01 to 2024-12-31."
             if strict:
                 raise DateValidationError(error_msg)
             return None
         
         if day < 1 or day > 31:
-            error_msg = f"Invalid date format: {requested_date_str}. Day must be between 01 and 31. I have data from 1950-01-01 to 1951-12-31."
+            error_msg = f"Invalid date format: {requested_date_str}. Day must be between 01 and 31. I have data from 1950-01-01 to 2024-12-31."
             if strict:
                 raise DateValidationError(error_msg)
             return None
@@ -105,12 +105,12 @@ class TimeParser:
         try:
             test_date = datetime(year, month, day)
         except ValueError as e:
-            error_msg = f"Invalid date: {requested_date_str}. {str(e).capitalize()}. I have data from 1950-01-01 to 1951-12-31."
+            error_msg = f"Invalid date: {requested_date_str}. {str(e).capitalize()}. I have data from 1950-01-01 to 2024-12-31."
             if strict:
                 raise DateValidationError(error_msg)
             return None
         
-        # Validate date is within 1950-1951
+        # Validate date is within 1950-2024
         if year < cls.MIN_YEAR or year > cls.MAX_YEAR:
             if strict:
                 # Find nearest available date
