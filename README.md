@@ -614,15 +614,6 @@ To extend the system:
 
 MIT License - see LICENSE file for details
 
-## 🙏 Acknowledgments
-
-- **E-OBS Project** for the comprehensive European gridded climate dataset (1950-2024)
-- **European Climate Assessment & Dataset (ECA&D)** for data curation
-- **NFDI4Earth** for data infrastructure and semantic web support
-- **Virtuoso** for the high-performance SPARQL triple store
-- **FastAPI** for the modern web framework
-- **SOSA/SSN Ontology** (W3C) for semantic sensor observation modeling
-- **QUDT** for units and quantities representation
 
 ## \ud83d\udcda Quick Reference
 
@@ -801,3 +792,15 @@ Contributions welcome! Please:
 ---
 
 For more details, see [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) and documentation in the `docs/` folder.
+
+## 🙏 Acknowledgments
+
+- **E-OBS Project** for the comprehensive European gridded climate dataset (1950-2024)
+- **European Climate Assessment & Dataset (ECA&D)** for data curation
+- **NFDI4Earth** for data infrastructure and semantic web support
+- **Virtuoso** for the high-performance SPARQL triple store
+- **FastAPI** for the modern web framework
+- **SOSA/SSN Ontology** (W3C) for semantic sensor observation modeling
+- **QUDT** for units and quantities representation
+
+  The work has been funded by the European Project EOSC Data Commons
