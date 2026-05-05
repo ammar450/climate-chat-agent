@@ -30,8 +30,4 @@
 | sample_observations | ✅ Working | Fixed filters |
 | all_properties_summary | ⚠️ Slow | Timeouts on large date ranges |
 
-### Next Steps
 
-1. Optimize all_properties_summary for large date ranges
-2. Test remaining templates systematically
-3. Add dataset-size-aware query optimization
