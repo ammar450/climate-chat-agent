@@ -56,7 +56,7 @@ Context Builder
     ├─ Extracts: values, stats, time ranges
     └─ Creates: compact context text
         ↓
-LLM Explainer (Ollama/SAIA)
+LLM Verbalizer (Ollama/SAIA)
     ├─ Input: question + context from KG
     └─ Output: grounded answer (no hallucinations)
         ↓
