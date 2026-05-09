@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Load graph IRI from environment
-GRAPH = os.getenv("GRAPH_IRI", "http://hyobs.nfdi4earth.de/graph/climateobservations")
+GRAPH = os.getenv("GRAPH_IRI", "climateobservations/eobs-v31")
 
 TEMPLATES = {
     "list_properties": """PREFIX sosa: <http://www.w3.org/ns/sosa/>

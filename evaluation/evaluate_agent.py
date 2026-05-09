@@ -7,13 +7,38 @@ This script evaluates the agent's performance by:
 3. Verifying query execution and results
 4. (Optional) Using LLM-as-judge to evaluate answer correctness
 5. Generating evaluation reports
+6. (Optional) Exporting qualitative examples for research papers
+
+Features:
+- Supports optional gold reference SPARQL queries for comparison
+- Backward compatible with existing benchmark files
+- Exports compact qualitative examples in JSON or Markdown format
 
 Usage:
-    python evaluate_agent.py                    # Run all tests (rule-based only)
-    python evaluate_agent.py --question-id 5    # Run specific test
-    python evaluate_agent.py --category summary # Run category tests
-    python evaluate_agent.py --report           # Generate detailed report
-    python evaluate_agent.py --report --llm-judge  # Include LLM-as-judge evaluation
+    # Basic evaluation
+    python evaluate_agent.py                           # Run all tests, auto-saves to full_report_TIMESTAMP.json
+    python evaluate_agent.py --llm-judge               # Run with LLM judge, saves to llm_judge_full_report.json
+    python evaluate_agent.py --question-id 5           # Run specific test (no auto-save)
+    python evaluate_agent.py --category summary        # Run category tests (no auto-save)
+    python evaluate_agent.py --output my_report.json   # Custom output file
+    
+    # Export qualitative examples for research paper
+    python evaluate_agent.py --llm-judge --export-qualitative examples.json
+    python evaluate_agent.py --export-qualitative examples.md --export-format markdown
+    python evaluate_agent.py --export-qualitative examples.json --gold-only --max-examples 10
+    
+Test Case Schema (optional fields for manual curation):
+    {
+      "id": 1,
+      "question": "What was the average temperature in 2020?",
+      "expected_template": "average_for_property_date_range",
+      "category": "statistics",
+      "difficulty": "medium",
+      "expected_coverage": ["Temperature", "Average value", "Year 2020"],
+      "notes": "Single property average for recent year",
+      "expected_sparql_query": "PREFIX sosa: ...",  # Optional - for gold reference
+      "expected_sparql_answer": "[{...}]"           # Optional - auto-executed if query provided
+    }
 """
 
 import os
@@ -30,6 +55,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.agent.graph_agent import run_agent
 from src.llm.llm_client import chat, LLMError
+from src.query.sparql_client import run_sparql
 
 
 class AgentEvaluator:
@@ -52,6 +78,29 @@ class AgentEvaluator:
         """Load test questions from JSON file."""
         with open(self.test_file, 'r', encoding='utf-8') as f:
             return json.load(f)
+    
+    def execute_expected_sparql(self, query: str) -> tuple[bool, Any]:
+        """
+        Execute expected SPARQL query and return results.
+        
+        Args:
+            query: SPARQL query string
+            
+        Returns:
+            Tuple of (success, results)
+            - success: True if query executed successfully
+            - results: Query results as list or None if failed
+        """
+        if not query or query.strip() == "":
+            return False, None
+        
+        try:
+            result = run_sparql(query, validate=False)
+            rows = result.get("results", {}).get("bindings", [])
+            return True, rows
+        except Exception as e:
+            print(f"[WARNING] Failed to execute expected SPARQL query: {e}")
+            return False, None
     
     def llm_judge_evaluate(
         self,
@@ -243,6 +292,7 @@ Return a JSON object with:
             final_answer = result.get("answer", "")
             sparql_query = result.get("sparql", "")
             rows = result.get("rows", [])
+            evidence = result.get("evidence", "")
             debug_info = result.get("debug", {})
             error_msg = debug_info.get("error") if debug_info else None
             
@@ -252,9 +302,29 @@ Return a JSON object with:
             # Check if query executed successfully
             success = final_answer and final_answer != "No data found." and not final_answer.startswith("I'm sorry")
             
+            # Format SPARQL answer (rows) for display
+            sparql_answer = json.dumps(rows, indent=2) if rows else ""
+            
+            # Get expected SPARQL query from test case
+            expected_sparql_query = test_case.get("expected_sparql_query", "")
+            
+            # Execute expected SPARQL query if available
+            gold_reference_available = False
+            expected_sparql_answer = None
+            
+            if expected_sparql_query and expected_sparql_query.strip():
+                exec_success, expected_rows = self.execute_expected_sparql(expected_sparql_query)
+                if exec_success:
+                    gold_reference_available = True
+                    expected_sparql_answer = json.dumps(expected_rows, indent=2) if expected_rows else ""
+                    print(f"\n✓ Executed expected SPARQL query, got {len(expected_rows) if expected_rows else 0} rows")
+                else:
+                    print(f"\n⚠ Failed to execute expected SPARQL query")
+            
             result_dict = {
                 "test_id": test_case["id"],
                 "question": test_case["question"],
+                "natural_language_question": test_case["question"],
                 "expected_template": test_case["expected_template"],
                 "actual_template": used_template,
                 "template_match": template_match,
@@ -266,7 +336,12 @@ Return a JSON object with:
                 "category": test_case["category"],
                 "difficulty": test_case["difficulty"],
                 "error": error_msg,
-                "notes": test_case.get("notes", "")
+                "notes": test_case.get("notes", ""),
+                "gold_reference_available": gold_reference_available,
+                "expected_sparql_query": expected_sparql_query,
+                "expected_sparql_answer": expected_sparql_answer,
+                "returned_sparql_query": sparql_query,
+                "returned_sparql_answer": sparql_answer
             }
             
             # Add LLM-as-judge evaluation if enabled
@@ -281,22 +356,28 @@ Return a JSON object with:
                     evidence=result.get("evidence", ""),
                     actual_template=used_template
                 )
-                result_dict["llm_judge_label"] = judge_result["label"]
-                result_dict["llm_judge_score"] = judge_result["score"]
-                result_dict["llm_judge_reason"] = judge_result["reason"]
-                result_dict["llm_judge_missing_coverage"] = judge_result.get("missing_coverage", [])
-                result_dict["llm_judge_incorrect_claims"] = judge_result.get("incorrect_claims", [])
+                result_dict["llm_as_judge_outputs"] = {
+                    "query_correct": judge_result["label"] == "correct",
+                    "answer_correct": judge_result["label"] == "correct",
+                    "semantic_score": judge_result["score"],
+                    "explanation": judge_result["reason"],
+                    "detected_errors": judge_result.get("incorrect_claims", []),
+                    "missing_requirements": judge_result.get("missing_coverage", [])
+                }
                 
                 print(f"  Label: {judge_result['label']}")
                 print(f"  Score: {judge_result['score']}")
                 print(f"  Reason: {judge_result['reason'][:100]}...")
             elif self.use_llm_judge and not success:
                 # Don't judge failed executions
-                result_dict["llm_judge_label"] = "not_evaluated"
-                result_dict["llm_judge_score"] = 0.0
-                result_dict["llm_judge_reason"] = "Query execution failed"
-                result_dict["llm_judge_missing_coverage"] = []
-                result_dict["llm_judge_incorrect_claims"] = []
+                result_dict["llm_as_judge_outputs"] = {
+                    "query_correct": False,
+                    "answer_correct": False,
+                    "semantic_score": 0.0,
+                    "explanation": "Query execution failed",
+                    "detected_errors": [],
+                    "missing_requirements": []
+                }
             
             # Print results
             print(f"\n✓ Template Match: {'PASS' if template_match else 'FAIL'}")
@@ -332,16 +413,25 @@ Return a JSON object with:
                 "category": test_case["category"],
                 "difficulty": test_case["difficulty"],
                 "error": str(e),
-                "notes": test_case.get("notes", "")
+                "notes": test_case.get("notes", ""),
+                "natural_language_question": test_case["question"],
+                "gold_reference_available": False,
+                "expected_sparql_query": test_case.get("expected_sparql_query", ""),
+                "expected_sparql_answer": None,
+                "returned_sparql_query": "",
+                "returned_sparql_answer": ""
             }
             
             # Add judge fields if LLM judge is enabled
             if self.use_llm_judge:
-                result_dict["llm_judge_label"] = "not_evaluated"
-                result_dict["llm_judge_score"] = 0.0
-                result_dict["llm_judge_reason"] = "Test execution failed"
-                result_dict["llm_judge_missing_coverage"] = []
-                result_dict["llm_judge_incorrect_claims"] = []
+                result_dict["llm_as_judge_outputs"] = {
+                    "query_correct": False,
+                    "answer_correct": False,
+                    "semantic_score": 0.0,
+                    "explanation": "Test execution failed",
+                    "detected_errors": [],
+                    "missing_requirements": []
+                }
             
             return result_dict
     
@@ -420,19 +510,32 @@ Return a JSON object with:
         # LLM judge statistics (if enabled)
         llm_judge_stats = {}
         if self.use_llm_judge:
-            correct_count = sum(1 for r in self.results if r.get("llm_judge_label") == "correct")
-            partially_correct_count = sum(1 for r in self.results if r.get("llm_judge_label") == "partially_correct")
-            incorrect_count = sum(1 for r in self.results if r.get("llm_judge_label") == "incorrect")
-            judge_error_count = sum(1 for r in self.results if r.get("llm_judge_label") == "judge_error")
-            not_evaluated_count = sum(1 for r in self.results if r.get("llm_judge_label") == "not_evaluated")
+            # Helper function to get label from llm_as_judge_outputs
+            def get_judge_label(result):
+                judge_outputs = result.get("llm_as_judge_outputs", {})
+                if not judge_outputs:
+                    return "not_evaluated"
+                # Derive label from query_correct and answer_correct
+                if judge_outputs.get("query_correct") and judge_outputs.get("answer_correct"):
+                    return "correct"
+                elif judge_outputs.get("semantic_score", 0) >= 0.5:
+                    return "partially_correct"
+                else:
+                    return "incorrect"
             
-            # Calculate average score (exclude not_evaluated and judge_error)
+            correct_count = sum(1 for r in self.results if get_judge_label(r) == "correct")
+            partially_correct_count = sum(1 for r in self.results if get_judge_label(r) == "partially_correct")
+            incorrect_count = sum(1 for r in self.results if get_judge_label(r) == "incorrect")
+            not_evaluated_count = sum(1 for r in self.results if get_judge_label(r) == "not_evaluated")
+            judge_error_count = 0  # No longer applicable with new structure
+            
+            # Calculate average score (exclude not_evaluated)
             scored_results = [
                 r for r in self.results 
-                if r.get("llm_judge_label") not in ["not_evaluated", "judge_error"]
+                if get_judge_label(r) != "not_evaluated"
             ]
             avg_judge_score = (
-                sum(r.get("llm_judge_score", 0.0) for r in scored_results) / len(scored_results)
+                sum(r.get("llm_as_judge_outputs", {}).get("semantic_score", 0.0) for r in scored_results) / len(scored_results)
                 if scored_results else 0.0
             )
             
@@ -560,6 +663,171 @@ Return a JSON object with:
                 print(f"    Got: {failure['got']}")
                 if failure['error']:
                     print(f"    Error: {failure['error'][:100]}")
+    
+    def export_qualitative_examples(
+        self, 
+        output_file: str, 
+        format: str = "json",
+        filter_gold_only: bool = False,
+        max_examples: Optional[int] = None
+    ) -> None:
+        """
+        Export qualitative evaluation examples for research paper inclusion.
+        
+        Args:
+            output_file: Output file path
+            format: "json" or "markdown" (table format)
+            filter_gold_only: Only include examples with gold_reference_available=True
+            max_examples: Maximum number of examples to export (None = all)
+        """
+        if not self.results:
+            print("No results to export. Run tests first.")
+            return
+        
+        # Filter results
+        examples = self.results
+        if filter_gold_only:
+            examples = [r for r in examples if r.get("gold_reference_available", False)]
+        
+        # Limit if specified
+        if max_examples:
+            examples = examples[:max_examples]
+        
+        if format == "json":
+            self._export_json_examples(examples, output_file)
+        elif format == "markdown":
+            self._export_markdown_table(examples, output_file)
+        else:
+            raise ValueError(f"Unsupported format: {format}. Use 'json' or 'markdown'")
+    
+    def _export_json_examples(self, examples: List[Dict], output_file: str) -> None:
+        """Export examples as compact JSON for research paper."""
+        compact_examples = []
+        
+        for result in examples:
+            example = {
+                "id": result["test_id"],
+                "question": result["natural_language_question"],
+                "category": result["category"],
+                "difficulty": result["difficulty"],
+                "template_match": result["template_match"],
+                "success": result["success"],
+                "gold_reference_available": result.get("gold_reference_available", False)
+            }
+            
+            # Add SPARQL comparison if gold reference available
+            if result.get("gold_reference_available"):
+                example["sparql_comparison"] = {
+                    "expected_query": result.get("expected_sparql_query", "")[:200] + "...",
+                    "returned_query": result.get("returned_sparql_query", "")[:200] + "...",
+                    "queries_match": result.get("expected_sparql_query") == result.get("returned_sparql_query")
+                }
+            
+            # Add LLM judge outputs if available
+            if "llm_as_judge_outputs" in result:
+                judge = result["llm_as_judge_outputs"]
+                example["llm_evaluation"] = {
+                    "semantic_score": judge.get("semantic_score", 0.0),
+                    "explanation": judge.get("explanation", ""),
+                    "detected_errors": judge.get("detected_errors", []),
+                    "missing_requirements": judge.get("missing_requirements", [])
+                }
+            
+            compact_examples.append(example)
+        
+        output_data = {
+            "export_metadata": {
+                "timestamp": datetime.now().isoformat(),
+                "total_examples": len(compact_examples),
+                "with_gold_reference": sum(1 for e in compact_examples if e.get("gold_reference_available")),
+                "format": "compact_qualitative_examples"
+            },
+            "examples": compact_examples
+        }
+        
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(output_data, f, indent=2, ensure_ascii=False)
+        
+        print(f"\n✅ Exported {len(compact_examples)} qualitative examples to: {output_file}")
+        print(f"   With gold reference: {output_data['export_metadata']['with_gold_reference']}")
+    
+    def _export_markdown_table(self, examples: List[Dict], output_file: str) -> None:
+        """Export examples as markdown table for research paper."""
+        lines = []
+        lines.append("# Qualitative Evaluation Examples")
+        lines.append(f"\n*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n")
+        lines.append(f"**Total Examples**: {len(examples)}  ")
+        gold_count = sum(1 for e in examples if e.get("gold_reference_available"))
+        lines.append(f"**With Gold Reference**: {gold_count}\n")
+        
+        # Summary table
+        lines.append("## Summary Table\n")
+        lines.append("| ID | Question | Category | Difficulty | Template Match | Success | Gold Ref | LLM Score |")
+        lines.append("|---:|:---------|:---------|:-----------|:--------------:|:-------:|:--------:|:---------:|")
+        
+        for result in examples:
+            question = result["natural_language_question"][:50]
+            if len(result["natural_language_question"]) > 50:
+                question += "..."
+            
+            template_match = "✓" if result["template_match"] else "✗"
+            success = "✓" if result["success"] else "✗"
+            gold_ref = "✓" if result.get("gold_reference_available") else "✗"
+            
+            llm_score = "N/A"
+            if "llm_as_judge_outputs" in result:
+                llm_score = f"{result['llm_as_judge_outputs'].get('semantic_score', 0.0):.2f}"
+            
+            lines.append(
+                f"| {result['test_id']} | {question} | {result['category']} | "
+                f"{result['difficulty']} | {template_match} | {success} | {gold_ref} | {llm_score} |"
+            )
+        
+        # Detailed examples with gold references
+        if gold_count > 0:
+            lines.append("\n## Detailed Examples (With Gold Reference)\n")
+            
+            for result in examples:
+                if not result.get("gold_reference_available"):
+                    continue
+                
+                lines.append(f"### Test {result['test_id']}: {result['category'].upper()}\n")
+                lines.append(f"**Question**: {result['natural_language_question']}\n")
+                lines.append(f"**Difficulty**: {result['difficulty']} | **Template Match**: {result['template_match']} | **Success**: {result['success']}\n")
+                
+                # SPARQL comparison
+                lines.append("**Expected SPARQL Query**:")
+                lines.append("```sparql")
+                lines.append(result.get("expected_sparql_query", "N/A")[:300])
+                if len(result.get("expected_sparql_query", "")) > 300:
+                    lines.append("...")
+                lines.append("```\n")
+                
+                lines.append("**Returned SPARQL Query**:")
+                lines.append("```sparql")
+                lines.append(result.get("returned_sparql_query", "N/A")[:300])
+                if len(result.get("returned_sparql_query", "")) > 300:
+                    lines.append("...")
+                lines.append("```\n")
+                
+                # LLM evaluation if available
+                if "llm_as_judge_outputs" in result:
+                    judge = result["llm_as_judge_outputs"]
+                    lines.append(f"**LLM Evaluation**:")
+                    lines.append(f"- Score: {judge.get('semantic_score', 0.0):.2f}")
+                    lines.append(f"- Explanation: {judge.get('explanation', 'N/A')}")
+                    if judge.get('detected_errors'):
+                        lines.append(f"- Detected Errors: {', '.join(judge['detected_errors'])}")
+                    if judge.get('missing_requirements'):
+                        lines.append(f"- Missing Requirements: {', '.join(judge['missing_requirements'])}")
+                    lines.append("")
+                
+                lines.append("---\n")
+        
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(lines))
+        
+        print(f"\n✅ Exported markdown table to: {output_file}")
 
 
 def main():
@@ -572,6 +840,12 @@ def main():
     parser.add_argument("--report", action="store_true", help="Generate detailed report")
     parser.add_argument("--output", type=str, help="Output file for report (JSON)")
     parser.add_argument("--llm-judge", action="store_true", help="Enable LLM-as-judge evaluation")
+    parser.add_argument("--export-qualitative", type=str, help="Export qualitative examples (specify output file)")
+    parser.add_argument("--export-format", type=str, choices=["json", "markdown"], default="json", 
+                       help="Format for qualitative export (default: json)")
+    parser.add_argument("--gold-only", action="store_true", 
+                       help="Export only examples with gold reference (use with --export-qualitative)")
+    parser.add_argument("--max-examples", type=int, help="Maximum examples to export")
     
     args = parser.parse_args()
     
@@ -591,12 +865,32 @@ def main():
     else:
         evaluator.run_all_tests()
     
+    # Generate report and auto-save for full test runs
+    output_file = args.output
+    
+    # Auto-generate output file for full test runs if not specified
+    if not args.question_id and not args.category and not output_file:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        if args.llm_judge:
+            output_file = f"evaluation/llm_judge_full_report.json"
+        else:
+            output_file = f"evaluation/full_report_{timestamp}.json"
+    
     # Generate report
-    if args.report or args.output:
-        evaluator.generate_report(args.output)
+    if args.report or args.output or output_file:
+        evaluator.generate_report(output_file)
     else:
         # Always show summary
         evaluator.generate_report()
+    
+    # Export qualitative examples if requested
+    if args.export_qualitative:
+        evaluator.export_qualitative_examples(
+            output_file=args.export_qualitative,
+            format=args.export_format,
+            filter_gold_only=args.gold_only,
+            max_examples=args.max_examples
+        )
 
 
 if __name__ == "__main__":
