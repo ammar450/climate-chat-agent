@@ -10,13 +10,11 @@ An intelligent question-answering system for European climate data using Retriev
 
 ## 🚀 Quick Links
 
-- **[📦 Setup & Installation](SETUP.md)** - Get started in 5 minutes
-- **[🎯 Features](FEATURES.md)** - Complete feature list and capabilities
-- **[🏗️ Architecture](ARCHITECTURE.md)** - RAG flow and system design
-- **[📊 Dataset Information](DATASET.md)** - E-OBS specifications and coverage
-- **[💻 Usage & Examples](USAGE.md)** - Query examples by category
-- **[🔌 API Reference](API.md)** - REST API documentation
-- **[👨‍💻 Development Guide](DEVELOPMENT.md)** - For contributors and developers
+- 📦 **[Setup & Installation](SETUP.md)** - Get started in 5 minutes
+- 🏗️ **[Architecture Details](docs/ARCHITECTURE.md)** - RAG flow and system design
+- 🔌 **[API Reference](API.md)** - REST API documentation
+- 👨‍💻 **[Development Guide](DEVELOPMENT.md)** - For contributors and developers
+- 📊 **[Evaluation Results](evaluation/EVALUATION_COMPARISON_TABLE.md)** - Performance metrics
 
 ---
 
@@ -33,8 +31,6 @@ An intelligent question-answering system for European climate data using Retriev
 - 📦 **Smart Caching** - Common queries cached for sub-second responses
 - 📊 **18 Query Templates** - Covering statistics, time-series, location-based queries
 
-[**→ See all features**](FEATURES.md)
-
 ---
 
 ## 📊 Dataset
@@ -46,8 +42,6 @@ An intelligent question-answering system for European climate data using Retriev
 - **0.1° × 0.1° spatial resolution** (~11km grid)
 - **Daily temporal resolution**
 - **Coverage:** 25°N-75°N, 25°W-45°E
-
-[**→ Dataset details**](DATASET.md)
 
 ---
 
@@ -67,17 +61,8 @@ SPARQL Query Execution
 Knowledge Graph Results
     └─ Returns: observations, statistics, metadata
         ↓
-<<<<<<< HEAD
-LLM Explainer (Ollama/OpenAI)
+LLM Answer Generator (Ollama/OpenAI/SAIA)
     ├─ Input: question + KG context
-=======
-Context Builder
-    ├─ Extracts: values, stats, time ranges
-    └─ Creates: compact context text
-        ↓
-LLM Verbalizer (Ollama/SAIA)
-    ├─ Input: question + context from KG
->>>>>>> cbfe75051d44cc5b0f82dad0825f937a6eed712a
     └─ Output: grounded answer (no hallucinations)
         ↓
 User Interface
@@ -85,10 +70,11 @@ User Interface
 
 **Key Principle:** The LLM never invents climate data. All numbers come from the knowledge graph.
 
-<<<<<<< HEAD
-[**→ Architecture details**](ARCHITECTURE.md)
-=======
-## � Dataset Information
+[**→ Full architecture details**](docs/ARCHITECTURE.md)
+
+---
+
+## 📊 Dataset Information
 
 ### E-OBS Gridded Climate Data
 
@@ -142,7 +128,9 @@ This application queries the **E-OBS (European Observations)** gridded climate d
 - **Either:**
   - [Ollama](https://ollama.com/download) installed locally, OR
   - SAIA API key (OpenAI-compatible)
+---
 
+## 
 ### Installation
 
 1. **Install dependencies**
@@ -689,7 +677,6 @@ Explain simply: what was the climate like in 1950?
 | Date out of range | Use dates between 1950-01-01 and 2024-12-31 |
 | Country not found | Use European/Mediterranean countries or coordinates |
 | API key error | Check OPENAI_API_KEY in .env (never commit!) |
->>>>>>> cbfe75051d44cc5b0f82dad0825f937a6eed712a
 
 ---
 
@@ -763,7 +750,7 @@ Access the chat interface at `http://localhost:8000`
 "Temperature variability in Berlin"
 ```
 
-[**→ More examples**](USAGE.md) | [**→ API reference**](API.md)
+[**→ More examples in the Usage section above**]
 
 ---
 
@@ -812,10 +799,6 @@ climate-chat-agent/
 ├── .env.example              # Configuration template
 ├── README.md                 # This file
 ├── SETUP.md                  # Installation guide
-├── FEATURES.md               # Complete feature list
-├── ARCHITECTURE.md           # System design
-├── DATASET.md                # E-OBS dataset info
-├── USAGE.md                  # Query examples
 ├── API.md                    # API documentation
 ├── DEVELOPMENT.md            # Development guide
 ├── src/                      # Source code
@@ -854,7 +837,6 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed guidelines.
 
 ---
 
-<<<<<<< HEAD
 ## 📜 License
 
 MIT License - see LICENSE file for details.
@@ -864,10 +846,10 @@ MIT License - see LICENSE file for details.
 ## 📞 Support & Documentation
 
 - **Setup Issues?** See [SETUP.md](SETUP.md)
-- **Usage Questions?** See [USAGE.md](USAGE.md)
+- **Usage Questions?** Check the Usage Examples section above
 - **API Integration?** See [API.md](API.md)
 - **Want to Contribute?** See [DEVELOPMENT.md](DEVELOPMENT.md)
-- **Architecture Details?** See [ARCHITECTURE.md](ARCHITECTURE.md)
+- **Architecture Details?** See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ---
 
@@ -898,12 +880,10 @@ MIT License - see LICENSE file for details.
 
 ---
 
-**Built with:** Python • FastAPI • LangGraph • SPARQL • Virtuoso • Ollama/OpenAI
-
-=======
-For more details, see [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) and documentation in the `docs/` folder.
-
 ## 🙏 Acknowledgments
 
-  The work has been funded by the European Project EOSC Data Commons.
->>>>>>> cbfe75051d44cc5b0f82dad0825f937a6eed712a
+The work has been funded by the European Project EOSC Data Commons.
+
+---
+
+**Built with:** Python • FastAPI • LangGraph • SPARQL • Virtuoso • Ollama/OpenAI
