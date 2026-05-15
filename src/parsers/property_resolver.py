@@ -614,7 +614,7 @@ LIMIT 2000"""
         """
         import re
         pattern = re.compile(
-            r'([\-\+]?\d+\.?\d*)[\s_,]+([\-\+]?\d+\.?\d*)'
+            r'([\-\+]?\d+)[p\.](\d+)[\s_,]+([\-\+]?\d+)[p\.](\d+)'
         )
         nearest_feature = None
         min_distance = float('inf')
@@ -625,7 +625,8 @@ LIMIT 2000"""
             m = pattern.search(tail)
             if m:
                 try:
-                    f_lat, f_lon = float(m.group(1)), float(m.group(2))
+                    f_lat = float(f"{m.group(1)}.{m.group(2)}")
+                    f_lon = float(f"{m.group(3)}.{m.group(4)}")
                     if not (-90 <= f_lat <= 90 and -180 <= f_lon <= 180):
                         continue
                     distance = LocationResolver._haversine_distance(lat, lon, f_lat, f_lon)

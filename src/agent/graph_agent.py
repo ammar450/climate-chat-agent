@@ -293,21 +293,23 @@ def resolve_node(state: AgentState) -> AgentState:
         state["debug"]["resolve_time"] = round(time.time() - start_time, 3)
         return state
     
-    # Check for year/month updates
-    year_update = TimeParser.extract_year_update(user_message)
-    if year_update:
-        # Clip to 1950-2024
-        if year_update < 1950:
-            year_update = 1950
-        elif year_update > 2024:
-            year_update = 2024
-        
-        # For a full year, end date should be start of next year
-        state["time_range"] = {
-            "start": f"{year_update}-01-01T00:00:00",
-            "end": f"{year_update + 1}-01-01T00:00:00"
-        }
-        print(f"[RESOLVE] Year set to: {year_update} (1950-2024 available)")
+    # Check for year updates ONLY if no specific time range was already detected
+    # This prevents overwriting month-specific queries like "March 1975"
+    if not state.get("time_range"):
+        year_update = TimeParser.extract_year_update(user_message)
+        if year_update:
+            # Clip to 1950-2024
+            if year_update < 1950:
+                year_update = 1950
+            elif year_update > 2024:
+                year_update = 2024
+            
+            # For a full year, end date should be start of next year
+            state["time_range"] = {
+                "start": f"{year_update}-01-01T00:00:00",
+                "end": f"{year_update + 1}-01-01T00:00:00"
+            }
+            print(f"[RESOLVE] Year set to: {year_update} (1950-2024 available)")
     
     # Extract feature URI if pasted (basic detection)
     if "http://obs.nfdi4earth.de/resource/feature/" in user_message:
@@ -551,9 +553,14 @@ def plan_node(state: AgentState) -> AgentState:
         state["debug"]["skipped"] = "answer_already_set"
         return state
 
+    # Get user message early for use in fast-path detection
+    user_message = state["user_message"]
+    msg_lower = user_message.lower()
+
     # -----------------------------------------------------------------------
     # FAST-PATH: skip the LLM when property + time_range are already resolved.
     # This handles "temperature in Leipzig in 1950"-style queries directly.
+    # Enhanced to detect specific query intents (average, daily, monthly, etc.)
     # -----------------------------------------------------------------------
     has_property = bool(state.get("selected_property_uri"))
     has_time = bool(state.get("time_range"))
@@ -561,7 +568,137 @@ def plan_node(state: AgentState) -> AgentState:
 
     if has_property and has_time:
         tr = state["time_range"]
-        template = "timeseries_statistics_with_feature" if has_feature else "timeseries_statistics"
+        template = None
+        
+        # Check for value filtering keywords (highest priority)
+        import re
+        range_patterns = [
+            r'between\s+([\d.]+)\s+and\s+([\d.]+)',
+            r'from\s+([\d.]+)\s+to\s+([\d.]+)',
+            r'([\d.]+)\s*-\s*([\d.]+)',
+        ]
+        threshold_patterns = [
+            r'above\s+([\d.]+)',
+            r'over\s+([\d.]+)',
+            r'greater than\s+([\d.]+)',
+            r'>\s*([\d.]+)',
+            r'below\s+([\d.]+)',
+            r'under\s+([\d.]+)',
+            r'less than\s+([\d.]+)',
+            r'<\s*([\d.]+)',
+        ]
+        
+        min_val, max_val = None, None
+        for pattern in range_patterns:
+            match = re.search(pattern, user_message, re.IGNORECASE)
+            if match:
+                min_val, max_val = float(match.group(1)), float(match.group(2))
+                template = "filtered_timeseries"
+                print(f"[PLAN] Fast path: {template} (detected value range: {min_val}-{max_val})")
+                break
+        
+        if not template:
+            for pattern in threshold_patterns:
+                match = re.search(pattern, user_message, re.IGNORECASE)
+                if match:
+                    threshold = float(match.group(1))
+                    if 'above' in pattern or 'over' in pattern or 'greater' in pattern or '>' in pattern:
+                        min_val, max_val = threshold, 1000000  # Large upper bound
+                    else:
+                        min_val, max_val = -1000000, threshold  # Large lower bound
+                    template = "filtered_timeseries"
+                    print(f"[PLAN] Fast path: {template} (detected threshold filter: {threshold})")
+                    break
+        
+        if template == "filtered_timeseries":
+            state["plan"] = {
+                "template": template,
+                "params": {
+                    "property_uri": state["selected_property_uri"],
+                    "start": tr["start"],
+                    "end": tr["end"],
+                    "min_value": min_val,
+                    "max_value": max_val
+                },
+                "followup": None,
+            }
+            state["debug"]["plan_time"] = 0
+            state["debug"]["fast_path"] = True
+            state["debug"]["fast_path_reason"] = f"value filtering detected: {min_val}-{max_val}"
+            return state
+        
+        # Check for daily aggregation keywords
+        if any(keyword in msg_lower for keyword in [
+            "daily", "day by day", "each day", "per day", "daily average",
+            "daily mean", "daily statistics", "day-by-day", "daily breakdown"
+        ]):
+            template = "daily_aggregates_with_feature" if has_feature else "daily_aggregates"
+            print(f"[PLAN] Fast path: {template} (detected 'daily' intent)")
+        
+        # Check for monthly aggregation keywords
+        elif any(keyword in msg_lower for keyword in [
+            "monthly", "month by month", "each month", "per month", "monthly average",
+            "monthly mean", "monthly statistics", "month-by-month", "monthly trends",
+            "monthly totals", "monthly breakdown"
+        ]):
+            template = "monthly_aggregates_with_feature" if has_feature else "monthly_aggregates"
+            print(f"[PLAN] Fast path: {template} (detected 'monthly' intent)")
+        
+        # Check for extreme values keywords
+        elif any(keyword in msg_lower for keyword in [
+            "highest", "maximum", "max", "top", "greatest", "warmest", "wettest",
+            "strongest", "peak", "record high"
+        ]):
+            template = "top_extremes_for_property"
+            state["plan"] = {
+                "template": template,
+                "params": {
+                    "property_uri": state["selected_property_uri"],
+                    "start": tr["start"],
+                    "end": tr["end"],
+                    "order": "DESC"
+                },
+                "followup": None,
+            }
+            state["debug"]["plan_time"] = 0
+            state["debug"]["fast_path"] = True
+            state["debug"]["fast_path_reason"] = "extremes detected (highest)"
+            print(f"[PLAN] Fast path: {template} (detected 'highest' intent)")
+            return state
+        
+        elif any(keyword in msg_lower for keyword in [
+            "lowest", "minimum", "min", "bottom", "smallest", "coldest", "driest",
+            "weakest", "record low"
+        ]):
+            template = "top_extremes_for_property"
+            state["plan"] = {
+                "template": template,
+                "params": {
+                    "property_uri": state["selected_property_uri"],
+                    "start": tr["start"],
+                    "end": tr["end"],
+                    "order": "ASC"
+                },
+                "followup": None,
+            }
+            state["debug"]["plan_time"] = 0
+            state["debug"]["fast_path"] = True
+            state["debug"]["fast_path_reason"] = "extremes detected (lowest)"
+            print(f"[PLAN] Fast path: {template} (detected 'lowest' intent)")
+            return state
+        
+        # Check for average-specific queries (but not daily/monthly average)
+        elif any(keyword in msg_lower for keyword in [
+            "average", "mean", "avg"
+        ]) and not any(kw in msg_lower for kw in ["daily", "monthly", "day", "month"]):
+            template = "average_for_property_date_range"
+            print(f"[PLAN] Fast path: {template} (detected 'average' intent)")
+        
+        # Default to timeseries statistics for general queries
+        else:
+            template = "timeseries_statistics_with_feature" if has_feature else "timeseries_statistics"
+            print(f"[PLAN] Fast path: {template} (property+time already resolved)")
+        
         state["plan"] = {
             "template": template,
             "params": {
@@ -573,13 +710,9 @@ def plan_node(state: AgentState) -> AgentState:
         }
         state["debug"]["plan_time"] = 0
         state["debug"]["fast_path"] = True
-        state["debug"]["fast_path_reason"] = "property+time already resolved"
-        print(f"[PLAN] Fast path: {template} (property+time already resolved, "
-              f"feature={'yes' if has_feature else 'no'})")
+        state["debug"]["fast_path_reason"] = "property+time already resolved with intent detection"
+        print(f"[PLAN] Fast path uses feature={'yes' if has_feature else 'no'}")
         return state
-
-    user_message = state["user_message"]
-    msg_lower = user_message.lower()
 
     # Fast path for common queries (skip LLM)
     if any(phrase in msg_lower for phrase in ["what variables", "list variables", "available variables", "what properties", "variables are"]):
@@ -676,13 +809,13 @@ Available templates:
 - location_based_summary: Climate summary for a specific location (needs start, end; uses location from context)
 - features_near_coordinates: Find features near given coordinates (informational, lists available features)
 - sample_observations: Show sample observations (needs property_uri)
-- average_for_property_date_range: Calculate average (needs property_uri, start, end)
-- top_extremes_for_property: Show highest/lowest values (needs property_uri, order: DESC/ASC)
-- timeseries_statistics: Calculate mean, min, max, count for a property (needs property_uri, start, end)
-- timeseries_statistics_by_feature: Statistics grouped by location/feature (needs property_uri, start, end)
-- filtered_timeseries: Filter data by value range (needs property_uri, start, end, min_value, max_value)
-- daily_aggregates: Daily mean, min, max (needs property_uri, start, end)
-- monthly_aggregates: Monthly mean, min, max (needs property_uri, start, end)
+- average_for_property_date_range: Calculate simple average ONLY (needs property_uri, start, end)
+- top_extremes_for_property: Show top highest/lowest individual values (needs property_uri, order: DESC/ASC, start, end)
+- timeseries_statistics: Calculate mean, min, max, count for a property (needs property_uri, start, end) - DEFAULT for "statistics", "calculate"
+- timeseries_statistics_by_feature: Statistics grouped by location/feature (needs property_uri, start, end) - USE when "by location", "across locations", "per grid point", "compare locations"
+- filtered_timeseries: Filter data by value range (needs property_uri, start, end, min_value, max_value) - USE for "between X and Y", "above X", "below X"
+- daily_aggregates: Daily mean, min, max, count per day (needs property_uri, start, end) - USE for "daily", "each day", "day by day"
+- monthly_aggregates: Monthly mean, min, max, count per month (needs property_uri, start, end) - USE for "monthly", "each month", "month by month"
 - monthly_mean_from_daily: Overall mean computed from daily means (needs property_uri, start, end)
 
 IMPORTANT: When user asks about recent data or doesn't specify year, use any year from 1950-2024 as appropriate.
@@ -694,13 +827,15 @@ Session context:
 CRITICAL: If session context shows "Current property: X", you MUST use the property_uri from context.
 DO NOT generate property URIs. Use the ones from session context or omit property_uri if not in context.
 
-For statistical queries (mean, standard deviation, aggregates):
-- Use timeseries_statistics for overall statistics
-- Use timeseries_statistics_by_feature for statistics per location
-- Use daily_aggregates or monthly_aggregates for time-based aggregation
-
-For filtering data:
-- Use filtered_timeseries with min_value and max_value parameters
+CRITICAL TEMPLATE SELECTION RULES:
+1. If query mentions "daily", "each day", "day by day" → USE daily_aggregates
+2. If query mentions "monthly", "each month", "month by month", "monthly totals" → USE monthly_aggregates  
+3. If query has value range ("between X and Y", "above X", "below X") → USE filtered_timeseries with min_value and max_value
+4. If query says "by location", "across locations", "per grid", "compare locations" → USE timeseries_statistics_by_feature
+5. If query asks for "highest", "lowest", "maximum", "minimum", "top", "extreme" values → USE top_extremes_for_property with order DESC or ASC
+6. For simple "average" without aggregation → USE average_for_property_date_range
+7. For general statistics ("calculate", "statistics", "mean") → USE timeseries_statistics
+8. If no specific property but asking about climate/weather → USE all_properties_summary
 
 LOCATION HANDLING:
 - If session context shows "Location: [name]", "Coordinates: lat=X, lon=Y", or "Current feature: [URI]", the location is RESOLVED
@@ -1235,12 +1370,16 @@ def explain_node(state: AgentState) -> AgentState:
 RULES:
 - Use ONLY facts from EVIDENCE
 - Be concise (2-4 sentences max)
-- Include units with values
+- ALWAYS include units with all numeric values
+- ALWAYS mention the count of observations when available in evidence
+- ALWAYS specify the exact time period from the query (e.g., "in 2020", "during January 1990", "for the year 1950")
 - NO asterisks (*) or markdown bold (**)
 - Use clean numbered lists or simple text
 - Use simple language, emojis, everyday comparisons
-- If WIKIDATA CONTEXT is provided, use it only for background/geographic info, never to replace EOBS numbers.
+- If WIKIDATA CONTEXT is provided, use it only for background/geographic info, never to replace EOBS numbers
 - When mixing EOBS data with Wikidata background, state the source: e.g. "(Source: EOBS)" or "(Background: Wikidata)"
+- For aggregate queries (daily/monthly), explicitly state what aggregation was done
+- State facts with certainty - avoid phrases like "expected to be" when you have actual data
 
 DATA: 1950-2024 (Source: EOBS)
 

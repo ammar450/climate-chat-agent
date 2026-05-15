@@ -113,6 +113,7 @@ WHERE {{
 
     "top_extremes_for_property": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
 PREFIX qudt: <http://qudt.org/schema/qudt/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT ?time ?feature ?value ?unit
 FROM <{graph}>
 WHERE {{
@@ -123,6 +124,7 @@ WHERE {{
        sosa:hasResult ?result .
   ?result qudt:numericValue ?value .
   OPTIONAL {{ ?result qudt:unit ?unit }}
+  FILTER(?time >= "{start}"^^xsd:dateTime && ?time < "{end}"^^xsd:dateTime)
 }}
 ORDER BY {order}(?value)
 LIMIT 20""",
