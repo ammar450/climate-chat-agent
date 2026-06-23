@@ -36,7 +36,7 @@
     },
     {
       "id": 4,
-      "question": "Give me a climate overview for 2024",
+      "question": "Give me an overview of climate observations for 2024",
       "expected_template": "all_properties_summary",
       "category": "summary",
       "difficulty": "medium",
@@ -216,7 +216,7 @@
     },
     {
       "id": 24,
-      "question": "Show me climate in Germany during 2024",
+      "question": "Show me climate data in Germany during 2024",
       "expected_template": "location_based_summary",
       "category": "location",
       "difficulty": "hard",
