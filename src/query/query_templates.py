@@ -13,18 +13,17 @@ GRAPH = os.getenv("GRAPH_IRI", "climateobservations/eobs-v31")
 
 TEMPLATES = {
     "list_properties": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
-SELECT ?property (COUNT(*) AS ?count)
+SELECT DISTINCT ?property (COUNT(*) AS ?count)
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
        sosa:observedProperty ?property .
 }}
 GROUP BY ?property
-ORDER BY DESC(?count)
-LIMIT 50""",
+ORDER BY DESC(?count)""",
 
     "list_features_of_interest": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
-SELECT ?feature (COUNT(*) AS ?count)
+SELECT DISTINCT ?feature (COUNT(*) AS ?count)
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
