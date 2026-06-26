@@ -2,25 +2,30 @@
   "metadata": {
     "dataset": "E-OBS Gridded Climate Data",
     "temporal_coverage": "1950-2024 (75 years)",
-    "total_questions": 30,
-    "templates_covered": 18,
-    "last_updated": "2026-04-26"
+    "total_questions_types": 16,
+    "total_questions": 46,
+    "templates_covered": 13,
+    "last_updated": "2026-06-26"
   },
   "test_cases": [
     {
       "id": 1,
       "question": "What variables are available?",
-      "expected_template": "list_properties",
-      "category": "discovery",
+      "alternative_question_phrasing_1": "Which variables can be queried?",  
+      "alternative_question_phrasing_2": "Provide an overview of observation variables in the dataset",  
+      "expected_template": "list_properties", 
+      "category": "overview", 
       "difficulty": "easy",
       "expected_coverage": ["Lists climate variables", "Shows observation counts"],
       "notes": "Basic discovery query - should list all 5 climate properties"
     },
     {
       "id": 2,
-      "question": "List all observation locations",
-      "expected_template": "list_features",
-      "category": "discovery",
+      "question": "List all locations of observations available",
+      "alternative_question_phrasing_1": "What are locations of observations available in the dataset?", 
+      "alternative_question_phrasing_2": "What are grids available in the dataset?", 
+      "expected_template": "list_features_of_interest",
+      "category": "overview",  
       "difficulty": "easy",
       "expected_coverage": ["Lists grid points", "Shows feature URIs"],
       "notes": "Basic location discovery"
@@ -28,8 +33,10 @@
     {
       "id": 3,
       "question": "Show me some sample observations",
+      "alternative_question_phrasing_1": "", 
+      "alternative_question_phrasing_2": "", 
       "expected_template": "sample_observations",
-      "category": "exploration",
+      "category": "subsampling",
       "difficulty": "easy",
       "expected_coverage": ["Sample data points", "Time stamps", "Values"],
       "notes": "General sample data query"
@@ -37,245 +44,152 @@
     {
       "id": 4,
       "question": "Give me an overview of climate observations for 2024",
+      "alternative_question_phrasing_1": "What was the climate like in 1950?", 
+      "alternative_question_phrasing_2": "Show me climate data for 2000", 
       "expected_template": "all_properties_summary",
-      "category": "summary",
+      "category": "overview",
       "difficulty": "medium",
-      "expected_coverage": ["All variables", "Statistics", "Date range: 2024"],
-      "notes": "Summary of all properties for recent year"
+      "expected_coverage": ["All variables", "Statistics", "Date range: 1950", "Date range: 2000", "Date range: 2024"],
+      "notes": "Summary of all properties for a given year"
     },
     {
       "id": 5,
-      "question": "What was the climate like in 1950?",
-      "expected_template": "all_properties_summary",
-      "category": "summary",
+      "question": "Calculate temperature statistics for 2024",
+      "alternative_question_phrasing_1": "Show me wind speed statistics for 2010", 
+      "alternative_question_phrasing_2": "What are statistics about relative humidity for 1960", 
+      "expected_template": "timeseries_statistics",
+      "category": "aggregation",
       "difficulty": "medium",
-      "expected_coverage": ["All variables", "Statistics", "Date range: 1950"],
-      "notes": "Summary for earliest year in dataset"
+      "expected_coverage": ["Mean", "Min", "Max", "Count", "Temperature", "Date range: 1960", "Date range: 2010", "Date range: 2024"],
+      "notes": "Summary statistics per variable per date range"
     },
     {
       "id": 6,
-      "question": "Show me climate data for 2000",
-      "expected_template": "all_properties_summary",
-      "category": "summary",
+      "question": "What was the average temperature in 2020?",
+      "alternative_question_phrasing_1": "Show me average precipitation in March 1975", 
+      "alternative_question_phrasing_2": "What is the average humidity for 2010?", 
+      "expected_template": "timeseries_statistics",
+      "category": "aggregation",
       "difficulty": "medium",
-      "expected_coverage": ["All variables", "Year 2000", "Statistical summary"],
-      "notes": "Mid-range year summary"
+      "expected_coverage": ["Temperature", "Precipitation", "Average", "Date range: 2020", "Date range: March 1975", "Date range: 2010"],
+      "notes": "Average of a single property for a given date range"
     },
     {
       "id": 7,
-      "question": "What was the average temperature in 2020?",
-      "expected_template": "average_for_property_date_range",
-      "category": "statistics",
-      "difficulty": "medium",
-      "expected_coverage": ["Temperature", "Average value", "Year 2020"],
-      "notes": "Single property average for recent year"
+      "question": "Show monthly temperature averages for 2022",
+      "alternative_question_phrasing_1": "What was the wettest month in 2023?", 
+      "alternative_question_phrasing_2": "Calculate monthly precipitation totals for 1965", 
+      "expected_template": "monthly_aggregates",
+      "category": "aggregation",
+      "difficulty": "hard",
+      "expected_coverage": ["Monthly aggregates", "Temperature", "Precipitation"],
+      "notes": "Monthly aggregation across the date range given"
     },
+
     {
       "id": 8,
-      "question": "Show me average precipitation in March 1975",
-      "expected_template": "average_for_property_date_range",
-      "category": "statistics",
-      "difficulty": "medium",
-      "expected_coverage": ["Precipitation", "March 1975", "Monthly average"],
-      "notes": "Monthly average for specific property"
+      "question": "Show daily temperature averages for January 2024",
+      "alternative_question_phrasing_1": "Give me daily precipitation statistics for June 1980", 
+      "alternative_question_phrasing_2": "What are daily humidity averages for March 2000", 
+      "expected_template": "daily_aggregates",
+      "category": "aggregation",
+      "difficulty": "hard",
+      "expected_coverage": ["Daily aggregates", "Temperature", "Humidity", "Precipitation", "Date range: January 2024", "Date range: March 2000", "Date range: June 1980"],
+      "notes": "Daily time series for the given time range - in this case a month"
     },
+
     {
       "id": 9,
-      "question": "Calculate temperature statistics for 2024",
-      "expected_template": "timeseries_statistics",
-      "category": "statistics",
+      "question": "What were the highest temperature values in 2023?",
+      "alternative_question_phrasing_1": "Show me the lowest precipitation amounts in 1955", 
+      "alternative_question_phrasing_2": "What were the highest humidity values in 1980", 
+      "expected_template": "top_extremes_for_property",
+      "category": "extremes",
       "difficulty": "medium",
-      "expected_coverage": ["Mean", "Min", "Max", "Count", "Temperature"],
-      "notes": "Comprehensive statistics for recent year"
+      "expected_coverage": ["Temperature", "Precipitation", "Humidity", "Maximum values", "Minimum values"],
+      "notes": "Extreme values query"
     },
+
     {
       "id": 10,
-      "question": "Give me humidity statistics for January 1990",
-      "expected_template": "timeseries_statistics",
-      "category": "statistics",
-      "difficulty": "medium",
-      "expected_coverage": ["Humidity", "January 1990", "Statistical measures"],
-      "notes": "Monthly statistics for humidity"
+      "question": "Show me wind speed between 5 and 15 m/s in 2020",
+      "alternative_question_phrasing_1": "Find precipitation values below 12 mm and above 10 mm in 2001", 
+      "alternative_question_phrasing_2": "Show me humidity values between 30 and 40 percent in 2022", 
+      "expected_template": "filtered_timeseries",
+      "category": "filtering",
+      "difficulty": "hard",
+      "expected_coverage": ["Wind speed", "Humidity", "Precipitation", "Value range filter", "Date range: 2020", "Date range: 2022", "Date range: 2001"],
+      "notes": "Filtering of values according to some range"
     },
     {
       "id": 11,
-      "question": "What were the highest temperature values in 2023?",
-      "expected_template": "top_extremes_for_property",
-      "category": "extremes",
-      "difficulty": "medium",
-      "expected_coverage": ["Temperature", "Maximum values", "2023"],
-      "notes": "Extreme values query"
+      "question": "Find temperature readings above 30 degrees in Summer 2024",
+      "alternative_question_phrasing_1": "Find humidity values below 20% in 1995", 
+      "alternative_question_phrasing_2": "Find precipitation values above 30 mm in 2000", 
+      "expected_template": "filtered_timeseries",
+      "category": "filtering",
+      "difficulty": "hard",
+      "expected_coverage": ["Temperature", "Threshold filter", "Humidity", "Precipitation", "Date range: Summer 2024", "Date range: 1995", "Date range: 2000"],
+      "notes": "Filtering of values above/below a threshold"
     },
+
     {
       "id": 12,
-      "question": "Show me the lowest precipitation amounts in 1955",
-      "expected_template": "top_extremes_for_property",
-      "category": "extremes",
+      "question": "What locations are near coordinates 48.5, 9.0?",
+      "alternative_question_phrasing_1": "Find observation points around lat: 52.5, lon: 13.4", 
+      "alternative_question_phrasing_2": "What are grids near lat: 67.8, lon: 20.3", 
+      "expected_template": "features_near_coordinates",
+      "category": "location-based",
       "difficulty": "medium",
-      "expected_coverage": ["Precipitation", "Minimum values", "1955"],
-      "notes": "Minimum extreme values"
+      "expected_coverage": ["Nearby features"],
+      "notes": "Spatial proximity queries: Stuttgart, Germany; Berlin, Germany; Kiruna, Sweden"
     },
+
     {
       "id": 13,
-      "question": "Show daily temperature averages for January 2024",
-      "expected_template": "daily_aggregates",
-      "category": "aggregation",
+      "question": "Show me climate data in Germany during 2024",
+      "alternative_question_phrasing_1": "What was the weather in France during 1985?", 
+      "alternative_question_phrasing_2": "what was the weather like in Poland in 1970?", 
+      "expected_template": "location_based_summary",
+      "category": "location-based",
       "difficulty": "hard",
-      "expected_coverage": ["Daily aggregates", "Temperature", "January 2024"],
-      "notes": "Daily time series aggregation"
+      "expected_coverage": ["Country filter", "All variables", "2024"],
+      "notes": "Country-based summary for a given time period"
     },
+
     {
       "id": 14,
-      "question": "Give me daily precipitation statistics for June 1980",
-      "expected_template": "daily_aggregates",
-      "category": "aggregation",
+      "question": "What was the mean daily temperature in 2021?",
+      "alternative_question_phrasing_1": "What was the mean daily temperature in 2011?", 
+      "alternative_question_phrasing_2": "What was the mean daily temperature in 2001?", 
+      "expected_template": "monthly_mean_from_daily",
+      "category": "nested-aggregation",
       "difficulty": "hard",
-      "expected_coverage": ["Daily data", "Precipitation", "June 1980"],
-      "notes": "Daily aggregates for historical month"
+      "expected_coverage": ["Daily means", "Temperature", "Date range: 2021", "Date range: 2011", "Date range: 2001"],
+      "notes": "Nested aggregation: overall mean from daily means"
     },
+
     {
       "id": 15,
-      "question": "Show monthly temperature averages for 2022",
-      "expected_template": "monthly_aggregates",
-      "category": "aggregation",
+      "question": "Compare temperature across different grid points in 2019",
+      "alternative_question_phrasing_1": "Compare humidity across different grid points in 2019", 
+      "alternative_question_phrasing_2": "Compare wind speed across different grid points in 2019", 
+      "expected_template": "timeseries_statistics_by_feature",
+      "category": "location-based",
       "difficulty": "hard",
-      "expected_coverage": ["Monthly aggregates", "Temperature", "2022"],
-      "notes": "Monthly aggregation across year"
+      "expected_coverage": ["Multiple locations", "Statistics per feature", "Date range: 2019"],
+      "notes": "Comparison of values across multiple locations (in this case grids)"
     },
     {
       "id": 16,
-      "question": "Calculate monthly precipitation totals for 1965",
-      "expected_template": "monthly_aggregates",
-      "category": "aggregation",
-      "difficulty": "hard",
-      "expected_coverage": ["Monthly data", "Precipitation", "1965"],
-      "notes": "Monthly aggregation for historical year"
-    },
-    {
-      "id": 17,
-      "question": "What was the mean daily temperature in 2021?",
-      "expected_template": "monthly_mean_from_daily",
-      "category": "aggregation",
-      "difficulty": "hard",
-      "expected_coverage": ["Daily means", "Temperature", "2021"],
-      "notes": "Nested aggregation: overall mean from daily means"
-    },
-    {
-      "id": 18,
-      "question": "Show me wind speed between 5 and 15 m/s in 2020",
-      "expected_template": "filtered_timeseries",
-      "category": "filtering",
-      "difficulty": "hard",
-      "expected_coverage": ["Wind speed", "Value range filter", "2020"],
-      "notes": "Range-filtered time series"
-    },
-    {
-      "id": 19,
-      "question": "Find temperature readings above 30 degrees in summer 2024",
-      "expected_template": "filtered_timeseries",
-      "category": "filtering",
-      "difficulty": "hard",
-      "expected_coverage": ["Temperature", "Threshold filter", "Summer 2024"],
-      "notes": "High temperature filtering"
-    },
-    {
-      "id": 20,
-      "question": "Show me climate statistics by location for 2023",
-      "expected_template": "timeseries_statistics_by_feature",
-      "category": "spatial",
-      "difficulty": "hard",
-      "expected_coverage": ["Multiple locations", "Statistics per feature", "2023"],
-      "notes": "Spatial aggregation query"
-    },
-    {
-      "id": 21,
-      "question": "Compare temperature across different grid points in 2019",
-      "expected_template": "timeseries_statistics_by_feature",
-      "category": "spatial",
-      "difficulty": "hard",
-      "expected_coverage": ["Temperature", "Feature comparison", "2019"],
-      "notes": "Multi-location comparison"
-    },
-    {
-      "id": 22,
-      "question": "What locations are near coordinates 48.5, 9.0?",
-      "expected_template": "features_near_coordinates",
-      "category": "spatial",
-      "difficulty": "medium",
-      "expected_coverage": ["Coordinate search", "Nearby features"],
-      "notes": "Spatial proximity query (Stuttgart, Germany area)"
-    },
-    {
-      "id": 23,
-      "question": "Find observation points around lat: 52.5, lon: 13.4",
-      "expected_template": "features_near_coordinates",
-      "category": "spatial",
-      "difficulty": "medium",
-      "expected_coverage": ["Coordinate search", "Grid points"],
-      "notes": "Berlin area coordinate search"
-    },
-    {
-      "id": 24,
-      "question": "Show me climate data in Germany during 2024",
-      "expected_template": "location_based_summary",
-      "category": "location",
-      "difficulty": "hard",
-      "expected_coverage": ["Country filter", "All variables", "2024"],
-      "notes": "Country-based summary for recent year"
-    },
-    {
-      "id": 25,
-      "question": "What was the weather in France during 1985?",
-      "expected_template": "location_based_summary",
-      "category": "location",
-      "difficulty": "hard",
-      "expected_coverage": ["France", "Climate variables", "1985"],
-      "notes": "Historical country-based query"
-    },
-    {
-      "id": 26,
-      "question": "Give me solar radiation data for 2015",
-      "expected_template": "timeseries_statistics",
-      "category": "statistics",
-      "difficulty": "medium",
-      "expected_coverage": ["Solar radiation", "Statistics", "2015"],
-      "notes": "Tests less common variable"
-    },
-    {
-      "id": 27,
       "question": "Show me wind speed trends for the last 5 years",
+      "alternative_question_phrasing_1": "Compare humidity between 1950 and 2024", 
+      "alternative_question_phrasing_2": "Show temperature patterns decade by decade from 1950 to 2024", 
       "expected_template": "timeseries_statistics",
-      "category": "trends",
+      "category": "multi-year-comparison",
       "difficulty": "hard",
-      "expected_coverage": ["Wind speed", "2020-2024", "Multi-year"],
-      "notes": "Recent multi-year query"
-    },
-    {
-      "id": 28,
-      "question": "Compare humidity between 1950 and 2024",
-      "expected_template": "timeseries_statistics",
-      "category": "comparison",
-      "difficulty": "hard",
-      "expected_coverage": ["Humidity", "1950 vs 2024", "Long-term comparison"],
-      "notes": "Full dataset span comparison"
-    },
-    {
-      "id": 29,
-      "question": "What was the wettest month in 2023?",
-      "expected_template": "monthly_aggregates",
-      "category": "extremes",
-      "difficulty": "hard",
-      "expected_coverage": ["Precipitation", "Monthly comparison", "2023"],
-      "notes": "Requires finding maximum from monthly aggregates"
-    },
-    {
-      "id": 30,
-      "question": "Show temperature patterns decade by decade from 1950 to 2024",
-      "expected_template": "timeseries_statistics",
-      "category": "long-term",
-      "difficulty": "hard",
-      "expected_coverage": ["Temperature", "Decadal analysis", "Full dataset"],
-      "notes": "Long-term climate change analysis"
+      "expected_coverage": ["Wind speed", "Humidity", "Decadal analysis"],
+      "notes": "Comparison of values that span multiple years"
     }
   ]
 }
