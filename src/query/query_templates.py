@@ -23,7 +23,7 @@ GROUP BY ?property
 ORDER BY DESC(?count)
 LIMIT 50""",
 
-    "list_features": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
+    "list_features_of_interest": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
 SELECT ?feature (COUNT(*) AS ?count)
 FROM <{graph}>
 WHERE {{
