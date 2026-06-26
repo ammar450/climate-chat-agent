@@ -96,21 +96,6 @@ WHERE {{
 ORDER BY ?time
 LIMIT 500""",
 
-    "average_for_property_date_range": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
-PREFIX qudt: <http://qudt.org/schema/qudt/>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-SELECT (AVG(?value) AS ?average) (COUNT(*) AS ?count) (SAMPLE(?unit) AS ?unit)
-FROM <{graph}>
-WHERE {{
-  ?obs a sosa:Observation ;
-       sosa:resultTime ?time ;
-       sosa:observedProperty <{property_uri}> ;
-       sosa:hasResult ?result .
-  ?result qudt:numericValue ?value .
-  OPTIONAL {{ ?result qudt:unit ?unit }}
-  FILTER(?time >= "{start}"^^xsd:dateTime && ?time < "{end}"^^xsd:dateTime)
-}}""",
-
     "top_extremes_for_property": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
 PREFIX qudt: <http://qudt.org/schema/qudt/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
