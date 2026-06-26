@@ -56,7 +56,7 @@
       "id": 5,
       "question": "Calculate temperature statistics for 2024",
       "alternative_question_phrasing_1": "Show me wind speed statistics for 2010", 
-      "alternative_question_phrasing_2": "What are statistics about relative humidity for 1960", 
+      "alternative_question_phrasing_2": "What are statistics about relative humidity for 1960?", 
       "expected_template": "timeseries_statistics",
       "category": "aggregation",
       "difficulty": "medium",
@@ -95,7 +95,7 @@
       "category": "aggregation",
       "difficulty": "hard",
       "expected_coverage": ["Daily aggregates", "Temperature", "Humidity", "Precipitation", "Date range: January 2024", "Date range: March 2000", "Date range: June 1980"],
-      "notes": "Daily time series for the given time range - in this case a month"
+      "notes": "Daily time series for the given time range - in this case, a month"
     },
 
     {
@@ -104,10 +104,10 @@
       "alternative_question_phrasing_1": "Show me the lowest precipitation amounts in 1955", 
       "alternative_question_phrasing_2": "What were the highest humidity values in 1980", 
       "expected_template": "top_extremes_for_property",
-      "category": "extremes",
+      "category": "extreme-values",
       "difficulty": "medium",
       "expected_coverage": ["Temperature", "Precipitation", "Humidity", "Maximum values", "Minimum values"],
-      "notes": "Extreme values query"
+      "notes": "queries about extreme values in the dataset"
     },
 
     {
