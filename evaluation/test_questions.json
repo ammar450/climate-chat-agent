@@ -10,9 +10,7 @@
   "test_cases": [
     {
       "id": 1,
-      "question": "What variables are available?",
-      "alternative_question_phrasing_1": "Which variables can be queried?",  
-      "alternative_question_phrasing_2": "Provide an overview of observation variables in the dataset",  
+      "question": ["What variables are available?", "Which variables can be queried?", "Provide an overview of observation variables in the dataset"],
       "expected_template": "list_properties", 
       "category": "overview", 
       "difficulty": "easy",
@@ -21,9 +19,7 @@
     },
     {
       "id": 2,
-      "question": "List all locations of observations available",
-      "alternative_question_phrasing_1": "What are locations of observations available in the dataset?", 
-      "alternative_question_phrasing_2": "What are grids available in the dataset?", 
+      "question": ["List all locations of observations available", "What are locations of observations available in the dataset?", "What are grids available in the dataset?"],
       "expected_template": "list_features_of_interest",
       "category": "overview",  
       "difficulty": "easy",
@@ -32,9 +28,7 @@
     },
     {
       "id": 3,
-      "question": "Show me some sample observations",
-      "alternative_question_phrasing_1": "", 
-      "alternative_question_phrasing_2": "", 
+      "question": ["Show me some sample observations"], 
       "expected_template": "sample_observations",
       "category": "subsampling",
       "difficulty": "easy",
@@ -43,9 +37,7 @@
     },
     {
       "id": 4,
-      "question": "Give me an overview of climate observations for 2024",
-      "alternative_question_phrasing_1": "What was the climate like in 1950?", 
-      "alternative_question_phrasing_2": "Show me climate data for 2000", 
+      "question": ["Give me an overview of climate observations for 2024", "What was the climate like in 1950?", "Show me climate data for 2000"],
       "expected_template": "all_properties_summary",
       "category": "overview",
       "difficulty": "medium",
@@ -54,9 +46,7 @@
     },
     {
       "id": 5,
-      "question": "Calculate temperature statistics for 2024",
-      "alternative_question_phrasing_1": "Show me wind speed statistics for 2010", 
-      "alternative_question_phrasing_2": "What are statistics about relative humidity for 1960?", 
+      "question": ["Calculate temperature statistics for 2024", "Show me wind speed statistics for 2010", "What are statistics about relative humidity for 1960?"],
       "expected_template": "timeseries_statistics",
       "category": "aggregation",
       "difficulty": "medium",
@@ -65,9 +55,7 @@
     },
     {
       "id": 6,
-      "question": "What was the average temperature in 2020?",
-      "alternative_question_phrasing_1": "Show me average precipitation in March 1975", 
-      "alternative_question_phrasing_2": "What is the average humidity for 2010?", 
+      "question": ["What was the average temperature in 2020?", "Show me average precipitation in March 1975",  "What is the average humidity for 2010?"],
       "expected_template": "timeseries_statistics",
       "category": "aggregation",
       "difficulty": "medium",
@@ -76,9 +64,7 @@
     },
     {
       "id": 7,
-      "question": "Show monthly temperature averages for 2022",
-      "alternative_question_phrasing_1": "What was the wettest month in 2023?", 
-      "alternative_question_phrasing_2": "Calculate monthly precipitation totals for 1965", 
+      "question": ["Show monthly temperature averages for 2022", "What was the wettest month in 2023?", "Calculate monthly precipitation totals for 1965"],
       "expected_template": "monthly_aggregates",
       "category": "aggregation",
       "difficulty": "hard",
@@ -88,9 +74,7 @@
 
     {
       "id": 8,
-      "question": "Show daily temperature averages for January 2024",
-      "alternative_question_phrasing_1": "Give me daily precipitation statistics for June 1980", 
-      "alternative_question_phrasing_2": "What are daily humidity averages for March 2000", 
+      "question": ["Show daily temperature averages for January 2024", "Give me daily precipitation statistics for June 1980", "What are daily humidity averages for March 2000"],
       "expected_template": "daily_aggregates",
       "category": "aggregation",
       "difficulty": "hard",
@@ -100,9 +84,7 @@
 
     {
       "id": 9,
-      "question": "What were the highest temperature values in 2023?",
-      "alternative_question_phrasing_1": "Show me the lowest precipitation amounts in 1955", 
-      "alternative_question_phrasing_2": "What were the highest humidity values in 1980", 
+      "question": ["What were the highest temperature values in 2023?", "Show me the lowest precipitation amounts in 1955", "What were the highest humidity values in 1980"],
       "expected_template": "top_extremes_for_property",
       "category": "extreme-values",
       "difficulty": "medium",
@@ -112,9 +94,7 @@
 
     {
       "id": 10,
-      "question": "Show me wind speed between 5 and 15 m/s in 2020",
-      "alternative_question_phrasing_1": "Find precipitation values below 12 mm and above 10 mm in 2001", 
-      "alternative_question_phrasing_2": "Show me humidity values between 30 and 40 percent in 2022", 
+      "question": ["Show me wind speed between 5 and 15 m/s in 2020", "Find precipitation values below 12 mm and above 10 mm in 2001", "Show me humidity values between 30 and 40 percent in 2022"],
       "expected_template": "filtered_timeseries",
       "category": "filtering",
       "difficulty": "hard",
@@ -123,9 +103,7 @@
     },
     {
       "id": 11,
-      "question": "Find temperature readings above 30 degrees in Summer 2024",
-      "alternative_question_phrasing_1": "Find humidity values below 20% in 1995", 
-      "alternative_question_phrasing_2": "Find precipitation values above 30 mm in 2000", 
+      "question": ["Find temperature readings above 30 degrees in Summer 2024", "Find humidity values below 20% in 1995", "Find precipitation values above 30 mm in 2000"],
       "expected_template": "filtered_timeseries",
       "category": "filtering",
       "difficulty": "hard",
@@ -135,9 +113,7 @@
 
     {
       "id": 12,
-      "question": "What locations are near coordinates 48.5, 9.0?",
-      "alternative_question_phrasing_1": "Find observation points around lat: 52.5, lon: 13.4", 
-      "alternative_question_phrasing_2": "What are grids near lat: 67.8, lon: 20.3", 
+      "question": ["What locations are near coordinates 48.5, 9.0?", "Find observation points around lat: 52.5, lon: 13.4", "What are grids near lat: 67.8, lon: 20.3"], 
       "expected_template": "features_near_coordinates",
       "category": "location-based",
       "difficulty": "medium",
@@ -147,9 +123,7 @@
 
     {
       "id": 13,
-      "question": "Show me climate data in Germany during 2024",
-      "alternative_question_phrasing_1": "What was the weather in France during 1985?", 
-      "alternative_question_phrasing_2": "what was the weather like in Poland in 1970?", 
+      "question": ["Show me climate data in Germany during 2024", "What was the weather in France during 1985?", "What was the weather like in Poland in 1970?" ],
       "expected_template": "location_based_summary",
       "category": "location-based",
       "difficulty": "hard",
@@ -159,9 +133,7 @@
 
     {
       "id": 14,
-      "question": "What was the mean daily temperature in 2021?",
-      "alternative_question_phrasing_1": "What was the mean daily temperature in 2011?", 
-      "alternative_question_phrasing_2": "What was the mean daily temperature in 2001?", 
+      "question": ["What was the mean daily temperature in 2021?", "What was the mean daily temperature in 2011?", "What was the mean daily temperature in 2001?"], 
       "expected_template": "monthly_mean_from_daily",
       "category": "nested-aggregation",
       "difficulty": "hard",
@@ -171,20 +143,16 @@
 
     {
       "id": 15,
-      "question": "Compare temperature across different grid points in 2019",
-      "alternative_question_phrasing_1": "Compare humidity across different grid points in 2019", 
-      "alternative_question_phrasing_2": "Compare wind speed across different grid points in 2019", 
+      "question": ["Compare temperature across different grid points in 2019", "Compare humidity across different grid points in 2019", "Compare wind speed across different grid points in 2019"], 
       "expected_template": "timeseries_statistics_by_feature",
       "category": "location-based",
       "difficulty": "hard",
       "expected_coverage": ["Multiple locations", "Statistics per feature", "Date range: 2019"],
-      "notes": "Comparison of values across multiple locations (in this case grids)"
+      "notes": "Comparison of values across multiple locations (in this case, grids)"
     },
     {
       "id": 16,
-      "question": "Show me wind speed trends for the last 5 years",
-      "alternative_question_phrasing_1": "Compare humidity between 1950 and 2024", 
-      "alternative_question_phrasing_2": "Show temperature patterns decade by decade from 1950 to 2024", 
+      "question": ["Show me wind speed trends for the last 5 years", "Compare humidity between 1950 and 2024", "Show temperature patterns decade by decade from 1950 to 2024"], 
       "expected_template": "timeseries_statistics",
       "category": "multi-year-comparison",
       "difficulty": "hard",
