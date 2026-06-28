@@ -1,0 +1,13 @@
+﻿python :   File 
+"C:\Users\AmmarYousaf\Desktop\climate-chat-agent\test_all_30_questions.py", 
+line 99
+At line:1 char:1
++ python test_all_30_questions.py 2>&1 | Out-File -Encoding UTF8 test_o ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (  File "C:\User...ns.py", line 99 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    print(f"[ERROR]
+          ^
+SyntaxError: unterminated f-string literal (detected at line 99)

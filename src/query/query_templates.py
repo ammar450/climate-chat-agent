@@ -74,7 +74,7 @@ WHERE {{
       OPTIONAL {{ ?result qudt:unit ?unit }}
       FILTER (?time >= \"{start}\"^^xsd:dateTime && ?time < \"{end}\"^^xsd:dateTime)
     }}
-    LIMIT 50000
+    LIMIT 1000000
   }}
 }}
 GROUP BY ?property
@@ -341,27 +341,52 @@ WHERE {{
   }}
 }}""",
 
-    "features_near_coordinates": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
+    "features_with_coordinates": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-SELECT DISTINCT ?feature (COUNT(?obs) AS ?obs_count)
+PREFIX wgs84: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+SELECT DISTINCT ?feature ?lat ?lng ?geometry (COUNT(?obs) AS ?obs_count)
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
        sosa:hasFeatureOfInterest ?feature .
-  ?feature geo:hasGeometry ?geom .
-  ?geom geo:asWKT ?wkt .
-  # Note: Actual spatial filtering would require GeoSPARQL functions
-  # For now, return all features for the user to select from
+  OPTIONAL {{ ?feature wgs84:lat ?lat }}
+  OPTIONAL {{ ?feature wgs84:long ?lng }}
+  OPTIONAL {{ 
+    ?feature geo:hasGeometry ?geom .
+    ?geom geo:asWKT ?geometry .
+  }}
 }}
-GROUP BY ?feature
+GROUP BY ?feature ?lat ?lng ?geometry
+ORDER BY DESC(?obs_count)
+LIMIT 50""",
+
+    "features_near_coordinates": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
+PREFIX wgs84: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT DISTINCT ?feature ?lat ?lng ?geometry (COUNT(?obs) AS ?obs_count)
+FROM <{graph}>
+WHERE {{
+  ?obs a sosa:Observation ;
+       sosa:hasFeatureOfInterest ?feature .
+  ?feature wgs84:lat ?lat ;
+           wgs84:long ?lng .
+  OPTIONAL {{ 
+    ?feature geo:hasGeometry ?geom .
+    ?geom geo:asWKT ?geometry .
+  }}
+  # Filter features within bounding box (if lat/lng provided)
+  {lat_lng_filter}
+}}
+GROUP BY ?feature ?lat ?lng ?geometry
 ORDER BY DESC(?obs_count)
 LIMIT 50""",
 
     "location_based_summary": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
 PREFIX qudt: <http://qudt.org/schema/qudt/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX wgs84: <http://www.w3.org/2003/01/geo/wgs84_pos#>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-SELECT ?property 
+SELECT ?property ?feature ?lat ?lng
        (AVG(?value) AS ?avg_value) 
        (MIN(?value) AS ?min_value) 
        (MAX(?value) AS ?max_value) 
@@ -376,11 +401,54 @@ WHERE {{
        sosa:hasResult ?result .
   ?result qudt:numericValue ?value .
   OPTIONAL {{ ?result qudt:unit ?unit }}
-  # Note: Add spatial filtering here when feature URI is known
+  OPTIONAL {{ ?feature wgs84:lat ?lat }}
+  OPTIONAL {{ ?feature wgs84:long ?lng }}
   FILTER (?time >= \"{start}\"^^xsd:dateTime && ?time < \"{end}\"^^xsd:dateTime)
+  {feature_filter}
 }}
-GROUP BY ?property
-ORDER BY ?property"""
+GROUP BY ?property ?feature ?lat ?lng
+ORDER BY ?property""",
+
+    "timeseries_with_location": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
+PREFIX qudt: <http://qudt.org/schema/qudt/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX wgs84: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+SELECT ?time ?value ?unit ?feature ?lat ?lng
+FROM <{graph}>
+WHERE {{
+  ?obs a sosa:Observation ;
+       sosa:resultTime ?time ;
+       sosa:observedProperty <{property_uri}> ;
+       sosa:hasFeatureOfInterest ?feature ;
+       sosa:hasResult ?result .
+  ?result qudt:numericValue ?value .
+  OPTIONAL {{ ?result qudt:unit ?unit }}
+  OPTIONAL {{ ?feature wgs84:lat ?lat }}
+  OPTIONAL {{ ?feature wgs84:long ?lng }}
+  FILTER(?time >= "{start}"^^xsd:dateTime && ?time < "{end}"^^xsd:dateTime)
+  {feature_filter}
+}}
+ORDER BY ?time
+LIMIT 500""",
+
+    "features_by_location": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
+PREFIX wgs84: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT DISTINCT ?feature ?lat ?lng ?geometry
+FROM <{graph}>
+WHERE {{
+  ?obs a sosa:Observation ;
+       sosa:hasFeatureOfInterest ?feature .
+  ?feature wgs84:lat ?lat ;
+           wgs84:long ?lng .
+  OPTIONAL {{ 
+    ?feature geo:hasGeometry ?geom .
+    ?geom geo:asWKT ?geometry .
+  }}
+  FILTER(?lat >= {min_lat} && ?lat <= {max_lat})
+  FILTER(?lng >= {min_lng} && ?lng <= {max_lng})
+}}
+LIMIT 100"""
 }
 
 # Property mappings for common terms
@@ -423,6 +491,15 @@ def render_template(template_name: str, params: dict) -> str:
             params_with_graph["feature_filter"] = f'FILTER(?feature = <{params_with_graph["feature_uri"]}>)'
         else:
             params_with_graph["feature_filter"] = ""
+    
+    # Add lat/lng filter for location-based queries
+    if "lat_lng_filter" not in params_with_graph:
+        if all(k in params_with_graph for k in ["min_lat", "max_lat", "min_lng", "max_lng"]):
+            lat_filter = f'FILTER(?lat >= {params_with_graph["min_lat"]} && ?lat <= {params_with_graph["max_lat"]})'
+            lng_filter = f'FILTER(?lng >= {params_with_graph["min_lng"]} && ?lng <= {params_with_graph["max_lng"]})'
+            params_with_graph["lat_lng_filter"] = f'{lat_filter}\n  {lng_filter}'
+        else:
+            params_with_graph["lat_lng_filter"] = ""
     
     # Ensure limit is set and reasonable
     if "limit" not in params_with_graph:

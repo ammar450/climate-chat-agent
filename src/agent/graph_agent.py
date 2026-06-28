@@ -571,6 +571,7 @@ def plan_node(state: AgentState) -> AgentState:
         template = None
         
         # Check for value filtering keywords (highest priority)
+        # But exclude year ranges (1900-2100) to avoid misinterpretation
         import re
         range_patterns = [
             r'between\s+([\d.]+)\s+and\s+([\d.]+)',
@@ -592,10 +593,15 @@ def plan_node(state: AgentState) -> AgentState:
         for pattern in range_patterns:
             match = re.search(pattern, user_message, re.IGNORECASE)
             if match:
-                min_val, max_val = float(match.group(1)), float(match.group(2))
-                template = "filtered_timeseries"
-                print(f"[PLAN] Fast path: {template} (detected value range: {min_val}-{max_val})")
-                break
+                val1, val2 = float(match.group(1)), float(match.group(2))
+                # Exclude year ranges (values >= 1900 and <= 2100)
+                if not (1900 <= val1 <= 2100 and 1900 <= val2 <= 2100):
+                    min_val, max_val = val1, val2
+                    template = "filtered_timeseries"
+                    print(f"[PLAN] Fast path: {template} (detected value range: {min_val}-{max_val})")
+                    break
+                else:
+                    print(f"[PLAN] Skipping year range {val1}-{val2} from value filter detection")
         
         if not template:
             for pattern in threshold_patterns:
@@ -625,6 +631,54 @@ def plan_node(state: AgentState) -> AgentState:
             state["debug"]["plan_time"] = 0
             state["debug"]["fast_path"] = True
             state["debug"]["fast_path_reason"] = f"value filtering detected: {min_val}-{max_val}"
+            return state
+        
+        # Check for by-feature/location queries (before daily/monthly)
+        if any(keyword in msg_lower for keyword in [
+            "by location", "by feature", "by grid", "by station", "by site",
+            "across locations", "across features", "across grid points", "across stations",
+            "different locations", "different features", "different grid points", "different stations",
+            "compare locations", "compare features", "compare grid", "compare stations",
+            "per location", "per feature", "per grid", "per station",
+            "location by location", "feature by feature", "grid by grid"
+        ]):
+            template = "timeseries_statistics_by_feature"
+            print(f"[PLAN] Fast path: {template} (detected by-feature/location intent)")
+            state["plan"] = {
+                "template": template,
+                "params": {
+                    "property_uri": state["selected_property_uri"],
+                    "start": tr["start"],
+                    "end": tr["end"],
+                },
+                "followup": None,
+            }
+            state["debug"]["plan_time"] = 0
+            state["debug"]["fast_path"] = True
+            state["debug"]["fast_path_reason"] = "by-feature/location query detected"
+            return state
+        
+        
+        # Check for "mean daily" (overall mean from daily values) - use monthly_mean_from_daily
+        # This is different from "daily mean" which shows daily statistics
+        if any(phrase in msg_lower for phrase in [
+            "mean daily", "average daily", "mean of daily", "average of daily",
+            "overall daily mean", "overall daily average"
+        ]):
+            template = "monthly_mean_from_daily"
+            print(f"[PLAN] Fast path: {template} (detected 'mean daily' intent)")
+            state["plan"] = {
+                "template": template,
+                "params": {
+                    "property_uri": state["selected_property_uri"],
+                    "start": tr["start"],
+                    "end": tr["end"],
+                },
+                "followup": None,
+            }
+            state["debug"]["plan_time"] = 0
+            state["debug"]["fast_path"] = True
+            state["debug"]["fast_path_reason"] = "mean daily detected (monthly_mean_from_daily)"
             return state
         
         # Check for daily aggregation keywords
@@ -727,6 +781,18 @@ def plan_node(state: AgentState) -> AgentState:
         state["debug"]["plan_time"] = round(time.time() - start_time, 3)
         state["debug"]["fast_path"] = True
         print("[PLAN] Fast path: list_features")
+        return state
+    
+    # Fast path for coordinate-based location queries
+    if state.get("coordinates") and any(phrase in msg_lower for phrase in [
+        "near coord", "around coord", "near lat", "around lat", "observation points",
+        "locations near", "features near", "stations near", "points near", "grid points near",
+        "find observation", "find locations", "find features"
+    ]):
+        state["plan"] = {"template": "features_near_coordinates", "params": {}, "followup": None}
+        state["debug"]["plan_time"] = round(time.time() - start_time, 3)
+        state["debug"]["fast_path"] = True
+        print("[PLAN] Fast path: features_near_coordinates (coordinates detected in query)")
         return state
     
     # Fast path for vague climate queries or simple overviews

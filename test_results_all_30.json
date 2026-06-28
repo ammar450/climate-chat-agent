@@ -1,0 +1,175 @@
+{
+  "passed": [
+    {
+      "id": 1,
+      "question": "What variables are available?",
+      "template": "list_properties"
+    },
+    {
+      "id": 2,
+      "question": "List all observation locations",
+      "template": "list_features"
+    },
+    {
+      "id": 3,
+      "question": "Show me some sample observations",
+      "template": "sample_observations"
+    },
+    {
+      "id": 4,
+      "question": "Give me a climate overview for 2024",
+      "template": "all_properties_summary"
+    },
+    {
+      "id": 5,
+      "question": "What was the climate like in 1950?",
+      "template": "all_properties_summary"
+    },
+    {
+      "id": 6,
+      "question": "Show me climate data for 2000",
+      "template": "all_properties_summary"
+    },
+    {
+      "id": 7,
+      "question": "What was the average temperature in 2020?",
+      "template": "average_for_property_date_range"
+    },
+    {
+      "id": 8,
+      "question": "Show me average precipitation in March 1975",
+      "template": "average_for_property_date_range"
+    },
+    {
+      "id": 9,
+      "question": "Calculate temperature statistics for 2024",
+      "template": "timeseries_statistics"
+    },
+    {
+      "id": 10,
+      "question": "Give me humidity statistics for January 1990",
+      "template": "timeseries_statistics"
+    },
+    {
+      "id": 11,
+      "question": "What were the highest temperature values in 2023?",
+      "template": "top_extremes_for_property"
+    },
+    {
+      "id": 12,
+      "question": "Show me the lowest precipitation amounts in 1955",
+      "template": "top_extremes_for_property"
+    },
+    {
+      "id": 13,
+      "question": "Show daily temperature averages for January 2024",
+      "template": "daily_aggregates"
+    },
+    {
+      "id": 14,
+      "question": "Give me daily precipitation statistics for June 1980",
+      "template": "daily_aggregates"
+    },
+    {
+      "id": 15,
+      "question": "Show monthly temperature averages for 2022",
+      "template": "monthly_aggregates"
+    },
+    {
+      "id": 16,
+      "question": "Calculate monthly precipitation totals for 1965",
+      "template": "monthly_aggregates"
+    },
+    {
+      "id": 18,
+      "question": "Show me wind speed between 5 and 15 m/s in 2020",
+      "template": "filtered_timeseries"
+    },
+    {
+      "id": 19,
+      "question": "Find temperature readings above 30 degrees in summer 2024",
+      "template": "filtered_timeseries"
+    },
+    {
+      "id": 23,
+      "question": "Find observation points around lat: 52.5, lon: 13.4",
+      "template": "features_near_coordinates"
+    },
+    {
+      "id": 26,
+      "question": "Give me solar radiation data for 2015",
+      "template": "timeseries_statistics"
+    },
+    {
+      "id": 27,
+      "question": "Show me wind speed trends for the last 5 years",
+      "template": "timeseries_statistics"
+    }
+  ],
+  "failed": [
+    {
+      "id": 17,
+      "question": "What was the mean daily temperature in 2021?",
+      "expected": "monthly_mean_from_daily",
+      "actual": "daily_aggregates",
+      "answer": "In 2021, the mean daily temperature was approximately 6.83 degrees Celsius (\u00b0C) based on 365 observa"
+    },
+    {
+      "id": 20,
+      "question": "Show me climate statistics by location for 2023",
+      "expected": "timeseries_statistics_by_feature",
+      "actual": "all_properties_summary",
+      "answer": "The climate statistics for the year 2023 are as follows:\n\n1. **Air Temperature**: Average of 1.29 \u00b0C"
+    },
+    {
+      "id": 21,
+      "question": "Compare temperature across different grid points in 2019",
+      "expected": "timeseries_statistics_by_feature",
+      "actual": "timeseries_statistics",
+      "answer": "I don't have specific grid point data for 2019, but I can tell you about the overall air temperature"
+    },
+    {
+      "id": 22,
+      "question": "What locations are near coordinates 48.5, 9.0?",
+      "expected": "features_near_coordinates",
+      "actual": "list_features",
+      "answer": "Query type: list_features\nResult count: 50\nHere are the available observation locations:\n  1. https:"
+    },
+    {
+      "id": 24,
+      "question": "Show me climate in Germany during 2024",
+      "expected": "location_based_summary",
+      "actual": "all_properties_summary",
+      "answer": "In Germany during 2024, the climate data shows the following averages and ranges:\n\n1. Air Temperatur"
+    },
+    {
+      "id": 25,
+      "question": "What was the weather in France during 1985?",
+      "expected": "location_based_summary",
+      "actual": "all_properties_summary",
+      "answer": "In France during 1985, the average precipitation was 1.38 mm, with a range from 0.00 mm to 83.00 mm "
+    },
+    {
+      "id": 28,
+      "question": "Compare humidity between 1950 and 2024",
+      "expected": "timeseries_statistics",
+      "actual": "filtered_timeseries",
+      "answer": "There is no data available for humidity in either 1950 or 2024 (Source: EOBS). Therefore, I cannot p"
+    },
+    {
+      "id": 29,
+      "question": "What was the wettest month in 2023?",
+      "expected": "monthly_aggregates",
+      "actual": "monthly_aggregates",
+      "answer": "I'm sorry \u2014 I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01"
+    },
+    {
+      "id": 30,
+      "question": "Show temperature patterns decade by decade from 1950 to 2024",
+      "expected": "timeseries_statistics",
+      "actual": "filtered_timeseries",
+      "answer": "No data is available to show temperature patterns decade by decade from 1950 to 2024. Therefore, I c"
+    }
+  ],
+  "errors": []
+}

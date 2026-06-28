@@ -53,6 +53,10 @@ class PropertyResolver:
         "shower": "http://vocab.nerc.ac.uk/standard_name/precipitation_amount",
         "showers": "http://vocab.nerc.ac.uk/standard_name/precipitation_amount",
         "downpour": "http://vocab.nerc.ac.uk/standard_name/precipitation_amount",
+        "wettest": "http://vocab.nerc.ac.uk/standard_name/precipitation_amount",
+        "driest": "http://vocab.nerc.ac.uk/standard_name/precipitation_amount",
+        "wet": "http://vocab.nerc.ac.uk/standard_name/precipitation_amount",
+        "dry": "http://vocab.nerc.ac.uk/standard_name/precipitation_amount",
         # Common typos for precipitation/rain
         "rainfal": "http://vocab.nerc.ac.uk/standard_name/precipitation_amount",
         "rainfalll": "http://vocab.nerc.ac.uk/standard_name/precipitation_amount",
