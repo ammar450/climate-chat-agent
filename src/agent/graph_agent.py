@@ -376,11 +376,27 @@ def resolve_node(state: AgentState) -> AgentState:
 
         # 2. Fuzzy match — check each word token against city list
         if not country_detected:
+            # Common English words that should NEVER be fuzzy-matched to cities
+            _stop_words = {
+                "some", "show", "same", "have", "like", "here", "what", "when",
+                "where", "there", "this", "that", "from", "with", "your", "about",
+                "over", "under", "data", "climate", "weather", "sample", "between",
+                "find", "give", "list", "available", "which", "their", "would",
+                "could", "should", "daily", "monthly", "yearly", "average", "mean",
+                "statistics", "calculate", "compare", "trends", "overview", "summary",
+                "locations", "stations", "grids", "points", "variables", "properties",
+                "observations", "values", "temperature", "precipitation", "humidity",
+                "wind", "speed", "pressure", "radiation", "summer", "winter", "spring",
+                "autumn", "fall", "january", "february", "march", "april", "may", "june",
+                "july", "august", "september", "october", "november", "december",
+                "highest", "lowest", "wettest", "driest", "coldest", "warmest",
+                "above", "below", "decade", "patterns", "last", "next", "recent"
+            }
             words = re.findall(r'[a-z]+', msg_lower)
             best_city = None
             best_dist = 999
             for word in words:
-                if len(word) < 3:  # skip very short tokens
+                if len(word) < 3 or word in _stop_words:  # skip short or common words
                     continue
                 for city in available_cities:
                     # Allow 1 edit for short names (≤6), 2 edits for longer
@@ -411,29 +427,49 @@ def resolve_node(state: AgentState) -> AgentState:
     
     # If location detected, try to resolve to coordinates and feature URI
     if country_detected and not state.get("coordinates"):
-        coords = location_resolver.get_coordinates(country_detected)
-        if coords:
-            state["coordinates"] = {"lat": coords[0], "lon": coords[1]}
-            state["location_resolution_method"] = "static_dict"
-            print(f"[RESOLVE] Location mapped via static dict: lat={coords[0]}, lon={coords[1]}")
+        # Try country bbox from lamah_ce geometry graph first
+        print(f"[RESOLVE] Trying lamah_ce geometry for '{country_detected}'...")
+        country_bbox = location_resolver.get_country_bbox(country_detected, run_sparql)
+        if country_bbox:
+            # Use center of bbox as coordinates
+            center_lat = (country_bbox["min_lat"] + country_bbox["max_lat"]) / 2
+            center_lon = (country_bbox["min_lng"] + country_bbox["max_lng"]) / 2
+            state["coordinates"] = {"lat": center_lat, "lon": center_lon}
+            state["location_resolution_method"] = "lamah_ce_geometry"
+            state["debug"]["country_bbox"] = country_bbox
+            state["nearest_grid_message"] = (
+                f"Using {country_bbox['feature_count']} station locations in '{country_detected}' "
+                f"(via lamah_ce geometry graph). Bounding box: "
+                f"({country_bbox['min_lat']:.1f}°-{country_bbox['max_lat']:.1f}°N, "
+                f"{country_bbox['min_lng']:.1f}°-{country_bbox['max_lng']:.1f}°E). "
+                f"[Sources: EOBS + lamah_ce]"
+            )
+            print(f"[RESOLVE] Country '{country_detected}' resolved via lamah_ce: "
+                  f"bbox=({country_bbox['min_lat']:.2f},{country_bbox['min_lng']:.2f})-"
+                  f"({country_bbox['max_lat']:.2f},{country_bbox['max_lng']:.2f})")
         else:
-            # Static dict missed — try Wikidata for coordinate resolution
-            print(f"[RESOLVE] '{country_detected}' not in static dict, trying Wikidata...")
-            try:
-                wikidata_result = resolve_place_to_coordinates(country_detected)
-                if wikidata_result:
-                    wd_lat, wd_lon, wd_label, wd_id = wikidata_result
-                    state["coordinates"] = {"lat": wd_lat, "lon": wd_lon}
-                    state["location_resolution_method"] = "wikidata"
-                    # Update location name to the canonical Wikidata label
-                    state["location_name"] = wd_label
-                    state["debug"]["wikidata_place_id"] = wd_id
-                    print(f"[RESOLVE] '{country_detected}' resolved via Wikidata to '{wd_label}' "
-                          f"({wd_id}): lat={wd_lat:.4f}, lon={wd_lon:.4f}")
-                else:
-                    print(f"[RESOLVE] Wikidata could not resolve '{country_detected}'")
-            except Exception as exc:
-                print(f"[RESOLVE] Wikidata place-resolution error (non-fatal): {exc}")
+            coords = location_resolver.get_coordinates(country_detected)
+            if coords:
+                state["coordinates"] = {"lat": coords[0], "lon": coords[1]}
+                state["location_resolution_method"] = "static_dict"
+                print(f"[RESOLVE] Location mapped via static dict: lat={coords[0]}, lon={coords[1]}")
+            else:
+                # Static dict missed — try Wikidata for coordinate resolution
+                print(f"[RESOLVE] '{country_detected}' not in static dict, trying Wikidata...")
+                try:
+                    wikidata_result = resolve_place_to_coordinates(country_detected)
+                    if wikidata_result:
+                        wd_lat, wd_lon, wd_label, wd_id = wikidata_result
+                        state["coordinates"] = {"lat": wd_lat, "lon": wd_lon}
+                        state["location_resolution_method"] = "wikidata"
+                        state["location_name"] = wd_label
+                        state["debug"]["wikidata_place_id"] = wd_id
+                        print(f"[RESOLVE] '{country_detected}' resolved via Wikidata to '{wd_label}' "
+                              f"({wd_id}): lat={wd_lat:.4f}, lon={wd_lon:.4f}")
+                    else:
+                        print(f"[RESOLVE] Wikidata could not resolve '{country_detected}'")
+                except Exception as exc:
+                    print(f"[RESOLVE] Wikidata place-resolution error (non-fatal): {exc}")
     
     # Check if user mentioned a country not in the dataset
     if not country_detected:
@@ -479,53 +515,69 @@ def resolve_node(state: AgentState) -> AgentState:
     # If we have coordinates but no feature URI, try to find nearest feature
     if state.get("coordinates") and not state.get("selected_feature_uri"):
         coords = state["coordinates"]
-        try:
-            result = location_resolver.find_nearest_feature_with_distance(
-                coords["lat"],
-                coords["lon"],
-                run_sparql
+        # Try lamah_ce geometry first (real POINT data)
+        print(f"[RESOLVE] Looking up nearest feature via lamah_ce geometry...")
+        lamah_result = location_resolver.find_nearest_lamah_ce_feature(
+            coords["lat"], coords["lon"], run_sparql
+        )
+        if lamah_result:
+            feature_uri, dist_km = lamah_result
+            state["selected_feature_uri"] = feature_uri
+            state["location_resolution_method"] = "lamah_ce_geometry"
+            loc_label = state.get("location_name", f"{coords['lat']:.4f},{coords['lon']:.4f}")
+            state["nearest_grid_message"] = (
+                f"Found nearest observation station '{feature_uri.split('/')[-1]}' "
+                f"({dist_km:.1f} km from {loc_label}) via lamah_ce geometry graph."
             )
-            if result:
-                feature_uri, dist_km = result
-                state["selected_feature_uri"] = feature_uri
-                resolution_method = state.get("location_resolution_method", "coordinates")
-                loc_label = state.get("location_name", f"{coords['lat']:.4f},{coords['lon']:.4f}")
+            state["debug"]["geometry_source"] = "lamah_ce"
+            print(f"[RESOLVE] lamah_ce match: {feature_uri} ({dist_km:.1f} km)")
+        else:
+            # Fallback to EOBS URI coordinate extraction
+            try:
+                result = location_resolver.find_nearest_feature_with_distance(
+                    coords["lat"],
+                    coords["lon"],
+                    run_sparql
+                )
+                if result:
+                    feature_uri, dist_km = result
+                    state["selected_feature_uri"] = feature_uri
+                    resolution_method = state.get("location_resolution_method", "coordinates")
+                    loc_label = state.get("location_name", f"{coords['lat']:.4f},{coords['lon']:.4f}")
 
-                if resolution_method == "wikidata":
-                    wd_id = state.get("debug", {}).get("wikidata_place_id", "")
-                    wd_note = f" (resolved via Wikidata{' QID: ' + wd_id if wd_id else ''})" 
-                    state["nearest_grid_message"] = (
-                        f"No exact EOBS match for '{loc_label}'{wd_note}. "
-                        f"Using nearest observation grid point ({dist_km:.1f} km away). "
-                        f"[Source: EOBS]"
-                    )
-                elif dist_km > 25:
-                    state["nearest_grid_message"] = (
-                        f"No exact EOBS grid point for '{loc_label}'. "
-                        f"Showing nearest observation point ({dist_km:.1f} km away). "
-                        f"[Source: EOBS]"
-                    )
+                    if resolution_method == "wikidata":
+                        wd_id = state.get("debug", {}).get("wikidata_place_id", "")
+                        wd_note = f" (resolved via Wikidata{' QID: ' + wd_id if wd_id else ''})" 
+                        state["nearest_grid_message"] = (
+                            f"No exact EOBS match for '{loc_label}'{wd_note}. "
+                            f"Using nearest observation grid point ({dist_km:.1f} km away). "
+                            f"[Source: EOBS]"
+                        )
+                    elif dist_km > 25:
+                        state["nearest_grid_message"] = (
+                            f"No exact EOBS grid point for '{loc_label}'. "
+                            f"Showing nearest observation point ({dist_km:.1f} km away). "
+                            f"[Source: EOBS]"
+                        )
+                    else:
+                        state["nearest_grid_message"] = None
+
+                    print(f"[RESOLVE] Resolved to feature URI: {feature_uri} "
+                          f"({dist_km:.1f} km from '{loc_label}')")
                 else:
-                    state["nearest_grid_message"] = None
-
-                print(f"[RESOLVE] Resolved to feature URI: {feature_uri} "
-                      f"({dist_km:.1f} km from '{loc_label}')")
-            else:
-                # EOBS has no geometry data for this endpoint — proceed without feature filter.
-                # The query will run globally; we note this in the grid message.
+                    loc_label = state.get("location_name", "requested location")
+                    state["nearest_grid_message"] = (
+                        f"Could not resolve a grid point for '{loc_label}' from EOBS geometry data. "
+                        f"Showing dataset-wide statistics. [Source: EOBS]"
+                    )
+                    print(f"[RESOLVE] No feature geometry found in EOBS; will run global query")
+            except Exception as e:
                 loc_label = state.get("location_name", "requested location")
                 state["nearest_grid_message"] = (
-                    f"Could not resolve a grid point for '{loc_label}' from EOBS geometry data. "
+                    f"Grid-point lookup failed for '{loc_label}' ({e}). "
                     f"Showing dataset-wide statistics. [Source: EOBS]"
                 )
-                print(f"[RESOLVE] No feature geometry found in EOBS; will run global query")
-        except Exception as e:
-            loc_label = state.get("location_name", "requested location")
-            state["nearest_grid_message"] = (
-                f"Grid-point lookup failed for '{loc_label}' ({e}). "
-                f"Showing dataset-wide statistics. [Source: EOBS]"
-            )
-            print(f"[RESOLVE] Error resolving feature from coordinates: {e}")
+                print(f"[RESOLVE] Error resolving feature from coordinates: {e}")
 
     # If coordinate lookup was direct (not via place name) and no resolution_method set yet
     if state.get("coordinates") and not state.get("location_resolution_method"):
@@ -556,6 +608,8 @@ def plan_node(state: AgentState) -> AgentState:
     # Get user message early for use in fast-path detection
     user_message = state["user_message"]
     msg_lower = user_message.lower()
+    
+    import re
 
     # -----------------------------------------------------------------------
     # FAST-PATH: skip the LLM when property + time_range are already resolved.
@@ -572,7 +626,6 @@ def plan_node(state: AgentState) -> AgentState:
         
         # Check for value filtering keywords (highest priority)
         # But exclude year ranges (1900-2100) to avoid misinterpretation
-        import re
         range_patterns = [
             r'between\s+([\d.]+)\s+and\s+([\d.]+)',
             r'from\s+([\d.]+)\s+to\s+([\d.]+)',
@@ -710,7 +763,7 @@ def plan_node(state: AgentState) -> AgentState:
                     "property_uri": state["selected_property_uri"],
                     "start": tr["start"],
                     "end": tr["end"],
-                    "order": "DESC"
+                    "agg": "MAX"
                 },
                 "followup": None,
             }
@@ -731,7 +784,7 @@ def plan_node(state: AgentState) -> AgentState:
                     "property_uri": state["selected_property_uri"],
                     "start": tr["start"],
                     "end": tr["end"],
-                    "order": "ASC"
+                    "agg": "MIN"
                 },
                 "followup": None,
             }
@@ -768,26 +821,13 @@ def plan_node(state: AgentState) -> AgentState:
         print(f"[PLAN] Fast path uses feature={'yes' if has_feature else 'no'}")
         return state
 
-    # Fast path for common queries (skip LLM)
-    if any(phrase in msg_lower for phrase in ["what variables", "list variables", "available variables", "what properties", "variables are"]):
-        state["plan"] = {"template": "list_properties", "params": {}, "followup": None}
-        state["debug"]["plan_time"] = round(time.time() - start_time, 3)
-        state["debug"]["fast_path"] = True
-        print("[PLAN] Fast path: list_properties")
-        return state
-    
-    if any(phrase in msg_lower for phrase in ["list locations", "what locations", "available locations", "list stations", "what stations"]):
-        state["plan"] = {"template": "list_features", "params": {}, "followup": None}
-        state["debug"]["plan_time"] = round(time.time() - start_time, 3)
-        state["debug"]["fast_path"] = True
-        print("[PLAN] Fast path: list_features")
-        return state
-    
-    # Fast path for coordinate-based location queries
-    if state.get("coordinates") and any(phrase in msg_lower for phrase in [
+    # Fast path for coordinate-based location queries (MUST come before list_features check)
+    # Detect coordinate patterns or explicit location-near requests
+    has_coords_in_msg = bool(re.search(r'(\d+\.\d+)[,\s]+(\d+\.\d+)', user_message))
+    if (state.get("coordinates") or has_coords_in_msg) and any(phrase in msg_lower for phrase in [
         "near coord", "around coord", "near lat", "around lat", "observation points",
         "locations near", "features near", "stations near", "points near", "grid points near",
-        "find observation", "find locations", "find features"
+        "find observation", "find locations", "find features", "grids near", "near coordinates"
     ]):
         state["plan"] = {"template": "features_near_coordinates", "params": {}, "followup": None}
         state["debug"]["plan_time"] = round(time.time() - start_time, 3)
@@ -795,12 +835,42 @@ def plan_node(state: AgentState) -> AgentState:
         print("[PLAN] Fast path: features_near_coordinates (coordinates detected in query)")
         return state
     
+    # Fast path for common queries (skip LLM)
+    if any(phrase in msg_lower for phrase in ["what variables", "list variables", "available variables", "what properties", "which variables", "variables are", "observation variables", "variables in the dataset"]):
+        state["plan"] = {"template": "list_properties", "params": {}, "followup": None}
+        state["debug"]["plan_time"] = round(time.time() - start_time, 3)
+        state["debug"]["fast_path"] = True
+        print("[PLAN] Fast path: list_properties")
+        return state
+    
+    if any(phrase in msg_lower for phrase in ["list locations", "what locations", "available locations", "list stations", "what stations", "what grids", "list grids", "available grids", "grids available", "grids in the dataset", "locations of observations"]):
+        state["plan"] = {"template": "list_features_of_interest", "params": {}, "followup": None}
+        state["debug"]["plan_time"] = round(time.time() - start_time, 3)
+        state["debug"]["fast_path"] = True
+        print("[PLAN] Fast path: list_features_of_interest")
+        return state
+    
     # Fast path for vague climate queries or simple overviews
     if state.get("debug", {}).get("vague_query") or any(phrase in msg_lower for phrase in [
         "explain", "overview", "summary", "simply", "general climate", "all data",
         "what happened", "climate conditions", "weather conditions"
     ]):
-        # Use all-properties summary if we have a time range
+        # Use location-based summary if location is available
+        if state.get("location_name") or state.get("selected_feature_uri") or state.get("coordinates"):
+            if state.get("time_range"):
+                state["plan"] = {
+                    "template": "location_based_summary",
+                    "params": {
+                        "start": state["time_range"]["start"],
+                        "end": state["time_range"]["end"]
+                    },
+                    "followup": None
+                }
+                state["debug"]["plan_time"] = round(time.time() - start_time, 3)
+                state["debug"]["fast_path"] = True
+                print("[PLAN] Fast path: location_based_summary (location + vague query)")
+                return state
+        # Otherwise use all-properties summary
         if state.get("time_range"):
             state["plan"] = {
                 "template": "all_properties_summary",
@@ -870,11 +940,11 @@ RULES FOR HANDLING DATE QUERIES:
 
 Available templates:
 - list_properties: List all available climate variables
-- list_features: List all observation locations/stations
+- list_features_of_interest: List all observation locations/stations/grids
 - all_properties_summary: Overview of ALL climate variables with statistics (needs start, end) - USE THIS for vague queries like "climate in 1950", "weather overview", "explain climate simply"
 - location_based_summary: Climate summary for a specific location (needs start, end; uses location from context)
 - features_near_coordinates: Find features near given coordinates (informational, lists available features)
-- sample_observations: Show sample observations (needs property_uri)
+- sample_observations: Show sample observations (needs property_uri, optional start/end)
 - average_for_property_date_range: Calculate simple average ONLY (needs property_uri, start, end)
 - top_extremes_for_property: Show top highest/lowest individual values (needs property_uri, order: DESC/ASC, start, end)
 - timeseries_statistics: Calculate mean, min, max, count for a property (needs property_uri, start, end) - DEFAULT for "statistics", "calculate"
@@ -1035,23 +1105,47 @@ def build_query_node(state: AgentState) -> AgentState:
         print(f"[BUILD_QUERY] Using property URI from state: {state['selected_property_uri']}")
     
     if state.get("selected_feature_uri"):
-        params["feature_uri"] = state["selected_feature_uri"]
-        print(f"[BUILD_QUERY] Using feature URI from state: {state['selected_feature_uri']}")
-        
-        # Switch to feature-specific template if available
-        feature_templates = {
-            "timeseries_statistics": "timeseries_statistics_with_feature",
-            "daily_aggregates": "daily_aggregates_with_feature",
-            "monthly_aggregates": "monthly_aggregates_with_feature",
-        }
-        if template_name in feature_templates:
-            template_name = feature_templates[template_name]
-            print(f"[BUILD_QUERY] Switched to feature-specific template: {template_name}")
+        # Skip lamah_ce feature URIs - they don't exist in EOBS observation graph
+        if state.get("location_resolution_method") == "lamah_ce_geometry":
+            print(f"[BUILD_QUERY] Skipping lamah_ce feature URI (not in EOBS): {state['selected_feature_uri']}")
+            # For location_based_summary with lamah_ce, fallback to all_properties_summary
+            if template_name == "location_based_summary":
+                print(f"[BUILD_QUERY] Falling back to all_properties_summary (lamah_ce feature not in EOBS)")
+                template_name = "all_properties_summary"
+        else:
+            params["feature_uri"] = state["selected_feature_uri"]
+            print(f"[BUILD_QUERY] Using feature URI from state: {state['selected_feature_uri']}")
+            
+            # Switch to feature-specific template if available
+            feature_templates = {
+                "timeseries_statistics": "timeseries_statistics_with_feature",
+                "daily_aggregates": "daily_aggregates_with_feature",
+                "monthly_aggregates": "monthly_aggregates_with_feature",
+            }
+            if template_name in feature_templates:
+                template_name = feature_templates[template_name]
+                print(f"[BUILD_QUERY] Switched to feature-specific template: {template_name}")
+    elif template_name == "location_based_summary":
+        # No feature URI available for location-based query - fallback to all_properties_summary
+        print(f"[BUILD_QUERY] No feature URI for location_based_summary, falling back to all_properties_summary")
+        template_name = "all_properties_summary"
     
     if state.get("time_range"):
         params["start"] = state["time_range"]["start"]
         params["end"] = state["time_range"]["end"]
         print(f"[BUILD_QUERY] Using time range from state: {params['start']} to {params['end']}")
+    
+    # Inject bounding box for features_near_coordinates when coordinates are available
+    if template_name == "features_near_coordinates" and state.get("coordinates"):
+        coords = state["coordinates"]
+        lat, lon = coords["lat"], coords["lon"]
+        # Generate ~1 degree bounding box (~111km around point)
+        if "min_lat" not in params:
+            params["min_lat"] = round(lat - 1.0, 4)
+            params["max_lat"] = round(lat + 1.0, 4)
+            params["min_lng"] = round(lon - 1.0, 4)
+            params["max_lng"] = round(lon + 1.0, 4)
+            print(f"[BUILD_QUERY] Injected bbox for coordinates: lat={lat}, lon={lon}")
     
     # Enforce limit: default 200, clamp <= 500
     if "limit" in params:
@@ -1077,7 +1171,7 @@ def build_query_node(state: AgentState) -> AgentState:
             raise SPARQLSecurityError("Query must contain SELECT")
         
         # Ensure FROM graph is present
-        graph_iri = os.getenv("GRAPH_IRI", "http://hyobs.nfdi4earth.de/graph/climateobservations")
+        graph_iri = os.getenv("GRAPH_IRI", "http://eobs/gridded")
         if f"FROM <{graph_iri}>" not in sparql_query and "FROM <" not in sparql_query:
             # Inject FROM clause after SELECT
             parts = sparql_query.split("WHERE", 1)
@@ -1157,7 +1251,7 @@ def format_evidence_node(state: AgentState) -> AgentState:
         evidence_parts.append(f"Time range: {tr['start']} to {tr['end']}")
     
     # Template-specific evidence
-    if template_name == "all_properties_summary":
+    if template_name == "all_properties_summary" or template_name == "location_based_summary":
         evidence_parts.append("Climate Overview (All Variables):")
         for row in rows:
             property_uri = row.get("property", {}).get("value", "Unknown")
@@ -1175,9 +1269,14 @@ def format_evidence_node(state: AgentState) -> AgentState:
     
     elif template_name == "average_for_property_date_range":
         for row in rows[:1]:
-            if "avg" in row or "average" in row:
-                avg_val = row.get("avg" if "avg" in row else "average", {}).get("value", "N/A")
-                unit = row.get("unit", {}).get("value", "")
+            avg_val = row.get("avg", {}).get("value", "N/A")
+            min_val = row.get("min", {}).get("value", "N/A")
+            max_val = row.get("max", {}).get("value", "N/A")
+            count = row.get("count", {}).get("value", "N/A")
+            unit = row.get("unit", {}).get("value", "")
+            try:
+                evidence_parts.append(f"Average: {float(avg_val):.2f} {unit} (Min: {float(min_val):.2f}, Max: {float(max_val):.2f}, Count: {count} observations)".strip())
+            except:
                 evidence_parts.append(f"Average: {avg_val} {unit}".strip())
     
     elif template_name == "timeseries_statistics":
@@ -1287,16 +1386,37 @@ def format_evidence_node(state: AgentState) -> AgentState:
             evidence_parts.append(f"  {i+1}. {value} {unit} at {time_val}".strip())
     
     elif template_name == "list_properties":
-        evidence_parts.append("Available properties:")
+        evidence_parts.append("Available climate variables:")
         for i, row in enumerate(rows[:10]):
-            label = row.get("label", {}).get("value", row.get("property", {}).get("value", "Unknown"))
-            evidence_parts.append(f"  {i+1}. {label}")
+            prop_uri = row.get("property", {}).get("value", "Unknown")
+            prop_label = property_resolver.get_property_display_name(prop_uri)
+            count = row.get("count", {}).get("value", "?")
+            evidence_parts.append(f"  {i+1}. {prop_label} ({count} observations)")
     
-    elif template_name == "list_features":
+    elif template_name in ["list_features", "list_features_of_interest"]:
         evidence_parts.append("Available locations:")
         for i, row in enumerate(rows[:10]):
             label = row.get("label", {}).get("value", row.get("feature", {}).get("value", "Unknown"))
             evidence_parts.append(f"  {i+1}. {label}")
+    
+    elif template_name == "features_near_coordinates":
+        evidence_parts.append("Nearby observation features:")
+        for i, row in enumerate(rows[:20]):
+            feature = row.get("feature", {}).get("value", "Unknown")
+            lat = row.get("lat", {}).get("value")
+            lng = row.get("lng", {}).get("value")
+            count = row.get("obs_count", {}).get("value", "?")
+            # Try to extract coords from URI
+            coord_str = ""
+            if not lat and feature:
+                import re
+                m = re.search(r'(\d+)p(\d+)[_\-](\d+)p(\d+)', feature)
+                if m:
+                    coord_str = f"lat~{m.group(1)}.{m.group(2)}, lon~{m.group(3)}.{m.group(4)}"
+            if lat and lng:
+                coord_str = f"({lat}, {lng})"
+            label = feature.split('#')[-1] if '#' in feature else feature.split('/')[-1]
+            evidence_parts.append(f"  {i+1}. {label} {coord_str} ({count} obs)".strip())
     
     elif template_name in ["sample_observations", "timeseries_for_feature_property"]:
         # Extract statistics
@@ -1392,7 +1512,7 @@ def explain_node(state: AgentState) -> AgentState:
     template_name = plan.get("template", "unknown")
     
     # Fast path for simple list queries - skip LLM entirely
-    if template_name in ["list_properties", "list_features"]:
+    if template_name in ["list_properties", "list_features", "list_features_of_interest"]:
         # Use evidence directly as answer
         answer = evidence.replace("Available properties:", "Here are the available climate variables:").replace("Available locations:", "Here are the available observation locations:")
         

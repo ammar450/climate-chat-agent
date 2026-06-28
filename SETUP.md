@@ -110,7 +110,7 @@ ENABLE_FAST_MODE=false   # true = no LLM calls (instant)
 ```bash
 # Current E-OBS gridded dataset endpoint
 SPARQL_ENDPOINT=https://obs.knowledgehub.nfdi4earth.de/sparql/
-GRAPH_IRI=climateobservations/eobs-v31
+GRAPH_IRI=http://eobs/gridded
 ```
 
 **To use a different SPARQL endpoint:**
@@ -191,7 +191,7 @@ The agent prints debug information to console:
 [LLM PROVIDER] Model: gpt-4o-mini
 [STARTUP] Initializing Climate Chat Agent...
 [CONFIG] SPARQL Endpoint: https://obs.knowledgehub.nfdi4earth.de/sparql/
-[CONFIG] Graph IRI: climateobservations/eobs-v31
+[CONFIG] Graph IRI: http://eobs/gridded
 ```
 
 Enable more verbose logging:

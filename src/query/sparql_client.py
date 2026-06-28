@@ -14,7 +14,7 @@ load_dotenv()
 # Configuration from environment variables
 # Primary knowledge source: EOBS — always queried first
 ENDPOINT = os.getenv("SPARQL_ENDPOINT", "http://141.76.19.254:8890/sparql")
-GRAPH = os.getenv("GRAPH_IRI", "climateobservations/eobs-v31")
+GRAPH = os.getenv("GRAPH_IRI", "http://eobs/gridded")
 QUERY_TIMEOUT = int(os.getenv("SPARQL_TIMEOUT", "30"))  # seconds
 MAX_LIMIT = int(os.getenv("MAX_LIMIT", "500"))
 DEFAULT_LIMIT = int(os.getenv("DEFAULT_LIMIT", "200"))
@@ -81,15 +81,19 @@ def enforce_limit(query: str, max_limit: int = None) -> str:
         # Don't enforce LIMIT on aggregate queries
         return query
     
-    # Check if LIMIT already exists
-    limit_match = re.search(r'LIMIT\s+(\d+)', query, re.IGNORECASE)
+    # Check if LIMIT already exists - only adjust the LAST (outermost) LIMIT
+    limit_matches = list(re.finditer(r'LIMIT\s+(\d+)', query, re.IGNORECASE))
     
-    if limit_match:
-        current_limit = int(limit_match.group(1))
+    if limit_matches:
+        # Only clamp the last LIMIT (outermost query level)
+        last_match = limit_matches[-1]
+        current_limit = int(last_match.group(1))
         if current_limit > max_limit:
-            # Replace with max_limit
-            query = re.sub(r'LIMIT\s+\d+', f'LIMIT {max_limit}', query, flags=re.IGNORECASE)
-            print(f"[SECURITY] LIMIT reduced from {current_limit} to {max_limit}")
+            # Replace only the last occurrence
+            prefix = query[:last_match.start()]
+            suffix = query[last_match.end():]
+            query = prefix + f'LIMIT {max_limit}' + suffix
+            print(f"[SECURITY] Outer LIMIT reduced from {current_limit} to {max_limit}")
     else:
         # No LIMIT found, add default
         query = query.rstrip() + f"\nLIMIT {DEFAULT_LIMIT}"

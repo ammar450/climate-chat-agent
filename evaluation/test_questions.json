@@ -56,7 +56,7 @@
     {
       "id": 6,
       "question": ["What was the average temperature in 2020?", "Show me average precipitation in March 1975",  "What is the average humidity for 2010?"],
-      "expected_template": "timeseries_statistics",
+      "expected_template": "average_for_property_date_range",
       "category": "aggregation",
       "difficulty": "medium",
       "expected_coverage": ["Temperature", "Precipitation", "Average", "Date range: 2020", "Date range: March 1975", "Date range: 2010"],
@@ -74,17 +74,17 @@
 
     {
       "id": 8,
-      "question": ["Show daily temperature averages for January 2024", "Give me daily precipitation statistics for June 1980", "What are daily humidity averages for March 2000"],
+      "question": ["Show daily temperature averages for January 2024", "Give me daily precipitation statistics for June 1970", "What are daily humidity averages for March 2000"],
       "expected_template": "daily_aggregates",
       "category": "aggregation",
       "difficulty": "hard",
-      "expected_coverage": ["Daily aggregates", "Temperature", "Humidity", "Precipitation", "Date range: January 2024", "Date range: March 2000", "Date range: June 1980"],
+      "expected_coverage": ["Daily aggregates", "Temperature", "Humidity", "Precipitation", "Date range: January 2024", "Date range: March 2000", "Date range: June 1970"],
       "notes": "Daily time series for the given time range - in this case, a month"
     },
 
     {
       "id": 9,
-      "question": ["What were the highest temperature values in 2023?", "Show me the lowest precipitation amounts in 1955", "What were the highest humidity values in 1980"],
+      "question": ["What were the highest temperature values in 2023?", "Show me the lowest precipitation amounts in 1955", "What were the highest humidity values in 1970"],
       "expected_template": "top_extremes_for_property",
       "category": "extreme-values",
       "difficulty": "medium",

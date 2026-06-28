@@ -461,6 +461,118 @@ class LocationResolver:
         "amman": (31.96, 35.95),
     }
     
+    # Country name to ISO A3 code mapping (for lamah_ce geometry lookups)
+    COUNTRY_ISO_MAP = {
+        "germany": "DEU", "deutschland": "DEU",
+        "austria": "AUT", "österreich": "AUT",
+        "czech republic": "CZE", "czechia": "CZE",
+        "switzerland": "CHE", "schweiz": "CHE", "suisse": "CHE",
+        "liechtenstein": "LIE",
+        "france": "FRA",
+        "italy": "ITA",
+        "spain": "ESP",
+        "poland": "POL",
+        "netherlands": "NLD",
+        "belgium": "BEL",
+        "united kingdom": "GBR", "uk": "GBR", "england": "GBR",
+        "denmark": "DNK",
+        "sweden": "SWE",
+        "norway": "NOR",
+        "finland": "FIN",
+    }
+    
+    # LAMAH_CE geometry graph
+    GEOMETRY_GRAPH = "hydroturtle/lamah_ce"
+    
+    @staticmethod
+    def get_country_iso_code(country_name: str) -> Optional[str]:
+        """Get ISO A3 country code from country name."""
+        return LocationResolver.COUNTRY_ISO_MAP.get(country_name.lower().strip())
+    
+    @staticmethod
+    def get_country_bbox(country_name: str, sparql_client_func) -> Optional[dict]:
+        """
+        Get bounding box of sensor stations in a country from lamah_ce geometry graph.
+        Parses WKT in Python for reliability.
+        """
+        import re
+        iso_code = LocationResolver.get_country_iso_code(country_name)
+        if not iso_code:
+            print(f"[GEOMETRY] No ISO code for '{country_name}'")
+            return None
+        
+        query = f"""
+        PREFIX esco: <http://data.europa.eu/esco/model#>
+        PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+        SELECT ?wkt
+        FROM <{LocationResolver.GEOMETRY_GRAPH}>
+        WHERE {{
+          ?feature esco:isoCountryCodeA3 ?cc .
+          ?feature geo:hasGeometry ?g .
+          ?g geo:asWKT ?wkt .
+          FILTER(STR(?cc) = "{iso_code}")
+        }}
+        LIMIT 500
+        """
+        try:
+            result = sparql_client_func(query)
+            rows = result.get("results", {}).get("bindings", [])
+            if not rows:
+                print(f"[GEOMETRY] No geometry found for {iso_code}")
+                return None
+            
+            lats, lngs = [], []
+            for row in rows:
+                wkt = row.get("wkt", {}).get("value", "")
+                # Parse POINT(lon lat) or other WKT
+                m = re.search(r'POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)', wkt)
+                if m:
+                    lngs.append(float(m.group(1)))
+                    lats.append(float(m.group(2)))
+            
+            if not lats:
+                print(f"[GEOMETRY] No POINT geometries parsed for {iso_code}")
+                return None
+            
+            bbox = {
+                "min_lat": min(lats), "max_lat": max(lats),
+                "min_lng": min(lngs), "max_lng": max(lngs),
+                "feature_count": len(lats),
+                "source": "lamah_ce", "iso_code": iso_code,
+            }
+            print(f"[GEOMETRY] {country_name} ({iso_code}): {len(lats)} stations, "
+                  f"bbox=({bbox['min_lat']:.2f},{bbox['min_lng']:.2f})-({bbox['max_lat']:.2f},{bbox['max_lng']:.2f})")
+            return bbox
+        except Exception as e:
+            print(f"[GEOMETRY] lamah_ce query failed for {iso_code}: {e}")
+        return None
+    
+    @staticmethod
+    def get_country_features(country_name: str, sparql_client_func) -> list:
+        """Get all sensor features with geometry for a country."""
+        iso_code = LocationResolver.get_country_iso_code(country_name)
+        if not iso_code:
+            return []
+        
+        query = f"""
+        PREFIX esco: <http://data.europa.eu/esco/model#>
+        PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+        SELECT ?feature ?wkt ?name
+        FROM <{LocationResolver.GEOMETRY_GRAPH}>
+        WHERE {{
+          ?feature esco:isoCountryCodeA3 "{iso_code}" .
+          ?feature geo:hasGeometry ?g . ?g geo:asWKT ?wkt .
+          OPTIONAL {{ ?feature <http://schema.org/name> ?name }}
+        }}
+        LIMIT 200
+        """
+        try:
+            result = sparql_client_func(query)
+            return result.get("results", {}).get("bindings", [])
+        except Exception as e:
+            print(f"[GEOMETRY] Error getting country features: {e}")
+            return []
+    
     @staticmethod
     def get_coordinates(location_name: str) -> Optional[tuple]:
         """
@@ -479,12 +591,48 @@ class LocationResolver:
     def find_nearest_feature(lat: float, lon: float, sparql_client_func) -> Optional[str]:
         """
         Find the nearest feature URI given coordinates.
-        Returns just the URI (backward-compatible); see find_nearest_feature_with_distance
-        for the full result including distance.
+        Tries lamah_ce geometry first, then EOBS URI extraction.
         """
         result = LocationResolver.find_nearest_feature_with_distance(lat, lon, sparql_client_func)
         if result:
             return result[0]
+        return None
+    
+    @staticmethod
+    def find_nearest_lamah_ce_feature(lat: float, lon: float, sparql_client_func) -> Optional[tuple]:
+        """Find nearest feature from lamah_ce geometry graph using actual POINT geometry."""
+        import math, re
+        query = f"""
+        PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+        SELECT ?feature ?wkt ?name
+        FROM <{LocationResolver.GEOMETRY_GRAPH}>
+        WHERE {{
+          ?feature geo:hasGeometry ?g .
+          ?g geo:asWKT ?wkt .
+          OPTIONAL {{ ?feature <http://schema.org/name> ?name }}
+        }}
+        LIMIT 2000
+        """
+        try:
+            result = sparql_client_func(query)
+            rows = result.get("results", {}).get("bindings", [])
+            if not rows:
+                return None
+            nearest_feature = None; nearest_name = None; min_distance = float('inf')
+            for row in rows:
+                wkt = row.get("wkt", {}).get("value", "")
+                m = re.search(r'POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)', wkt)
+                if not m: continue
+                dist = LocationResolver._haversine_distance(lat, lon, float(m.group(2)), float(m.group(1)))
+                if dist < min_distance:
+                    min_distance = dist
+                    nearest_feature = row["feature"]["value"]
+                    nearest_name = row.get("name", {}).get("value")
+            if nearest_feature:
+                print(f"[GEOMETRY] Nearest lamah_ce: {nearest_feature} ({min_distance:.2f}km) name={nearest_name}")
+                return nearest_feature, min_distance
+        except Exception as e:
+            print(f"[GEOMETRY] lamah_ce nearest error: {e}")
         return None
 
     @staticmethod

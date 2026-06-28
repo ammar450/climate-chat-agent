@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Load graph IRI from environment
-GRAPH = os.getenv("GRAPH_IRI", "climateobservations/eobs-v31")
+GRAPH = os.getenv("GRAPH_IRI", "http://eobs/gridded")
 
 TEMPLATES = {
     "list_properties": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
@@ -35,6 +35,7 @@ LIMIT 50""",
 
     "sample_observations": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
 PREFIX qudt: <http://qudt.org/schema/qudt/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT ?time ?value ?property ?feature ?unit
 FROM <{graph}>
 WHERE {{
@@ -47,6 +48,7 @@ WHERE {{
   OPTIONAL {{ ?result qudt:unit ?unit }}
   {property_filter}
   {feature_filter}
+  {time_filter}
 }}
 ORDER BY ?time
 LIMIT {limit}""",
@@ -109,9 +111,40 @@ WHERE {{
   ?result qudt:numericValue ?value .
   OPTIONAL {{ ?result qudt:unit ?unit }}
   FILTER(?time >= "{start}"^^xsd:dateTime && ?time < "{end}"^^xsd:dateTime)
+  {{
+    SELECT ({agg}(?value2) AS ?extreme)
+    WHERE {{
+      ?obs2 a sosa:Observation ;
+            sosa:resultTime ?time2 ;
+            sosa:observedProperty <{property_uri}> ;
+            sosa:hasResult ?result2 .
+      ?result2 qudt:numericValue ?value2 .
+      FILTER(?time2 >= "{start}"^^xsd:dateTime && ?time2 < "{end}"^^xsd:dateTime)
+    }}
+  }}
+  FILTER(?value = ?extreme)
 }}
-ORDER BY {order}(?value)
 LIMIT 20""",
+
+    "average_for_property_date_range": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
+PREFIX qudt: <http://qudt.org/schema/qudt/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT 
+  (AVG(?value) AS ?avg) 
+  (MIN(?value) AS ?min) 
+  (MAX(?value) AS ?max) 
+  (COUNT(?value) AS ?count)
+  (SAMPLE(?unit) AS ?unit)
+FROM <{graph}>
+WHERE {{
+  ?obs a sosa:Observation ;
+       sosa:resultTime ?time ;
+       sosa:observedProperty <{property_uri}> ;
+       sosa:hasResult ?result .
+  ?result qudt:numericValue ?value .
+  OPTIONAL {{ ?result qudt:unit ?unit }}
+  FILTER(?time >= "{start}"^^xsd:dateTime && ?time < "{end}"^^xsd:dateTime)
+}}""",
 
     "timeseries_statistics": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
 PREFIX qudt: <http://qudt.org/schema/qudt/>
@@ -346,24 +379,15 @@ LIMIT 50""",
 
     "features_near_coordinates": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
 PREFIX wgs84: <http://www.w3.org/2003/01/geo/wgs84_pos#>
-PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-SELECT DISTINCT ?feature ?lat ?lng ?geometry (COUNT(?obs) AS ?obs_count)
+SELECT DISTINCT ?feature ?lat ?lng
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
        sosa:hasFeatureOfInterest ?feature .
-  ?feature wgs84:lat ?lat ;
-           wgs84:long ?lng .
-  OPTIONAL {{ 
-    ?feature geo:hasGeometry ?geom .
-    ?geom geo:asWKT ?geometry .
-  }}
-  # Filter features within bounding box (if lat/lng provided)
-  {lat_lng_filter}
+  OPTIONAL {{ ?feature wgs84:lat ?lat }}
+  OPTIONAL {{ ?feature wgs84:long ?lng }}
 }}
-GROUP BY ?feature ?lat ?lng ?geometry
-ORDER BY DESC(?obs_count)
-LIMIT 50""",
+LIMIT 200""",
 
     "location_based_summary": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
 PREFIX qudt: <http://qudt.org/schema/qudt/>
@@ -484,6 +508,14 @@ def render_template(template_name: str, params: dict) -> str:
             params_with_graph["lat_lng_filter"] = f'{lat_filter}\n  {lng_filter}'
         else:
             params_with_graph["lat_lng_filter"] = ""
+    
+    # Add time filter for sample_observations to prevent timeouts
+    if "time_filter" not in params_with_graph:
+        if "start" in params_with_graph and "end" in params_with_graph:
+            params_with_graph["time_filter"] = f'FILTER(?time >= "{params_with_graph["start"]}"^^xsd:dateTime && ?time < "{params_with_graph["end"]}"^^xsd:dateTime)'
+        else:
+            # Default: last available year to prevent timeouts on 328M rows
+            params_with_graph["time_filter"] = 'FILTER(?time >= "2024-01-01T00:00:00"^^xsd:dateTime && ?time < "2025-01-01T00:00:00"^^xsd:dateTime)'
     
     # Ensure limit is set and reasonable
     if "limit" not in params_with_graph:

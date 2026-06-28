@@ -90,6 +90,8 @@ except Exception as e:
 print("\nTEST 4: Check for SOSA Observations")
 print("-" * 70)
 test_graphs = [
+    "http://eobs/gridded",
+    "http://example.org/eobs",
     "climateobservations/eobs-v31",
     "http://hyobs.nfdi4earth.de/graph/climateobservations/eobs-v31",
     "http://hyobs.nfdi4earth.de/graph/climateobservations",
@@ -125,12 +127,12 @@ for test_graph in test_graphs:
         print(f"✗ {test_graph}: {e}")
 
 # Test 5: Check properties in the most likely graph
-print("\nTEST 5: Check Properties in climateobservations/eobs-v31")
+print("\nTEST 5: Check Properties in http://eobs/gridded")
 print("-" * 70)
 props_query = """
 PREFIX sosa: <http://www.w3.org/ns/sosa/>
 SELECT ?property (COUNT(*) AS ?count)
-FROM <climateobservations/eobs-v31>
+FROM <http://eobs/gridded>
 WHERE {
   ?obs a sosa:Observation ;
        sosa:observedProperty ?property .

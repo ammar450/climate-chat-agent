@@ -160,6 +160,50 @@ class TimeParser:
         
         text_lower = text.lower()
         
+        # Pattern: "last N years" / "past N years"
+        match = re.search(r'(?:last|past)\s+(\d+)\s+years?', text_lower)
+        if match:
+            n_years = int(match.group(1))
+            from datetime import datetime
+            current_year = datetime.now().year
+            end_year = min(current_year, cls.MAX_YEAR)
+            start_year = max(end_year - n_years, cls.MIN_YEAR)
+            return (f"{start_year}-01-01T00:00:00", f"{end_year + 1}-01-01T00:00:00")
+        
+        # Pattern: "Summer YYYY" / "Spring YYYY" / "Autumn YYYY" / "Winter YYYY"
+        season_months = {
+            "spring": (3, 5),    # March to May
+            "summer": (6, 8),    # June to August
+            "autumn": (9, 11),   # September to November
+            "fall": (9, 11),     # September to November
+            "winter": (12, 2),   # December to February (wraps around)
+        }
+        for season, (start_month, end_month) in season_months.items():
+            # "Summer 2024", "summer of 2024", "in summer 2024"
+            pattern = rf'\b{season}\s+(?:of\s+)?(\d{{4}})\b'
+            match = re.search(pattern, text_lower)
+            if match:
+                year = int(match.group(1))
+                if strict:
+                    validation = cls.validate_year(year)
+                    if not validation['valid']:
+                        raise DateValidationError(
+                            validation['message'],
+                            suggested_query=validation['suggestion']
+                        )
+                if season == "winter":
+                    # Winter wraps: December YYYY to February YYYY+1
+                    return (f"{year}-12-01T00:00:00", f"{year + 1}-03-01T00:00:00")
+                else:
+                    # Inclusive: start of start_month to start of end_month+1
+                    if end_month == 12:
+                        end_str = f"{year + 1}-01-01T00:00:00"
+                    else:
+                        end_str = f"{year}-{end_month + 1:02d}-01T00:00:00"
+                    return (f"{year}-{start_month:02d}-01T00:00:00", end_str)
+        
+        # Pattern: "between YYYY and YYYY"
+        # ... existing patterns ...
         # Pattern: "between YYYY and YYYY"
         match = re.search(r'between\s+(\d{4})\s+and\s+(\d{4})', text_lower)
         if match:
