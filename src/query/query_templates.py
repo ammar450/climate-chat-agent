@@ -13,18 +13,17 @@ GRAPH = os.getenv("GRAPH_IRI", "climateobservations/eobs-v31")
 
 TEMPLATES = {
     "list_properties": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
-SELECT ?property (COUNT(*) AS ?count)
+SELECT DISTINCT ?property (COUNT(*) AS ?count)
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
        sosa:observedProperty ?property .
 }}
 GROUP BY ?property
-ORDER BY DESC(?count)
-LIMIT 50""",
+ORDER BY DESC(?count)""",
 
-    "list_features": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
-SELECT ?feature (COUNT(*) AS ?count)
+    "list_features_of_interest": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
+SELECT DISTINCT ?feature (COUNT(*) AS ?count)
 FROM <{graph}>
 WHERE {{
   ?obs a sosa:Observation ;
@@ -95,21 +94,6 @@ WHERE {{
 }}
 ORDER BY ?time
 LIMIT 500""",
-
-    "average_for_property_date_range": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
-PREFIX qudt: <http://qudt.org/schema/qudt/>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-SELECT (AVG(?value) AS ?average) (COUNT(*) AS ?count) (SAMPLE(?unit) AS ?unit)
-FROM <{graph}>
-WHERE {{
-  ?obs a sosa:Observation ;
-       sosa:resultTime ?time ;
-       sosa:observedProperty <{property_uri}> ;
-       sosa:hasResult ?result .
-  ?result qudt:numericValue ?value .
-  OPTIONAL {{ ?result qudt:unit ?unit }}
-  FILTER(?time >= "{start}"^^xsd:dateTime && ?time < "{end}"^^xsd:dateTime)
-}}""",
 
     "top_extremes_for_property": """PREFIX sosa: <http://www.w3.org/ns/sosa/>
 PREFIX qudt: <http://qudt.org/schema/qudt/>
