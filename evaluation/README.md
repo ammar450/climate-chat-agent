@@ -1,63 +1,54 @@
-# Climate Chat Agent Evaluation Framework
+# Climate Chat Agent — Evaluation Framework v2.0
 
-This folder contains the evaluation framework for testing and assessing the Climate Chat Agent's performance on the E-OBS gridded climate dataset (1950-2024).
+Comprehensive evaluation with 5 randomized runs, cross-category analysis, and detailed reporting.
 
-## 📁 Files
+## Files
 
-- **`test_questions.json`**: 30 comprehensive test cases covering all 18 SPARQL query templates
-- **`evaluate_agent.py`**: Python script to run evaluations and generate reports
-- **`README.md`**: This file
+| File | Purpose |
+|------|---------|
+| `evaluate_agent.py` | Main evaluation script |
+| `test_questions.json` | 16 test cases with 46 alternative phrasings |
+| `evaluation_results.json` | Full JSON output (generated) |
+| `evaluation_summary.csv` | CSV summary (generated) |
+| `evaluation_summary.md` | Markdown report (generated) |
 
-## 🎯 Test Coverage
-
-The test suite includes 30 questions designed to evaluate:
-
-- **All 18 Query Templates**: Every SPARQL template is tested at least once
-- **Multiple Categories**: 
-  - Discovery (3 tests)
-  - Statistics (7 tests)
-  - Aggregation (6 tests)
-  - Filtering (2 tests)
-  - Spatial (4 tests)
-  - Location (2 tests)
-  - Trends (1 test)
-  - Comparison (1 test)
-  - Extremes (2 tests)
-  - Long-term (1 test)
-  - Exploration (1 test)
-
-- **Difficulty Levels**:
-  - Easy: 6 tests (basic queries)
-  - Medium: 10 tests (moderate complexity)
-  - Hard: 14 tests (complex queries, multiple conditions)
-
-## 🚀 Usage
-
-### Rule-Based Evaluation (Default)
-
-Run all tests with rule-based metrics only:
+## Usage
 
 ```bash
+# 5 randomized runs (default)
 python evaluation/evaluate_agent.py
+
+# Reproducible with seed
+python evaluation/evaluate_agent.py --seed 42
+
+# Fewer runs
+python evaluation/evaluate_agent.py --runs 3
+
+# Different model
+python evaluation/evaluate_agent.py --model ollama:llama3.2
 ```
 
-This will:
-1. Execute all 30 test questions
-2. Check template matching accuracy
-3. Verify query execution success
-4. Display a summary report
+## Metrics
 
-### LLM-as-Judge Evaluation (Optional)
+| Metric | Description |
+|--------|-------------|
+| Template Accuracy | % correct template selected |
+| Execution Success | % queries that ran successfully |
+| Answer Correctness | correct / partially_correct / incorrect |
+| Latency | avg, min, max, std execution time |
+| Overall Score | weighted: 35% template + 25% execution + 40% correctness |
 
-Run evaluation with LLM-as-judge to assess answer correctness:
+## Reports
 
-```bash
-python evaluation/evaluate_agent.py --llm-judge
-```
+- **evaluation_results.json** — Full per-run and aggregate data
+- **evaluation_summary.csv** — Key metrics in tabular form
+- **evaluation_summary.md** — Human-readable report with tables and confusion matrix
 
-This adds AI-powered evaluation that:
-- Checks if the answer correctly reflects the evidence
-- Verifies expected coverage items are addressed
+## Test Coverage
+
+16 test cases across 8 categories:
+overview, aggregation, filtering, location-based, nested-aggregation, extreme-values, multi-year-comparison, subsampling
+
 - Detects unsupported claims or hallucinations
 - Validates units, time periods, and locations
 - Returns a label (correct/partially_correct/incorrect) and score (0.0-1.0)

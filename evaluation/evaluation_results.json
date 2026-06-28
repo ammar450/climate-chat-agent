@@ -1,0 +1,575 @@
+{
+  "metadata": {
+    "evaluation_timestamp": "2026-06-28T18:58:17.211315",
+    "random_seed": 42,
+    "num_runs": 1,
+    "test_questions_file": "evaluation/test_questions.json"
+  },
+  "aggregate_metrics": {
+    "num_runs": 1,
+    "total_tests_per_run": 16,
+    "aggregate_metrics": {
+      "avg_template_accuracy": 1.0,
+      "std_template_accuracy": 0,
+      "min_template_accuracy": 1.0,
+      "max_template_accuracy": 1.0,
+      "avg_execution_success_rate": 1.0,
+      "avg_answer_correct": 0,
+      "avg_answer_partial": 4,
+      "avg_answer_incorrect": 12,
+      "avg_latency": 18.738,
+      "min_latency": 10.339,
+      "max_latency": 35.15,
+      "std_latency": 0
+    },
+    "overall_score": 0.6,
+    "confusion_matrix": {
+      "list_properties": {
+        "list_properties": 1
+      },
+      "list_features_of_interest": {
+        "list_features_of_interest": 1
+      },
+      "sample_observations": {
+        "sample_observations": 1
+      },
+      "all_properties_summary": {
+        "all_properties_summary": 1
+      },
+      "timeseries_statistics": {
+        "timeseries_statistics": 2
+      },
+      "average_for_property_date_range": {
+        "average_for_property_date_range": 1
+      },
+      "monthly_aggregates": {
+        "monthly_aggregates": 1
+      },
+      "daily_aggregates": {
+        "daily_aggregates": 1
+      },
+      "top_extremes_for_property": {
+        "top_extremes_for_property": 1
+      },
+      "filtered_timeseries": {
+        "filtered_timeseries": 2
+      },
+      "features_near_coordinates": {
+        "features_near_coordinates": 1
+      },
+      "location_based_summary": {
+        "location_based_summary": 1
+      },
+      "monthly_mean_from_daily": {
+        "monthly_mean_from_daily": 1
+      },
+      "timeseries_statistics_by_feature": {
+        "timeseries_statistics_by_feature": 1
+      }
+    },
+    "category_analysis": {
+      "aggregation": {
+        "total": 4,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 16.696,
+        "common_errors": {
+          "Formatting failure": 2
+        }
+      },
+      "extreme-values": {
+        "total": 1,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 15.218,
+        "common_errors": {
+          "Formatting failure": 1
+        }
+      },
+      "filtering": {
+        "total": 2,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 11.084,
+        "common_errors": {
+          "Formatting failure": 2
+        }
+      },
+      "location-based": {
+        "total": 3,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 16.405,
+        "common_errors": {
+          "Formatting failure": 3
+        }
+      },
+      "multi-year-comparison": {
+        "total": 1,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 19.118,
+        "common_errors": {}
+      },
+      "nested-aggregation": {
+        "total": 1,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 34.48,
+        "common_errors": {
+          "Formatting failure": 1
+        }
+      },
+      "overview": {
+        "total": 3,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 23.573,
+        "common_errors": {
+          "Formatting failure": 3
+        }
+      },
+      "subsampling": {
+        "total": 1,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 22.112,
+        "common_errors": {}
+      }
+    },
+    "template_analysis": {
+      "all_properties_summary": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 35.15,
+        "common_errors": {
+          "Formatting failure": 1
+        }
+      },
+      "average_for_property_date_range": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 10.339,
+        "common_errors": {}
+      },
+      "daily_aggregates": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 10.547,
+        "common_errors": {
+          "Formatting failure": 1
+        }
+      },
+      "features_near_coordinates": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 11.251,
+        "common_errors": {
+          "Formatting failure": 1
+        }
+      },
+      "filtered_timeseries": {
+        "total_tested": 2,
+        "successful": 2,
+        "success_rate": 1.0,
+        "avg_response_time": 11.084,
+        "common_errors": {
+          "Formatting failure": 2
+        }
+      },
+      "list_features_of_interest": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 18.639,
+        "common_errors": {
+          "Formatting failure": 1
+        }
+      },
+      "list_properties": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 16.931,
+        "common_errors": {
+          "Formatting failure": 1
+        }
+      },
+      "location_based_summary": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 21.28,
+        "common_errors": {
+          "Formatting failure": 1
+        }
+      },
+      "monthly_aggregates": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 18.445,
+        "common_errors": {}
+      },
+      "monthly_mean_from_daily": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 34.48,
+        "common_errors": {
+          "Formatting failure": 1
+        }
+      },
+      "sample_observations": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 22.112,
+        "common_errors": {}
+      },
+      "timeseries_statistics": {
+        "total_tested": 2,
+        "successful": 2,
+        "success_rate": 1.0,
+        "avg_response_time": 23.285,
+        "common_errors": {
+          "Formatting failure": 1
+        }
+      },
+      "timeseries_statistics_by_feature": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 16.685,
+        "common_errors": {
+          "Formatting failure": 1
+        }
+      },
+      "top_extremes_for_property": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 15.218,
+        "common_errors": {
+          "Formatting failure": 1
+        }
+      }
+    },
+    "error_analysis": {
+      "Formatting failure": 12
+    }
+  },
+  "per_run_results": [
+    {
+      "run_number": 1,
+      "timestamp": "2026-06-28T18:53:17.388775",
+      "total_tests": 16,
+      "test_results": [
+        {
+          "test_id": 1,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "Provide an overview of observation variables in the dataset",
+          "expected_template": "list_properties",
+          "predicted_template": "list_properties",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 16.931,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "Query type: list_properties\nResult count: 5\nAvailable climate variables:\n  1. Air Temperature (167402267 observations)\n  2. Precipitation Amount (57426526 observations)\n  3. Relative Humidity (42603920 observations)\n  4. Surface Downwelling Shortwave Flux In Air (37308459 observations)\n  5. Wind Speed (24136086 observations)",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": ""
+        },
+        {
+          "test_id": 2,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "What are grids available in the dataset?",
+          "expected_template": "list_features_of_interest",
+          "predicted_template": "list_features_of_interest",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 18.639,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "Query type: list_features_of_interest\nResult count: 50\nHere are the available observation locations:\n  1. http://www.w3.org/2003/01/geo/wgs84_pos#grid_43p38_16p62\n  2. http://www.w3.org/2003/01/geo/wgs84_pos#grid_39p62_m0p62\n  3. http://www.w3.org/2003/01/geo/wgs84_pos#grid_44p88_7p62\n  4. http://www.w3.org/2003/01/geo/wgs84_pos#grid_41p12_0p88\n  5. http://www.w3.org/2003/01/geo/wgs84_pos#grid_39p62_3p12\n  6. http://www.w3.org/2003/01/geo/wgs84_pos#grid_41p12_m1p38\n  7. http://www.w3.org/2003/01",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": ""
+        },
+        {
+          "test_id": 3,
+          "category": "subsampling",
+          "difficulty": "easy",
+          "selected_question": "Show me some sample observations",
+          "expected_template": "sample_observations",
+          "predicted_template": "sample_observations",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 22.112,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "Here are some sample observations from January 1, 2024:\n\n1. 1.94 meters per second (m/s)\n2. 1.69 m/s\n3. 0.84 m/s\n4. 1.40 m/s\n5. 1.29 m/s\n\nThese values are part of a total of 200 observations, with an average of 3.30 m/s for that day.",
+          "answer_correctness": "partially_correct",
+          "error_category": null,
+          "notes": ""
+        },
+        {
+          "test_id": 4,
+          "category": "overview",
+          "difficulty": "medium",
+          "selected_question": "Give me an overview of climate observations for 2024",
+          "expected_template": "all_properties_summary",
+          "predicted_template": "all_properties_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 35.15,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "In 2024, the climate observations show the following averages and ranges:\n\n1. Air Temperature: Average of 13.23 °C, ranging from -25.26 °C to 31.93 °C (n=33,867).\n2. Precipitation Amount: Average of 1.81 mm, ranging from 0.00 mm to 124.60 mm (n=166,651).\n3. Relative Humidity: Average of 74.24%, ranging from 10.50% to 94.40% (n=253,637).\n4. Surface Downwelling Shortwave Flux: Average of 141.76 W/m², ranging from 0.00 W/m² to 734.00 W/m² (n=97,900).\n5. Wind Speed: Average of 2.46 m/s, ranging from",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": ""
+        },
+        {
+          "test_id": 5,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "What are statistics about relative humidity for 1960?",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "timeseries_statistics",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 27.453,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "In 1960, the average relative humidity was 77.26% based on 586,711 observations. The humidity ranged from a minimum of 14.20% to a maximum of 94.40%. The standard deviation was approximately 13.37%, indicating some variability in the humidity levels throughout the year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": ""
+        },
+        {
+          "test_id": 6,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "Show me average precipitation in March 1975",
+          "expected_template": "average_for_property_date_range",
+          "predicted_template": "average_for_property_date_range",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.339,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "In March 1975, the average precipitation was 1.35 mm. This data is based on 143,966 observations, with a minimum of 0.00 mm and a maximum of 113.60 mm.",
+          "answer_correctness": "partially_correct",
+          "error_category": null,
+          "notes": ""
+        },
+        {
+          "test_id": 7,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "Calculate monthly precipitation totals for 1965",
+          "expected_template": "monthly_aggregates",
+          "predicted_template": "monthly_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 18.445,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "In 1965, the monthly precipitation totals (in MilliM) were as follows:\n\n1. January: 1.76\n2. February: 1.32\n3. March: 1.35\n4. April: 1.39\n5. May: 1.50\n6. June: 1.80\n7. July: 1.97\n8. August: 1.66\n9. September: 1.87\n10. October: 1.39\n11. November: 2.12\n12. December: 2.31\n\nThis data is based on 12 observations for the year 1965 (Source: EOBS).",
+          "answer_correctness": "partially_correct",
+          "error_category": null,
+          "notes": ""
+        },
+        {
+          "test_id": 8,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "Give me daily precipitation statistics for June 1970",
+          "expected_template": "daily_aggregates",
+          "predicted_template": "daily_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.547,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "In June 1970, there were 30 daily precipitation observations. The daily mean precipitation ranged from 0.77 MilliM to 2.02 MilliM. The highest daily mean was 2.02 MilliM on June 30, while the lowest was 0.77 MilliM on June 26.",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": ""
+        },
+        {
+          "test_id": 9,
+          "category": "extreme-values",
+          "difficulty": "medium",
+          "selected_question": "What were the highest temperature values in 2023?",
+          "expected_template": "top_extremes_for_property",
+          "predicted_template": "top_extremes_for_property",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 15.218,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "1. The highest air temperature recorded in 2023 was 58.96 °C on July 28, 2023. \n2. This data is based on 1 observation during the year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": ""
+        },
+        {
+          "test_id": 10,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Show me humidity values between 30 and 40 percent in 2022",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.0,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "In 2022, there were 500 observations of relative humidity values ranging from 30.10% to 40.00%. Some specific values recorded include 36.30%, 31.50%, 31.30%, 34.20%, and 35.30%. This data shows that humidity levels were generally on the lower side during that year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": ""
+        },
+        {
+          "test_id": 11,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Find precipitation values above 30 mm in 2000",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.168,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "In 2000, there were 500 observations of precipitation amounts. The values ranged from 30.70 mm to 98.30 mm, indicating that all recorded amounts were above 30 mm.",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": ""
+        },
+        {
+          "test_id": 12,
+          "category": "location-based",
+          "difficulty": "medium",
+          "selected_question": "What are grids near lat: 67.8, lon: 20.3",
+          "expected_template": "features_near_coordinates",
+          "predicted_template": "features_near_coordinates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.251,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "Found nearest observation station 'sensor_385' (2120.7 km from Lyon) via lamah_ce geometry graph.\n\nThere are 200 nearby observation features around the coordinates lat: 67.8, lon: 20.3. Some of the grid locations include:\n\n1. grid_67p8_20p3 lat~67.8, lon~20.3\n2. grid_67p8_21p3 lat~67.8, lon~21.3\n3. grid_67p8_22p3 lat~67.8, lon~22.3\n\nThese grids are part of a larger set of observations in that area.",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": ""
+        },
+        {
+          "test_id": 13,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "What was the weather in France during 1985?",
+          "expected_template": "location_based_summary",
+          "predicted_template": "location_based_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 21.28,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "In France during 1985, the average air temperature was 3.54°C, with temperatures ranging from -37.52°C to 26.82°C (n=107170). The average relative humidity was 74.94%, with a range of 10.20% to 94.30% (n=365718). Wind speed averaged 2.59 m/s, with a range from 0.11 m/s to 20.70 m/s (n=466881).",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": ""
+        },
+        {
+          "test_id": 14,
+          "category": "nested-aggregation",
+          "difficulty": "hard",
+          "selected_question": "What was the mean daily temperature in 2011?",
+          "expected_template": "monthly_mean_from_daily",
+          "predicted_template": "monthly_mean_from_daily",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 34.48,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "In 2011, the overall mean daily temperature was 9.04 °C, based on 365 days of observations. The temperature ranged from a minimum of -6.64 °C to a maximum of 21.59 °C during that year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": ""
+        },
+        {
+          "test_id": 15,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "Compare humidity across different grid points in 2019",
+          "expected_template": "timeseries_statistics_by_feature",
+          "predicted_template": "timeseries_statistics_by_feature",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 16.685,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "In 2019, the average relative humidity across different grid points varied as follows:\n\n1. Grid 70.38, 29.38: 84.47% (n=309)\n2. Grid 70.38, 28.62: 84.38% (n=321)\n3. Grid 59.12, 6.88: 84.33% (n=275)\n4. Grid 55.38, -3.62: 84.06% (n=273)\n5. Grid 60.62, 7.62: 83.94% (n=318)\n6. Grid 54.62, -6.62: 83.87% (n=314)\n7. Grid 55.38, -2.88: 83.73% (n=291)\n8. Grid 69.62, 21.88: 83.63% (n=308)\n9. Grid 57.62, -5.12: 83.59% (n=281)\n10. Grid 65.12, 14.38: 83.50% (n=252)\n\nThe highest average humidity was at grid 7",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": ""
+        },
+        {
+          "test_id": 16,
+          "category": "multi-year-comparison",
+          "difficulty": "hard",
+          "selected_question": "Show me wind speed trends for the last 5 years",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "timeseries_statistics",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 19.118,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "1. The average wind speed from January 1, 2019, to January 1, 2024, is approximately 2.55 meters per second (m/s).\n2. The minimum recorded wind speed during this period is about 0.11 m/s, while the maximum is around 20.28 m/s.\n3. There were 3,749,050 observations made during this time.",
+          "answer_correctness": "partially_correct",
+          "error_category": null,
+          "notes": ""
+        }
+      ],
+      "summary": {
+        "total": 16,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "sparql_success_rate": 1.0,
+        "answer_correct": 0,
+        "answer_partial": 4,
+        "answer_incorrect": 12,
+        "avg_execution_time": 18.738,
+        "min_execution_time": 10.339,
+        "max_execution_time": 35.15,
+        "std_execution_time": 7.924
+      }
+    }
+  ],
+  "per_run_summaries": [
+    {
+      "total": 16,
+      "template_accuracy": 1.0,
+      "execution_success_rate": 1.0,
+      "sparql_success_rate": 1.0,
+      "answer_correct": 0,
+      "answer_partial": 4,
+      "answer_incorrect": 12,
+      "avg_execution_time": 18.738,
+      "min_execution_time": 10.339,
+      "max_execution_time": 35.15,
+      "std_execution_time": 7.924
+    }
+  ]
+}

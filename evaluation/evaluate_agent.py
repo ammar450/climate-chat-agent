@@ -1,896 +1,486 @@
 """
-Climate Chat Agent Evaluation Framework
+Climate Chat Agent — Comprehensive Evaluation Framework v2.0
 
-This script evaluates the agent's performance by:
-1. Running predefined test questions
-2. Checking if correct SPARQL templates are used
-3. Verifying query execution and results
-4. (Optional) Using LLM-as-judge to evaluate answer correctness
-5. Generating evaluation reports
-6. (Optional) Exporting qualitative examples for research papers
-
-Features:
-- Supports optional gold reference SPARQL queries for comparison
-- Backward compatible with existing benchmark files
-- Exports compact qualitative examples in JSON or Markdown format
+Evaluates agent performance across 5 randomized runs with:
+- Per-run and aggregate metrics
+- Template accuracy, execution success, answer correctness
+- Category-wise and template-wise breakdown
+- Confusion matrix, error classification
+- JSON, CSV, and Markdown report generation
 
 Usage:
-    # Basic evaluation
-    python evaluate_agent.py                           # Run all tests, auto-saves to full_report_TIMESTAMP.json
-    python evaluate_agent.py --llm-judge               # Run with LLM judge, saves to llm_judge_full_report.json
-    python evaluate_agent.py --question-id 5           # Run specific test (no auto-save)
-    python evaluate_agent.py --category summary        # Run category tests (no auto-save)
-    python evaluate_agent.py --output my_report.json   # Custom output file
-    
-    # Export qualitative examples for research paper
-    python evaluate_agent.py --llm-judge --export-qualitative examples.json
-    python evaluate_agent.py --export-qualitative examples.md --export-format markdown
-    python evaluate_agent.py --export-qualitative examples.json --gold-only --max-examples 10
-    
-Test Case Schema (optional fields for manual curation):
-    {
-      "id": 1,
-      "question": "What was the average temperature in 2020?",
-      "expected_template": "average_for_property_date_range",
-      "category": "statistics",
-      "difficulty": "medium",
-      "expected_coverage": ["Temperature", "Average value", "Year 2020"],
-      "notes": "Single property average for recent year",
-      "expected_sparql_query": "PREFIX sosa: ...",  # Optional - for gold reference
-      "expected_sparql_answer": "[{...}]"           # Optional - auto-executed if query provided
-    }
+    python evaluation/evaluate_agent.py                    # 5 runs, random seed
+    python evaluation/evaluate_agent.py --seed 42           # reproducible
+    python evaluation/evaluate_agent.py --runs 3            # fewer runs
+    python evaluation/evaluate_agent.py --model openai:gpt-4o-mini
 """
 
 import os
 import sys
 import json
 import time
-import requests
+import random
+import statistics
+import argparse
 from datetime import datetime
-from typing import Dict, List, Any, Optional
 from pathlib import Path
+from typing import Dict, List, Any, Optional, Tuple
+from collections import defaultdict, Counter
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.agent.graph_agent import run_agent
-from src.llm.llm_client import chat, LLMError
-from src.query.sparql_client import run_sparql
 
 
-class AgentEvaluator:
-    """Evaluates agent performance on test questions."""
-    
-    def __init__(self, test_file: str = "evaluation/test_questions.json", use_llm_judge: bool = False):
-        """
-        Initialize evaluator with test questions.
-        
-        Args:
-            test_file: Path to test questions JSON file
-            use_llm_judge: Whether to use LLM-as-judge for evaluation
-        """
-        self.test_file = test_file
-        self.tests = self.load_tests()
-        self.results = []
-        self.use_llm_judge = use_llm_judge
-        
-    def load_tests(self) -> Dict:
-        """Load test questions from JSON file."""
-        with open(self.test_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    
-    def execute_expected_sparql(self, query: str) -> tuple[bool, Any]:
-        """
-        Execute expected SPARQL query and return results.
-        
-        Args:
-            query: SPARQL query string
-            
-        Returns:
-            Tuple of (success, results)
-            - success: True if query executed successfully
-            - results: Query results as list or None if failed
-        """
-        if not query or query.strip() == "":
-            return False, None
-        
-        try:
-            result = run_sparql(query, validate=False)
-            rows = result.get("results", {}).get("bindings", [])
-            return True, rows
-        except Exception as e:
-            print(f"[WARNING] Failed to execute expected SPARQL query: {e}")
-            return False, None
-    
-    def llm_judge_evaluate(
-        self,
-        question: str,
-        expected_template: str,
-        expected_coverage: List[str],
-        final_answer: str,
-        sparql_query: str,
-        evidence: str,
-        actual_template: str
-    ) -> Dict[str, Any]:
-        """
-        Use LLM-as-judge to evaluate answer correctness.
-        
-        Args:
-            question: Original user question
-            expected_template: Expected SPARQL template
-            expected_coverage: List of expected coverage items
-            final_answer: Agent's final answer
-            sparql_query: Generated SPARQL query
-            evidence: Evidence/results from SPARQL execution
-            actual_template: Actually used template
-            
-        Returns:
-            Dict with label, score, reason, missing_coverage, incorrect_claims
-            Returns judge_error label if evaluation fails
-        """
-        judge_prompt = f"""You are an expert evaluator for a climate data question-answering system.
+# ──────────────────────────────────────────────
+# ERROR CLASSIFICATION
+# ──────────────────────────────────────────────
 
-Your task is to evaluate whether the agent's answer correctly addresses the user's question based on the provided evidence.
+def classify_error(result: Dict[str, Any], exception: Optional[Exception] = None) -> str:
+    """Classify a failure into a specific error category."""
+    if exception:
+        err_str = str(exception).lower()
+        if "sparql" in err_str or "endpoint" in err_str:
+            return "SPARQL execution failure"
+        if "template" in err_str or "render" in err_str:
+            return "SPARQL generation failure"
+        if "property" in err_str or "resolver" in err_str:
+            return "Property resolution failure"
+        if "date" in err_str or "time" in err_str or "parser" in err_str:
+            return "Date parsing failure"
+        if "location" in err_str or "feature" in err_str or "coordinates" in err_str:
+            return "Location resolution failure"
+        if "federat" in err_str:
+            return "Federation failure"
+        if "format" in err_str or "evidence" in err_str or "answer" in err_str:
+            return "Formatting failure"
+        return "Unexpected exception"
 
-## Evaluation Criteria:
+    answer = result.get("answer", "").lower()
+    template = result.get("used_template", "")
 
-1. **Correctness**: Does the answer accurately reflect the evidence/data?
-2. **Completeness**: Does the answer address all expected coverage points?
-3. **Accuracy**: Are units, time periods, locations, and variables correct?
-4. **Groundedness**: Is every claim supported by the evidence? (No hallucinations)
+    if not template or template == "error":
+        return "Template routing failure"
 
-## Important Rules:
+    if not result.get("sparql"):
+        return "SPARQL generation failure"
 
-- Judge ONLY based on the provided evidence, not external knowledge
-- Do NOT reward unsupported claims or hallucinated information
-- Allow semantically equivalent answers (exact wording not required)
-- Check that expected coverage items are addressed (explicitly or implicitly)
-- Verify units, time periods, locations, climate variables are correct
-- If the answer contradicts the evidence, mark as incorrect
+    if not result.get("results") or len(result.get("results", [])) == 0:
+        if any(p in answer for p in ["no data", "i don't have", "i'm sorry", "no results"]):
+            return "Empty SPARQL results"
+        return "Formatting failure"
 
-## Input Information:
+    return "Unknown failure"
 
-**User Question**: {question}
 
-**Expected Template**: {expected_template}
-**Actual Template**: {actual_template}
+# ──────────────────────────────────────────────
+# ANSWER CORRECTNESS (rule-based heuristics)
+# ──────────────────────────────────────────────
 
-**Expected Coverage**: {json.dumps(expected_coverage, indent=2)}
+def evaluate_answer_correctness(result: Dict[str, Any], test_case: Dict[str, Any]) -> str:
+    """
+    Rule-based answer correctness evaluation.
+    Returns: "correct", "partially_correct", or "incorrect"
+    """
+    answer = result.get("answer", "").lower()
+    template = result.get("used_template", "")
+    expected = test_case.get("expected_template", "")
+    expected_coverage = [c.lower() for c in test_case.get("expected_coverage", [])]
+    rows = result.get("results", [])
 
-**SPARQL Query**:
-```sparql
-{sparql_query[:500]}{'...' if len(sparql_query) > 500 else ''}
-```
+    if not answer or any(p in answer for p in ["i'm sorry", "i don't have enough", "error"]):
+        return "incorrect"
 
-**Evidence/Data**:
-```
-{evidence[:800]}{'...' if len(evidence) > 800 else ''}
-```
+    no_data_phrases = ["no data found", "no data available", "no results"]
+    if any(p in answer for p in no_data_phrases):
+        return "incorrect"
 
-**Agent's Answer**:
-```
-{final_answer}
-```
+    if template != expected:
+        return "partially_correct"
 
-## Your Evaluation:
-
-Return a JSON object with:
-- "label": "correct" | "partially_correct" | "incorrect"
-- "score": 0.0-1.0 (0.0=incorrect, 0.5=partially correct, 1.0=fully correct)
-- "reason": Brief explanation (1-2 sentences)
-- "missing_coverage": List of coverage items not addressed (empty if all covered)
-- "incorrect_claims": List of incorrect or unsupported claims (empty if none)
-
-**Return ONLY valid JSON, no markdown, no explanations outside JSON:**"""
-
-        system_prompt = """You are a precise evaluator. Return only valid JSON matching the specified schema. Be strict about groundedness - do not reward unsupported claims."""
-        
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": judge_prompt}
-        ]
-        
-        try:
-            # Use existing LLM infrastructure
-            response = chat(messages, temperature=0.0, max_tokens=400)
-            
-            # Clean response (remove markdown if present)
-            response_clean = response.strip()
-            if response_clean.startswith("```"):
-                lines = response_clean.split("\n")
-                response_clean = "\n".join([l for l in lines if not l.startswith("```")])
-                response_clean = response_clean.strip()
-            
-            # Parse JSON
-            judge_result = json.loads(response_clean)
-            
-            # Validate required fields
-            required_fields = ["label", "score", "reason"]
-            for field in required_fields:
-                if field not in judge_result:
-                    print(f"[LLM JUDGE WARNING] Missing required field: {field}")
-                    return {
-                        "label": "judge_error",
-                        "score": 0.0,
-                        "reason": f"Judge returned invalid JSON (missing {field})",
-                        "missing_coverage": [],
-                        "incorrect_claims": []
-                    }
-            
-            # Validate label
-            valid_labels = ["correct", "partially_correct", "incorrect"]
-            if judge_result["label"] not in valid_labels:
-                print(f"[LLM JUDGE WARNING] Invalid label: {judge_result['label']}")
-                judge_result["label"] = "judge_error"
-            
-            # Ensure optional fields exist
-            judge_result.setdefault("missing_coverage", [])
-            judge_result.setdefault("incorrect_claims", [])
-            
-            return judge_result
-            
-        except json.JSONDecodeError as e:
-            print(f"[LLM JUDGE ERROR] Failed to parse JSON: {e}")
-            print(f"[LLM JUDGE ERROR] Response was: {response[:200] if 'response' in locals() else 'N/A'}")
-            return {
-                "label": "judge_error",
-                "score": 0.0,
-                "reason": f"Judge returned invalid JSON: {str(e)}",
-                "missing_coverage": [],
-                "incorrect_claims": []
-            }
-        except LLMError as e:
-            print(f"[LLM JUDGE ERROR] LLM request failed: {e}")
-            return {
-                "label": "judge_error",
-                "score": 0.0,
-                "reason": f"LLM request failed: {str(e)}",
-                "missing_coverage": [],
-                "incorrect_claims": []
-            }
-        except Exception as e:
-            print(f"[LLM JUDGE ERROR] Unexpected error: {e}")
-            return {
-                "label": "judge_error",
-                "score": 0.0,
-                "reason": f"Unexpected error: {str(e)}",
-                "missing_coverage": [],
-                "incorrect_claims": []
-            }
-    
-    def run_single_test(self, test_case: Dict) -> Dict[str, Any]:
-        """
-        Run a single test case.
-        
-        Args:
-            test_case: Test case dictionary
-            
-        Returns:
-            Result dictionary with success/failure and details
-        """
-        print(f"\n{'='*80}")
-        print(f"Test {test_case['id']}: {test_case['question']}")
-        print(f"Expected template: {test_case['expected_template']}")
-        print(f"Category: {test_case['category']} | Difficulty: {test_case['difficulty']}")
-        print(f"{'='*80}")
-        
-        start_time = time.time()
-        
-        try:
-            # Run agent
-            result = run_agent(
-                session_id=f"eval_test_{test_case['id']}",
-                user_message=test_case["question"],
-                history=[],
-                model=None
-            )
-            
-            execution_time = time.time() - start_time
-            
-            # Extract results
-            used_template = result.get("used_template")
-            final_answer = result.get("answer", "")
-            sparql_query = result.get("sparql", "")
-            rows = result.get("rows", [])
-            evidence = result.get("evidence", "")
-            debug_info = result.get("debug", {})
-            error_msg = debug_info.get("error") if debug_info else None
-            
-            # Check if correct template was used
-            template_match = used_template == test_case["expected_template"]
-            
-            # Check if query executed successfully
-            success = final_answer and final_answer != "No data found." and not final_answer.startswith("I'm sorry")
-            
-            # Format SPARQL answer (rows) for display
-            sparql_answer = json.dumps(rows, indent=2) if rows else ""
-            
-            # Get expected SPARQL query from test case
-            expected_sparql_query = test_case.get("expected_sparql_query", "")
-            
-            # Execute expected SPARQL query if available
-            gold_reference_available = False
-            expected_sparql_answer = None
-            
-            if expected_sparql_query and expected_sparql_query.strip():
-                exec_success, expected_rows = self.execute_expected_sparql(expected_sparql_query)
-                if exec_success:
-                    gold_reference_available = True
-                    expected_sparql_answer = json.dumps(expected_rows, indent=2) if expected_rows else ""
-                    print(f"\n✓ Executed expected SPARQL query, got {len(expected_rows) if expected_rows else 0} rows")
-                else:
-                    print(f"\n⚠ Failed to execute expected SPARQL query")
-            
-            result_dict = {
-                "test_id": test_case["id"],
-                "question": test_case["question"],
-                "natural_language_question": test_case["question"],
-                "expected_template": test_case["expected_template"],
-                "actual_template": used_template,
-                "template_match": template_match,
-                "success": success,
-                "has_results": len(rows) > 0 if rows else False,
-                "result_count": len(rows) if rows else 0,
-                "execution_time": round(execution_time, 3),
-                "answer_length": len(final_answer) if final_answer else 0,
-                "category": test_case["category"],
-                "difficulty": test_case["difficulty"],
-                "error": error_msg,
-                "notes": test_case.get("notes", ""),
-                "gold_reference_available": gold_reference_available,
-                "expected_sparql_query": expected_sparql_query,
-                "expected_sparql_answer": expected_sparql_answer,
-                "returned_sparql_query": sparql_query,
-                "returned_sparql_answer": sparql_answer
-            }
-            
-            # Add LLM-as-judge evaluation if enabled
-            if self.use_llm_judge and success:
-                print(f"\n🤖 Running LLM-as-judge evaluation...")
-                judge_result = self.llm_judge_evaluate(
-                    question=test_case["question"],
-                    expected_template=test_case["expected_template"],
-                    expected_coverage=test_case.get("expected_coverage", []),
-                    final_answer=final_answer,
-                    sparql_query=sparql_query,
-                    evidence=result.get("evidence", ""),
-                    actual_template=used_template
-                )
-                result_dict["llm_as_judge_outputs"] = {
-                    "query_correct": judge_result["label"] == "correct",
-                    "answer_correct": judge_result["label"] == "correct",
-                    "semantic_score": judge_result["score"],
-                    "explanation": judge_result["reason"],
-                    "detected_errors": judge_result.get("incorrect_claims", []),
-                    "missing_requirements": judge_result.get("missing_coverage", [])
-                }
-                
-                print(f"  Label: {judge_result['label']}")
-                print(f"  Score: {judge_result['score']}")
-                print(f"  Reason: {judge_result['reason'][:100]}...")
-            elif self.use_llm_judge and not success:
-                # Don't judge failed executions
-                result_dict["llm_as_judge_outputs"] = {
-                    "query_correct": False,
-                    "answer_correct": False,
-                    "semantic_score": 0.0,
-                    "explanation": "Query execution failed",
-                    "detected_errors": [],
-                    "missing_requirements": []
-                }
-            
-            # Print results
-            print(f"\n✓ Template Match: {'PASS' if template_match else 'FAIL'}")
-            print(f"  Expected: {test_case['expected_template']}")
-            print(f"  Got: {used_template}")
-            print(f"\n✓ Execution: {'PASS' if success else 'FAIL'}")
-            print(f"  Result count: {len(rows) if rows else 0}")
-            print(f"  Execution time: {execution_time:.3f}s")
-            
-            if final_answer and len(final_answer) < 300:
-                print(f"\n📝 Answer: {final_answer[:200]}...")
-            
-            if error_msg:
-                print(f"\n❌ Error: {error_msg}")
-            
-            return result_dict
-            
-        except Exception as e:
-            execution_time = time.time() - start_time
-            print(f"\n❌ Exception: {str(e)}")
-            
-            result_dict = {
-                "test_id": test_case["id"],
-                "question": test_case["question"],
-                "expected_template": test_case["expected_template"],
-                "actual_template": None,
-                "template_match": False,
-                "success": False,
-                "has_results": False,
-                "result_count": 0,
-                "execution_time": round(execution_time, 3),
-                "answer_length": 0,
-                "category": test_case["category"],
-                "difficulty": test_case["difficulty"],
-                "error": str(e),
-                "notes": test_case.get("notes", ""),
-                "natural_language_question": test_case["question"],
-                "gold_reference_available": False,
-                "expected_sparql_query": test_case.get("expected_sparql_query", ""),
-                "expected_sparql_answer": None,
-                "returned_sparql_query": "",
-                "returned_sparql_answer": ""
-            }
-            
-            # Add judge fields if LLM judge is enabled
-            if self.use_llm_judge:
-                result_dict["llm_as_judge_outputs"] = {
-                    "query_correct": False,
-                    "answer_correct": False,
-                    "semantic_score": 0.0,
-                    "explanation": "Test execution failed",
-                    "detected_errors": [],
-                    "missing_requirements": []
-                }
-            
-            return result_dict
-    
-    def run_all_tests(self) -> List[Dict]:
-        """Run all test cases and return results."""
-        print(f"\n{'#'*80}")
-        print(f"# CLIMATE CHAT AGENT EVALUATION")
-        print(f"# Dataset: {self.tests['metadata']['dataset']}")
-        print(f"# Coverage: {self.tests['metadata']['temporal_coverage']}")
-        print(f"# Total Tests: {self.tests['metadata']['total_questions']}")
-        print(f"{'#'*80}\n")
-        
-        results = []
-        for test_case in self.tests["test_cases"]:
-            result = self.run_single_test(test_case)
-            results.append(result)
-            time.sleep(0.5)  # Small delay between tests
-        
-        self.results = results
-        return results
-    
-    def run_by_category(self, category: str) -> List[Dict]:
-        """Run tests for a specific category."""
-        filtered_tests = [
-            tc for tc in self.tests["test_cases"] 
-            if tc["category"] == category
-        ]
-        
-        print(f"\nRunning {len(filtered_tests)} tests for category: {category}\n")
-        
-        results = []
-        for test_case in filtered_tests:
-            result = self.run_single_test(test_case)
-            results.append(result)
-            time.sleep(0.5)
-        
-        self.results = results
-        return results
-    
-    def run_by_id(self, test_id: int) -> Dict:
-        """Run a specific test by ID."""
-        test_case = next(
-            (tc for tc in self.tests["test_cases"] if tc["id"] == test_id),
-            None
-        )
-        
-        if not test_case:
-            raise ValueError(f"Test ID {test_id} not found")
-        
-        result = self.run_single_test(test_case)
-        self.results = [result]
-        return result
-    
-    def generate_report(self, output_file: Optional[str] = None) -> Dict:
-        """
-        Generate evaluation report.
-        
-        Args:
-            output_file: Optional file to save report (JSON format)
-            
-        Returns:
-            Report dictionary
-        """
-        if not self.results:
-            print("No results to report. Run tests first.")
-            return {}
-        
-        # Calculate statistics
-        total_tests = len(self.results)
-        template_matches = sum(1 for r in self.results if r["template_match"])
-        successful = sum(1 for r in self.results if r["success"])
-        with_results = sum(1 for r in self.results if r["has_results"])
-        
-        avg_execution_time = sum(r["execution_time"] for r in self.results) / total_tests
-        
-        # LLM judge statistics (if enabled)
-        llm_judge_stats = {}
-        if self.use_llm_judge:
-            # Helper function to get label from llm_as_judge_outputs
-            def get_judge_label(result):
-                judge_outputs = result.get("llm_as_judge_outputs", {})
-                if not judge_outputs:
-                    return "not_evaluated"
-                # Derive label from query_correct and answer_correct
-                if judge_outputs.get("query_correct") and judge_outputs.get("answer_correct"):
-                    return "correct"
-                elif judge_outputs.get("semantic_score", 0) >= 0.5:
-                    return "partially_correct"
-                else:
-                    return "incorrect"
-            
-            correct_count = sum(1 for r in self.results if get_judge_label(r) == "correct")
-            partially_correct_count = sum(1 for r in self.results if get_judge_label(r) == "partially_correct")
-            incorrect_count = sum(1 for r in self.results if get_judge_label(r) == "incorrect")
-            not_evaluated_count = sum(1 for r in self.results if get_judge_label(r) == "not_evaluated")
-            judge_error_count = 0  # No longer applicable with new structure
-            
-            # Calculate average score (exclude not_evaluated)
-            scored_results = [
-                r for r in self.results 
-                if get_judge_label(r) != "not_evaluated"
-            ]
-            avg_judge_score = (
-                sum(r.get("llm_as_judge_outputs", {}).get("semantic_score", 0.0) for r in scored_results) / len(scored_results)
-                if scored_results else 0.0
-            )
-            
-            llm_judge_stats = {
-                "enabled": True,
-                "correct_count": correct_count,
-                "partially_correct_count": partially_correct_count,
-                "incorrect_count": incorrect_count,
-                "judge_error_count": judge_error_count,
-                "not_evaluated_count": not_evaluated_count,
-                "average_score": round(avg_judge_score, 3),
-                "correctness_rate": round(correct_count / max(len(scored_results), 1) * 100, 2) if scored_results else 0.0
-            }
+    if expected_coverage:
+        covered = sum(1 for c in expected_coverage if c in answer)
+        coverage_ratio = covered / len(expected_coverage) if expected_coverage else 1.0
+        if coverage_ratio >= 0.75:
+            return "correct"
+        elif coverage_ratio >= 0.33:
+            return "partially_correct"
         else:
-            llm_judge_stats = {"enabled": False}
-        
-        # Group by category
-        by_category = {}
-        for result in self.results:
-            cat = result["category"]
-            if cat not in by_category:
-                by_category[cat] = {"total": 0, "passed": 0, "template_match": 0}
-            by_category[cat]["total"] += 1
-            if result["success"]:
-                by_category[cat]["passed"] += 1
-            if result["template_match"]:
-                by_category[cat]["template_match"] += 1
-        
-        # Group by difficulty
-        by_difficulty = {}
-        for result in self.results:
-            diff = result["difficulty"]
-            if diff not in by_difficulty:
-                by_difficulty[diff] = {"total": 0, "passed": 0}
-            by_difficulty[diff]["total"] += 1
-            if result["success"]:
-                by_difficulty[diff]["passed"] += 1
-        
-        # Failures
-        failures = [
-            {
-                "id": r["test_id"],
-                "question": r["question"],
-                "expected": r["expected_template"],
-                "got": r["actual_template"],
-                "error": r["error"]
-            }
-            for r in self.results if not r["success"]
-        ]
-        
-        report = {
-            "timestamp": datetime.now().isoformat(),
-            "summary": {
-                "total_tests": total_tests,
-                "template_matches": template_matches,
-                "template_match_rate": round(template_matches / total_tests * 100, 2),
-                "successful_executions": successful,
-                "success_rate": round(successful / total_tests * 100, 2),
-                "with_results": with_results,
-                "avg_execution_time": round(avg_execution_time, 3),
-                "llm_judge": llm_judge_stats
-            },
-            "by_category": by_category,
-            "by_difficulty": by_difficulty,
-            "failures": failures,
-            "detailed_results": self.results
-        }
-        
-        # Print report
-        self._print_report(report)
-        
-        # Save to file if specified
-        if output_file:
-            with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(report, f, indent=2, ensure_ascii=False)
-            print(f"\n✅ Report saved to: {output_file}")
-        
-        return report
-    
-    def _print_report(self, report: Dict):
-        """Print formatted evaluation report."""
-        print(f"\n{'#'*80}")
-        print(f"# EVALUATION REPORT")
-        print(f"# Generated: {report['timestamp']}")
-        print(f"{'#'*80}\n")
-        
-        summary = report["summary"]
-        print("📊 OVERALL SUMMARY")
-        print(f"  Total Tests: {summary['total_tests']}")
-        print(f"  Template Match Rate: {summary['template_match_rate']}% ({summary['template_matches']}/{summary['total_tests']})")
-        print(f"  Success Rate: {summary['success_rate']}% ({summary['successful_executions']}/{summary['total_tests']})")
-        print(f"  Tests with Results: {summary['with_results']}")
-        print(f"  Avg Execution Time: {summary['avg_execution_time']}s")
-        
-        # LLM Judge Summary
-        if summary["llm_judge"]["enabled"]:
-            judge = summary["llm_judge"]
-            print(f"\n🤖 LLM-AS-JUDGE SUMMARY")
-            print(f"  Average Score: {judge['average_score']}")
-            print(f"  Correctness Rate: {judge['correctness_rate']}%")
-            print(f"  Correct: {judge['correct_count']}")
-            print(f"  Partially Correct: {judge['partially_correct_count']}")
-            print(f"  Incorrect: {judge['incorrect_count']}")
-            if judge['judge_error_count'] > 0:
-                print(f"  Judge Errors: {judge['judge_error_count']}")
-            if judge['not_evaluated_count'] > 0:
-                print(f"  Not Evaluated: {judge['not_evaluated_count']}")
-        
-        print("\n📁 BY CATEGORY")
-        for cat, stats in report["by_category"].items():
-            success_rate = round(stats["passed"] / stats["total"] * 100, 1)
-            template_rate = round(stats["template_match"] / stats["total"] * 100, 1)
-            print(f"  {cat.upper()}: {stats['passed']}/{stats['total']} passed ({success_rate}%), template match: {template_rate}%")
-        
-        print("\n⚡ BY DIFFICULTY")
-        for diff, stats in report["by_difficulty"].items():
-            success_rate = round(stats["passed"] / stats["total"] * 100, 1)
-            print(f"  {diff.upper()}: {stats['passed']}/{stats['total']} passed ({success_rate}%)")
-        
-        if report["failures"]:
-            print(f"\n❌ FAILURES ({len(report['failures'])})")
-            for failure in report["failures"][:10]:  # Show first 10
-                print(f"\n  Test {failure['id']}: {failure['question']}")
-                print(f"    Expected template: {failure['expected']}")
-                print(f"    Got: {failure['got']}")
-                if failure['error']:
-                    print(f"    Error: {failure['error'][:100]}")
-    
-    def export_qualitative_examples(
-        self, 
-        output_file: str, 
-        format: str = "json",
-        filter_gold_only: bool = False,
-        max_examples: Optional[int] = None
-    ) -> None:
-        """
-        Export qualitative evaluation examples for research paper inclusion.
-        
-        Args:
-            output_file: Output file path
-            format: "json" or "markdown" (table format)
-            filter_gold_only: Only include examples with gold_reference_available=True
-            max_examples: Maximum number of examples to export (None = all)
-        """
-        if not self.results:
-            print("No results to export. Run tests first.")
-            return
-        
-        # Filter results
-        examples = self.results
-        if filter_gold_only:
-            examples = [r for r in examples if r.get("gold_reference_available", False)]
-        
-        # Limit if specified
-        if max_examples:
-            examples = examples[:max_examples]
-        
-        if format == "json":
-            self._export_json_examples(examples, output_file)
-        elif format == "markdown":
-            self._export_markdown_table(examples, output_file)
-        else:
-            raise ValueError(f"Unsupported format: {format}. Use 'json' or 'markdown'")
-    
-    def _export_json_examples(self, examples: List[Dict], output_file: str) -> None:
-        """Export examples as compact JSON for research paper."""
-        compact_examples = []
-        
-        for result in examples:
-            example = {
-                "id": result["test_id"],
-                "question": result["natural_language_question"],
-                "category": result["category"],
-                "difficulty": result["difficulty"],
-                "template_match": result["template_match"],
-                "success": result["success"],
-                "gold_reference_available": result.get("gold_reference_available", False)
-            }
-            
-            # Add SPARQL comparison if gold reference available
-            if result.get("gold_reference_available"):
-                example["sparql_comparison"] = {
-                    "expected_query": result.get("expected_sparql_query", "")[:200] + "...",
-                    "returned_query": result.get("returned_sparql_query", "")[:200] + "...",
-                    "queries_match": result.get("expected_sparql_query") == result.get("returned_sparql_query")
-                }
-            
-            # Add LLM judge outputs if available
-            if "llm_as_judge_outputs" in result:
-                judge = result["llm_as_judge_outputs"]
-                example["llm_evaluation"] = {
-                    "semantic_score": judge.get("semantic_score", 0.0),
-                    "explanation": judge.get("explanation", ""),
-                    "detected_errors": judge.get("detected_errors", []),
-                    "missing_requirements": judge.get("missing_requirements", [])
-                }
-            
-            compact_examples.append(example)
-        
-        output_data = {
-            "export_metadata": {
-                "timestamp": datetime.now().isoformat(),
-                "total_examples": len(compact_examples),
-                "with_gold_reference": sum(1 for e in compact_examples if e.get("gold_reference_available")),
-                "format": "compact_qualitative_examples"
-            },
-            "examples": compact_examples
-        }
-        
-        with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(output_data, f, indent=2, ensure_ascii=False)
-        
-        print(f"\n✅ Exported {len(compact_examples)} qualitative examples to: {output_file}")
-        print(f"   With gold reference: {output_data['export_metadata']['with_gold_reference']}")
-    
-    def _export_markdown_table(self, examples: List[Dict], output_file: str) -> None:
-        """Export examples as markdown table for research paper."""
-        lines = []
-        lines.append("# Qualitative Evaluation Examples")
-        lines.append(f"\n*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n")
-        lines.append(f"**Total Examples**: {len(examples)}  ")
-        gold_count = sum(1 for e in examples if e.get("gold_reference_available"))
-        lines.append(f"**With Gold Reference**: {gold_count}\n")
-        
-        # Summary table
-        lines.append("## Summary Table\n")
-        lines.append("| ID | Question | Category | Difficulty | Template Match | Success | Gold Ref | LLM Score |")
-        lines.append("|---:|:---------|:---------|:-----------|:--------------:|:-------:|:--------:|:---------:|")
-        
-        for result in examples:
-            question = result["natural_language_question"][:50]
-            if len(result["natural_language_question"]) > 50:
-                question += "..."
-            
-            template_match = "✓" if result["template_match"] else "✗"
-            success = "✓" if result["success"] else "✗"
-            gold_ref = "✓" if result.get("gold_reference_available") else "✗"
-            
-            llm_score = "N/A"
-            if "llm_as_judge_outputs" in result:
-                llm_score = f"{result['llm_as_judge_outputs'].get('semantic_score', 0.0):.2f}"
-            
-            lines.append(
-                f"| {result['test_id']} | {question} | {result['category']} | "
-                f"{result['difficulty']} | {template_match} | {success} | {gold_ref} | {llm_score} |"
-            )
-        
-        # Detailed examples with gold references
-        if gold_count > 0:
-            lines.append("\n## Detailed Examples (With Gold Reference)\n")
-            
-            for result in examples:
-                if not result.get("gold_reference_available"):
-                    continue
-                
-                lines.append(f"### Test {result['test_id']}: {result['category'].upper()}\n")
-                lines.append(f"**Question**: {result['natural_language_question']}\n")
-                lines.append(f"**Difficulty**: {result['difficulty']} | **Template Match**: {result['template_match']} | **Success**: {result['success']}\n")
-                
-                # SPARQL comparison
-                lines.append("**Expected SPARQL Query**:")
-                lines.append("```sparql")
-                lines.append(result.get("expected_sparql_query", "N/A")[:300])
-                if len(result.get("expected_sparql_query", "")) > 300:
-                    lines.append("...")
-                lines.append("```\n")
-                
-                lines.append("**Returned SPARQL Query**:")
-                lines.append("```sparql")
-                lines.append(result.get("returned_sparql_query", "N/A")[:300])
-                if len(result.get("returned_sparql_query", "")) > 300:
-                    lines.append("...")
-                lines.append("```\n")
-                
-                # LLM evaluation if available
-                if "llm_as_judge_outputs" in result:
-                    judge = result["llm_as_judge_outputs"]
-                    lines.append(f"**LLM Evaluation**:")
-                    lines.append(f"- Score: {judge.get('semantic_score', 0.0):.2f}")
-                    lines.append(f"- Explanation: {judge.get('explanation', 'N/A')}")
-                    if judge.get('detected_errors'):
-                        lines.append(f"- Detected Errors: {', '.join(judge['detected_errors'])}")
-                    if judge.get('missing_requirements'):
-                        lines.append(f"- Missing Requirements: {', '.join(judge['missing_requirements'])}")
-                    lines.append("")
-                
-                lines.append("---\n")
-        
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(lines))
-        
-        print(f"\n✅ Exported markdown table to: {output_file}")
+            return "incorrect"
 
+    if rows and len(rows) > 0:
+        return "correct"
+
+    return "partially_correct"
+
+
+# ──────────────────────────────────────────────
+# SINGLE RUN EVALUATOR
+# ──────────────────────────────────────────────
+
+def run_single_evaluation(
+    test_cases: List[Dict],
+    model: str = None,
+    run_number: int = 1,
+) -> Dict[str, Any]:
+    """Run one evaluation pass over all test cases with random question selection."""
+    run_results = {
+        "run_number": run_number,
+        "timestamp": datetime.now().isoformat(),
+        "total_tests": len(test_cases),
+        "test_results": [],
+        "summary": {},
+    }
+
+    for tc in test_cases:
+        qid = tc["id"]
+        category = tc.get("category", "unknown")
+        expected_template = tc["expected_template"]
+        difficulty = tc.get("difficulty", "medium")
+
+        questions = tc.get("question", [])
+        selected_question = random.choice(questions) if questions else ""
+
+        result_entry = {
+            "test_id": qid,
+            "category": category,
+            "difficulty": difficulty,
+            "selected_question": selected_question,
+            "expected_template": expected_template,
+            "predicted_template": None,
+            "template_match": False,
+            "execution_success": False,
+            "execution_time_seconds": 0,
+            "sparql_success": False,
+            "returned_rows": 0,
+            "answer": "",
+            "answer_correctness": "incorrect",
+            "error_category": None,
+            "notes": "",
+        }
+
+        try:
+            session_id = f"eval-r{run_number}-t{qid}"
+            start = time.time()
+            result = run_agent(session_id, selected_question, model=model)
+            elapsed = time.time() - start
+
+            predicted = result.get("used_template", "error")
+            answer = result.get("answer", "")
+            rows = result.get("results", [])
+
+            result_entry["predicted_template"] = predicted
+            result_entry["template_match"] = (predicted == expected_template)
+            result_entry["execution_success"] = True
+            result_entry["execution_time_seconds"] = round(elapsed, 3)
+            result_entry["sparql_success"] = bool(result.get("sparql"))
+            result_entry["returned_rows"] = len(rows) if rows else 0
+            result_entry["answer"] = answer[:500]
+            result_entry["answer_correctness"] = evaluate_answer_correctness(result, tc)
+
+            if not result_entry["template_match"] or result_entry["answer_correctness"] == "incorrect":
+                result_entry["error_category"] = classify_error(result)
+
+        except Exception as e:
+            elapsed = time.time() - start if 'start' in dir() else 0
+            result_entry["execution_success"] = False
+            result_entry["execution_time_seconds"] = round(elapsed, 3)
+            result_entry["error_category"] = classify_error({}, e)
+            result_entry["notes"] = str(e)[:200]
+
+        run_results["test_results"].append(result_entry)
+
+    # Compute summary
+    total = len(run_results["test_results"])
+    template_matches = sum(1 for r in run_results["test_results"] if r["template_match"])
+    exec_successes = sum(1 for r in run_results["test_results"] if r["execution_success"])
+    sparql_successes = sum(1 for r in run_results["test_results"] if r["sparql_success"])
+    times = [r["execution_time_seconds"] for r in run_results["test_results"]]
+    correctness = Counter(r["answer_correctness"] for r in run_results["test_results"])
+
+    run_results["summary"] = {
+        "total": total,
+        "template_accuracy": round(template_matches / total, 4) if total else 0,
+        "execution_success_rate": round(exec_successes / total, 4) if total else 0,
+        "sparql_success_rate": round(sparql_successes / total, 4) if total else 0,
+        "answer_correct": correctness.get("correct", 0),
+        "answer_partial": correctness.get("partially_correct", 0),
+        "answer_incorrect": correctness.get("incorrect", 0),
+        "avg_execution_time": round(statistics.mean(times), 3) if times else 0,
+        "min_execution_time": round(min(times), 3) if times else 0,
+        "max_execution_time": round(max(times), 3) if times else 0,
+        "std_execution_time": round(statistics.stdev(times), 3) if len(times) > 1 else 0,
+    }
+
+    return run_results
+
+
+# ──────────────────────────────────────────────
+# AGGREGATE OVER MULTIPLE RUNS
+# ──────────────────────────────────────────────
+
+def aggregate_runs(all_runs: List[Dict[str, Any]], test_cases: List[Dict]) -> Dict[str, Any]:
+    """Aggregate metrics across multiple evaluation runs."""
+    num_runs = len(all_runs)
+    summaries = [r["summary"] for r in all_runs]
+
+    agg = {
+        "num_runs": num_runs,
+        "total_tests_per_run": summaries[0]["total"],
+        "aggregate_metrics": {
+            "avg_template_accuracy": round(statistics.mean([s["template_accuracy"] for s in summaries]), 4),
+            "std_template_accuracy": round(statistics.stdev([s["template_accuracy"] for s in summaries]), 4) if num_runs > 1 else 0,
+            "min_template_accuracy": round(min(s["template_accuracy"] for s in summaries), 4),
+            "max_template_accuracy": round(max(s["template_accuracy"] for s in summaries), 4),
+            "avg_execution_success_rate": round(statistics.mean([s["execution_success_rate"] for s in summaries]), 4),
+            "avg_answer_correct": round(statistics.mean([s["answer_correct"] for s in summaries]), 1),
+            "avg_answer_partial": round(statistics.mean([s["answer_partial"] for s in summaries]), 1),
+            "avg_answer_incorrect": round(statistics.mean([s["answer_incorrect"] for s in summaries]), 1),
+            "avg_latency": round(statistics.mean([s["avg_execution_time"] for s in summaries]), 3),
+            "min_latency": round(min(s["min_execution_time"] for s in summaries), 3),
+            "max_latency": round(max(s["max_execution_time"] for s in summaries), 3),
+            "std_latency": round(statistics.stdev([s["avg_execution_time"] for s in summaries]), 3) if num_runs > 1 else 0,
+        },
+        "overall_score": round(
+            statistics.mean([
+                s["template_accuracy"] * 0.35 +
+                s["execution_success_rate"] * 0.25 +
+                (s["answer_correct"] / s["total"]) * 0.40
+                for s in summaries
+            ]), 4
+        ),
+    }
+
+    # Confusion matrix
+    confusion = defaultdict(lambda: defaultdict(int))
+    for run in all_runs:
+        for tr in run["test_results"]:
+            expected = tr["expected_template"]
+            predicted = tr["predicted_template"] or "error"
+            confusion[expected][predicted] += 1
+    agg["confusion_matrix"] = {k: dict(v) for k, v in confusion.items()}
+
+    # Category-wise
+    cat_stats = defaultdict(lambda: {"total": 0, "template_match": 0, "exec_success": 0, "times": [], "errors": Counter()})
+    for run in all_runs:
+        for tr in run["test_results"]:
+            cat = tr["category"]
+            cat_stats[cat]["total"] += 1
+            if tr["template_match"]: cat_stats[cat]["template_match"] += 1
+            if tr["execution_success"]: cat_stats[cat]["exec_success"] += 1
+            cat_stats[cat]["times"].append(tr["execution_time_seconds"])
+            if tr["error_category"]: cat_stats[cat]["errors"][tr["error_category"]] += 1
+
+    agg["category_analysis"] = {}
+    for cat, stats in sorted(cat_stats.items()):
+        t = stats["total"]
+        agg["category_analysis"][cat] = {
+            "total": t,
+            "template_accuracy": round(stats["template_match"] / t, 4) if t else 0,
+            "execution_success_rate": round(stats["exec_success"] / t, 4) if t else 0,
+            "avg_execution_time": round(statistics.mean(stats["times"]), 3) if stats["times"] else 0,
+            "common_errors": dict(stats["errors"].most_common(3)),
+        }
+
+    # Template-wise
+    tpl_stats = defaultdict(lambda: {"total": 0, "success": 0, "times": [], "errors": Counter()})
+    for run in all_runs:
+        for tr in run["test_results"]:
+            tpl = tr["expected_template"]
+            tpl_stats[tpl]["total"] += 1
+            if tr["execution_success"] and tr["template_match"]: tpl_stats[tpl]["success"] += 1
+            tpl_stats[tpl]["times"].append(tr["execution_time_seconds"])
+            if tr["error_category"]: tpl_stats[tpl]["errors"][tr["error_category"]] += 1
+
+    agg["template_analysis"] = {}
+    for tpl, stats in sorted(tpl_stats.items()):
+        t = stats["total"]
+        agg["template_analysis"][tpl] = {
+            "total_tested": t, "successful": stats["success"],
+            "success_rate": round(stats["success"] / t, 4) if t else 0,
+            "avg_response_time": round(statistics.mean(stats["times"]), 3) if stats["times"] else 0,
+            "common_errors": dict(stats["errors"].most_common(3)),
+        }
+
+    # Error analysis
+    error_counts = Counter()
+    for run in all_runs:
+        for tr in run["test_results"]:
+            if tr["error_category"]: error_counts[tr["error_category"]] += 1
+    agg["error_analysis"] = dict(error_counts.most_common())
+
+    return agg
+
+
+# ──────────────────────────────────────────────
+# REPORT GENERATION
+# ──────────────────────────────────────────────
+
+def generate_json_report(all_runs: List[Dict], aggregate: Dict, seed: int, output_path: str):
+    report = {
+        "metadata": {"evaluation_timestamp": datetime.now().isoformat(), "random_seed": seed,
+                      "num_runs": len(all_runs), "test_questions_file": "evaluation/test_questions.json"},
+        "aggregate_metrics": aggregate,
+        "per_run_results": all_runs,
+        "per_run_summaries": [r["summary"] for r in all_runs],
+    }
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2, ensure_ascii=False)
+    print(f"[REPORT] JSON -> {output_path}")
+
+
+def generate_csv_report(aggregate: Dict, output_path: str):
+    import csv
+    m = aggregate.get("aggregate_metrics", {})
+    rows = [
+        ["Metric", "Value"],
+        ["avg_template_accuracy", m.get("avg_template_accuracy", 0)],
+        ["std_template_accuracy", m.get("std_template_accuracy", 0)],
+        ["min_template_accuracy", m.get("min_template_accuracy", 0)],
+        ["max_template_accuracy", m.get("max_template_accuracy", 0)],
+        ["avg_execution_success_rate", m.get("avg_execution_success_rate", 0)],
+        ["avg_answer_correct", m.get("avg_answer_correct", 0)],
+        ["avg_answer_partial", m.get("avg_answer_partial", 0)],
+        ["avg_answer_incorrect", m.get("avg_answer_incorrect", 0)],
+        ["avg_latency", m.get("avg_latency", 0)],
+        ["min_latency", m.get("min_latency", 0)],
+        ["max_latency", m.get("max_latency", 0)],
+        ["std_latency", m.get("std_latency", 0)],
+        ["overall_score", aggregate.get("overall_score", 0)],
+        [], ["Category", "Total", "TemplateAccuracy", "ExecSuccessRate", "AvgTime"],
+    ]
+    for cat, stats in aggregate.get("category_analysis", {}).items():
+        rows.append([cat, stats["total"], stats["template_accuracy"], stats["execution_success_rate"], stats["avg_execution_time"]])
+    rows.append([])
+    rows.append(["ErrorCategory", "Count"])
+    for err, count in aggregate.get("error_analysis", {}).items():
+        rows.append([err, count])
+    with open(output_path, "w", newline="", encoding="utf-8") as f:
+        csv.writer(f).writerows(rows)
+    print(f"[REPORT] CSV -> {output_path}")
+
+
+def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, output_path: str):
+    m = aggregate.get("aggregate_metrics", {})
+    L = []
+    L.append("# Climate Chat Agent — Evaluation Report")
+    L.append(f"**Generated:** {datetime.now().isoformat()}  ")
+    L.append(f"**Random Seed:** {seed}  ")
+    L.append(f"**Runs:** {len(all_runs)} × {aggregate.get('total_tests_per_run', 0)} test cases")
+    L.append("")
+    L.append("## 📊 Aggregate Metrics")
+    L.append("| Metric | Value |")
+    L.append("|--- |--- |")
+    L.append(f"| Template Accuracy | {m.get('avg_template_accuracy', 0):.1%} ± {m.get('std_template_accuracy', 0):.1%} |")
+    L.append(f"| Template Accuracy Range | {m.get('min_template_accuracy', 0):.1%} – {m.get('max_template_accuracy', 0):.1%} |")
+    L.append(f"| Execution Success Rate | {m.get('avg_execution_success_rate', 0):.1%} |")
+    L.append(f"| Answer Correct | {m.get('avg_answer_correct', 0):.0f} / run |")
+    L.append(f"| Answer Partial | {m.get('avg_answer_partial', 0):.0f} / run |")
+    L.append(f"| Answer Incorrect | {m.get('avg_answer_incorrect', 0):.0f} / run |")
+    L.append(f"| Avg Latency | {m.get('avg_latency', 0):.2f}s |")
+    L.append(f"| Latency Range | {m.get('min_latency', 0):.2f}s – {m.get('max_latency', 0):.2f}s |")
+    L.append(f"| **Overall Score** | **{aggregate.get('overall_score', 0):.1%}** |")
+    L.append("")
+    L.append("## 📋 Per-Run Summary")
+    L.append("| Run | Templ Acc | Exec Success | Correct | Partial | Incorrect | Avg Time |")
+    L.append("|--- |--- |--- |--- |--- |--- |--- |")
+    for run in all_runs:
+        s = run["summary"]
+        L.append(f"| {run['run_number']} | {s['template_accuracy']:.1%} | {s['execution_success_rate']:.1%} | {s['answer_correct']} | {s['answer_partial']} | {s['answer_incorrect']} | {s['avg_execution_time']:.2f}s |")
+    L.append("")
+    L.append("## 🏷️ Category-wise Analysis")
+    L.append("| Category | Tests | Templ Acc | Exec Success | Avg Time | Common Errors |")
+    L.append("|--- |--- |--- |--- |--- |--- |")
+    for cat, stats in aggregate.get("category_analysis", {}).items():
+        errs = ", ".join(f"{k}({v})" for k, v in stats.get("common_errors", {}).items())
+        L.append(f"| {cat} | {stats['total']} | {stats['template_accuracy']:.1%} | {stats['execution_success_rate']:.1%} | {stats['avg_execution_time']:.2f}s | {errs} |")
+    L.append("")
+    L.append("## 📐 Template-wise Analysis")
+    L.append("| Template | Tested | Success | Rate | Avg Time | Common Errors |")
+    L.append("|--- |--- |--- |--- |--- |--- |")
+    for tpl, stats in aggregate.get("template_analysis", {}).items():
+        errs = ", ".join(f"{k}({v})" for k, v in stats.get("common_errors", {}).items())
+        L.append(f"| {tpl} | {stats['total_tested']} | {stats['successful']} | {stats['success_rate']:.1%} | {stats['avg_response_time']:.2f}s | {errs} |")
+    L.append("")
+    L.append("## ❌ Error Analysis")
+    L.append("| Error Category | Count |")
+    L.append("|--- |--- |")
+    for err, count in aggregate.get("error_analysis", {}).items():
+        L.append(f"| {err} | {count} |")
+    L.append("")
+    L.append("## 🔀 Confusion Matrix")
+    cm = aggregate.get("confusion_matrix", {})
+    all_tpl = sorted(set(cm.keys()) | {p for v in cm.values() for p in v})
+    L.append("| Expected ↓ / Predicted → | " + " | ".join(all_tpl) + " |")
+    L.append("|" + "|".join(["---"] * (len(all_tpl) + 1)) + "|")
+    for exp in sorted(cm.keys()):
+        row = f"| {exp} | " + " | ".join(str(cm[exp].get(p, 0)) for p in all_tpl) + " |"
+        L.append(row)
+    L.append("")
+    L.append("## 📝 Detailed Results (Run 1)")
+    L.append("| ID | Cat | Question | Expected | Predicted | Match | Rows | Correct | Time |")
+    L.append("|--- |--- |--- |--- |--- |--- |--- |--- |--- |")
+    for tr in all_runs[0]["test_results"]:
+        q = tr["selected_question"][:60]
+        mch = "✅" if tr["template_match"] else "❌"
+        L.append(f"| {tr['test_id']} | {tr['category']} | {q} | {tr['expected_template']} | {tr['predicted_template']} | {mch} | {tr['returned_rows']} | {tr['answer_correctness']} | {tr['execution_time_seconds']:.2f}s |")
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(L))
+    print(f"[REPORT] MD -> {output_path}")
+
+
+# ──────────────────────────────────────────────
+# MAIN
+# ──────────────────────────────────────────────
 
 def main():
-    """Main entry point for evaluation."""
-    import argparse
-    
-    parser = argparse.ArgumentParser(description="Evaluate Climate Chat Agent")
-    parser.add_argument("--question-id", type=int, help="Run specific question by ID")
-    parser.add_argument("--category", type=str, help="Run tests for specific category")
-    parser.add_argument("--report", action="store_true", help="Generate detailed report")
-    parser.add_argument("--output", type=str, help="Output file for report (JSON)")
-    parser.add_argument("--llm-judge", action="store_true", help="Enable LLM-as-judge evaluation")
-    parser.add_argument("--export-qualitative", type=str, help="Export qualitative examples (specify output file)")
-    parser.add_argument("--export-format", type=str, choices=["json", "markdown"], default="json", 
-                       help="Format for qualitative export (default: json)")
-    parser.add_argument("--gold-only", action="store_true", 
-                       help="Export only examples with gold reference (use with --export-qualitative)")
-    parser.add_argument("--max-examples", type=int, help="Maximum examples to export")
-    
+    parser = argparse.ArgumentParser(description="Climate Chat Agent — Comprehensive Evaluation v2")
+    parser.add_argument("--runs", type=int, default=5, help="Number of evaluation runs")
+    parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducibility")
+    parser.add_argument("--model", type=str, default="openai:gpt-4o-mini", help="LLM model")
+    parser.add_argument("--test-file", type=str, default="evaluation/test_questions.json")
+    parser.add_argument("--output-dir", type=str, default="evaluation")
     args = parser.parse_args()
-    
-    # Create evaluator with optional LLM judge
-    evaluator = AgentEvaluator(use_llm_judge=args.llm_judge)
-    
-    if args.llm_judge:
-        print("\n" + "="*80)
-        print("🤖 LLM-AS-JUDGE MODE ENABLED")
-        print("="*80 + "\n")
-    
-    # Run tests based on arguments
-    if args.question_id:
-        evaluator.run_by_id(args.question_id)
-    elif args.category:
-        evaluator.run_by_category(args.category)
-    else:
-        evaluator.run_all_tests()
-    
-    # Generate report and auto-save for full test runs
-    output_file = args.output
-    
-    # Auto-generate output file for full test runs if not specified
-    if not args.question_id and not args.category and not output_file:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        if args.llm_judge:
-            output_file = f"evaluation/llm_judge_full_report.json"
-        else:
-            output_file = f"evaluation/full_report_{timestamp}.json"
-    
-    # Generate report
-    if args.report or args.output or output_file:
-        evaluator.generate_report(output_file)
-    else:
-        # Always show summary
-        evaluator.generate_report()
-    
-    # Export qualitative examples if requested
-    if args.export_qualitative:
-        evaluator.export_qualitative_examples(
-            output_file=args.export_qualitative,
-            format=args.export_format,
-            filter_gold_only=args.gold_only,
-            max_examples=args.max_examples
-        )
+
+    seed = args.seed if args.seed is not None else random.randint(1, 99999)
+    random.seed(seed)
+    print(f"[EVAL] Seed: {seed} | Runs: {args.runs} | Model: {args.model}")
+
+    test_file = os.path.join(os.path.dirname(__file__), "test_questions.json")
+    with open(test_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    test_cases = data["test_cases"]
+    print(f"[EVAL] Loaded {len(test_cases)} test cases")
+
+    all_runs = []
+    for rn in range(1, args.runs + 1):
+        print(f"\n[EVAL] === Run {rn}/{args.runs} ===")
+        rr = run_single_evaluation(test_cases, model=args.model, run_number=rn)
+        s = rr["summary"]
+        print(f"[EVAL] Run {rn}: acc={s['template_accuracy']:.1%} ok={s['execution_success_rate']:.1%} "
+              f"C={s['answer_correct']} P={s['answer_partial']} I={s['answer_incorrect']} t={s['avg_execution_time']:.2f}s")
+        all_runs.append(rr)
+
+    print(f"\n[EVAL] Aggregating...")
+    agg = aggregate_runs(all_runs, test_cases)
+
+    od = args.output_dir
+    os.makedirs(od, exist_ok=True)
+    generate_json_report(all_runs, agg, seed, os.path.join(od, "evaluation_results.json"))
+    generate_csv_report(agg, os.path.join(od, "evaluation_summary.csv"))
+    generate_markdown_report(all_runs, agg, seed, os.path.join(od, "evaluation_summary.md"))
+
+    m = agg["aggregate_metrics"]
+    print("\n" + "=" * 60)
+    print("FINAL SUMMARY")
+    print("=" * 60)
+    print(f"  Template Accuracy:  {m['avg_template_accuracy']:.1%} +/- {m['std_template_accuracy']:.1%}")
+    print(f"  Execution Success:  {m['avg_execution_success_rate']:.1%}")
+    print(f"  Correct/Partial/Incorrect: {m['avg_answer_correct']:.0f}/{m['avg_answer_partial']:.0f}/{m['avg_answer_incorrect']:.0f}")
+    print(f"  Avg Latency:        {m['avg_latency']:.2f}s")
+    print(f"  Overall Score:      {agg['overall_score']:.1%}")
+    print("=" * 60)
 
 
 if __name__ == "__main__":

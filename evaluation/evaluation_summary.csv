@@ -1,0 +1,27 @@
+Metric,Value
+avg_template_accuracy,1.0
+std_template_accuracy,0
+min_template_accuracy,1.0
+max_template_accuracy,1.0
+avg_execution_success_rate,1.0
+avg_answer_correct,0
+avg_answer_partial,4
+avg_answer_incorrect,12
+avg_latency,18.738
+min_latency,10.339
+max_latency,35.15
+std_latency,0
+overall_score,0.6
+
+Category,Total,TemplateAccuracy,ExecSuccessRate,AvgTime
+aggregation,4,1.0,1.0,16.696
+extreme-values,1,1.0,1.0,15.218
+filtering,2,1.0,1.0,11.084
+location-based,3,1.0,1.0,16.405
+multi-year-comparison,1,1.0,1.0,19.118
+nested-aggregation,1,1.0,1.0,34.48
+overview,3,1.0,1.0,23.573
+subsampling,1,1.0,1.0,22.112
+
+ErrorCategory,Count
+Formatting failure,12
