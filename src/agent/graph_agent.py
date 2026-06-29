@@ -1171,7 +1171,7 @@ def build_query_node(state: AgentState) -> AgentState:
             raise SPARQLSecurityError("Query must contain SELECT")
         
         # Ensure FROM graph is present
-        graph_iri = os.getenv("GRAPH_IRI", "http://eobs/gridded")
+        graph_iri = os.getenv("GRAPH_IRI", "climateobservations/eobs-v31")
         if f"FROM <{graph_iri}>" not in sparql_query and "FROM <" not in sparql_query:
             # Inject FROM clause after SELECT
             parts = sparql_query.split("WHERE", 1)

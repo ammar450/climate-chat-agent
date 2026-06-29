@@ -14,8 +14,8 @@ load_dotenv()
 # Configuration from environment variables
 # Primary knowledge source: EOBS — always queried first
 ENDPOINT = os.getenv("SPARQL_ENDPOINT", "http://141.76.19.254:8890/sparql")
-GRAPH = os.getenv("GRAPH_IRI", "http://eobs/gridded")
-QUERY_TIMEOUT = int(os.getenv("SPARQL_TIMEOUT", "30"))  # seconds
+GRAPH = os.getenv("GRAPH_IRI", "climateobservations/eobs-v31")
+QUERY_TIMEOUT = int(os.getenv("SPARQL_TIMEOUT", "300"))  # seconds
 MAX_LIMIT = int(os.getenv("MAX_LIMIT", "500"))
 DEFAULT_LIMIT = int(os.getenv("DEFAULT_LIMIT", "200"))
 

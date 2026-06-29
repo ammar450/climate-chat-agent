@@ -762,23 +762,27 @@ LIMIT 2000"""
     ) -> Optional[tuple]:
         """
         Last-resort: try to parse coordinates encoded in feature URIs.
-        Patterns supported: /feature/51.5_-0.1, /feature/51.5N0.1W, /51.5/-0.1
+        Patterns supported:
+          - Old: grid_48p62_9p12 or grid_48p62_m9p12 (m = minus)
+          - New: grid_48p62_m5p88 (underscore separator, m prefix for negative)
         """
         import re
+        # Pattern handles: optional sign, digits, 'p' separator, optional 'm' for negative
         pattern = re.compile(
-            r'([\-\+]?\d+)[p\.](\d+)[\s_,]+([\-\+]?\d+)[p\.](\d+)'
+            r'grid_([\-\+]?\d+)[p\.](\d+)_(m?)([\-\+]?\d+)[p\.](\d+)'
         )
         nearest_feature = None
         min_distance = float('inf')
         for uri in uris:
             if not uri:
                 continue
-            tail = uri.split('/')[-1]
+            tail = uri.split('/')[-1].split('#')[-1]
             m = pattern.search(tail)
             if m:
                 try:
                     f_lat = float(f"{m.group(1)}.{m.group(2)}")
-                    f_lon = float(f"{m.group(3)}.{m.group(4)}")
+                    sign = -1 if m.group(3) == 'm' else 1
+                    f_lon = sign * float(f"{m.group(4)}.{m.group(5)}")
                     if not (-90 <= f_lat <= 90 and -180 <= f_lon <= 180):
                         continue
                     distance = LocationResolver._haversine_distance(lat, lon, f_lat, f_lon)
