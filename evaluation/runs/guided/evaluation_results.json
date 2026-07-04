@@ -1,0 +1,2740 @@
+{
+  "metadata": {
+    "evaluation_timestamp": "2026-07-04T17:58:28.886869",
+    "random_seed": 42,
+    "num_runs": 5,
+    "test_questions_file": "evaluation/test_questions.json"
+  },
+  "aggregate_metrics": {
+    "num_runs": 5,
+    "total_tests_per_run": 16,
+    "aggregate_metrics": {
+      "avg_template_accuracy": 0.9,
+      "std_template_accuracy": 0.0342,
+      "min_template_accuracy": 0.875,
+      "max_template_accuracy": 0.9375,
+      "avg_execution_success_rate": 1.0,
+      "avg_answer_correct": 0,
+      "avg_answer_partial": 2,
+      "avg_answer_incorrect": 14,
+      "avg_judge_score": 0.4325,
+      "avg_judge_correct": 6.8,
+      "avg_judge_partial": 0.2,
+      "avg_judge_incorrect": 9,
+      "avg_judge_error": 0,
+      "avg_latency": 10.268,
+      "min_latency": 8.15,
+      "max_latency": 28.503,
+      "std_latency": 0.668
+    },
+    "overall_score": 0.738,
+    "confusion_matrix": {
+      "list_properties": {
+        "list_properties": 5
+      },
+      "list_features_of_interest": {
+        "list_features_of_interest": 5
+      },
+      "sample_observations": {
+        "sample_observations": 5
+      },
+      "all_properties_summary": {
+        "all_properties_summary": 5
+      },
+      "timeseries_statistics": {
+        "timeseries_statistics": 7,
+        "timeseries_statistics_by_feature": 1,
+        "monthly_aggregates": 2
+      },
+      "average_for_property_date_range": {
+        "average_for_property_date_range": 5
+      },
+      "monthly_aggregates": {
+        "monthly_aggregates": 5
+      },
+      "daily_aggregates": {
+        "daily_aggregates": 5
+      },
+      "top_extremes_for_property": {
+        "top_extremes_for_property": 5
+      },
+      "filtered_timeseries": {
+        "filtered_timeseries": 10
+      },
+      "features_near_coordinates": {
+        "features_near_coordinates": 5
+      },
+      "location_based_summary": {
+        "location_based_summary": 5
+      },
+      "monthly_mean_from_daily": {
+        "daily_aggregates": 5
+      },
+      "timeseries_statistics_by_feature": {
+        "timeseries_statistics_by_feature": 5
+      }
+    },
+    "category_analysis": {
+      "aggregation": {
+        "total": 20,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 9.909,
+        "common_errors": {
+          "SPARQL generation failure": 15,
+          "Unknown failure": 2
+        }
+      },
+      "extreme-values": {
+        "total": 5,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 9.587,
+        "common_errors": {
+          "SPARQL generation failure": 5
+        }
+      },
+      "filtering": {
+        "total": 10,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 11.14,
+        "common_errors": {
+          "Empty SPARQL results": 10
+        }
+      },
+      "location-based": {
+        "total": 15,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 11.348,
+        "common_errors": {
+          "Empty SPARQL results": 12,
+          "SPARQL generation failure": 1
+        }
+      },
+      "multi-year-comparison": {
+        "total": 5,
+        "template_accuracy": 0.4,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 10.076,
+        "common_errors": {
+          "SPARQL generation failure": 4,
+          "Empty SPARQL results": 1
+        }
+      },
+      "nested-aggregation": {
+        "total": 5,
+        "template_accuracy": 0.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 11.903,
+        "common_errors": {
+          "Empty SPARQL results": 5
+        }
+      },
+      "overview": {
+        "total": 15,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 8.926,
+        "common_errors": {
+          "Empty SPARQL results": 11,
+          "Formatting failure": 4
+        }
+      },
+      "subsampling": {
+        "total": 5,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 9.982,
+        "common_errors": {
+          "Empty SPARQL results": 4,
+          "SPARQL generation failure": 1
+        }
+      }
+    },
+    "template_analysis": {
+      "all_properties_summary": {
+        "total_tested": 5,
+        "successful": 5,
+        "success_rate": 1.0,
+        "avg_response_time": 10.382,
+        "common_errors": {
+          "Formatting failure": 4,
+          "Empty SPARQL results": 1
+        }
+      },
+      "average_for_property_date_range": {
+        "total_tested": 5,
+        "successful": 5,
+        "success_rate": 1.0,
+        "avg_response_time": 10.949,
+        "common_errors": {
+          "Unknown failure": 2
+        }
+      },
+      "daily_aggregates": {
+        "total_tested": 5,
+        "successful": 5,
+        "success_rate": 1.0,
+        "avg_response_time": 9.613,
+        "common_errors": {
+          "SPARQL generation failure": 5
+        }
+      },
+      "features_near_coordinates": {
+        "total_tested": 5,
+        "successful": 5,
+        "success_rate": 1.0,
+        "avg_response_time": 9.787,
+        "common_errors": {
+          "Empty SPARQL results": 5
+        }
+      },
+      "filtered_timeseries": {
+        "total_tested": 10,
+        "successful": 10,
+        "success_rate": 1.0,
+        "avg_response_time": 11.14,
+        "common_errors": {
+          "Empty SPARQL results": 10
+        }
+      },
+      "list_features_of_interest": {
+        "total_tested": 5,
+        "successful": 5,
+        "success_rate": 1.0,
+        "avg_response_time": 8.179,
+        "common_errors": {
+          "Empty SPARQL results": 5
+        }
+      },
+      "list_properties": {
+        "total_tested": 5,
+        "successful": 5,
+        "success_rate": 1.0,
+        "avg_response_time": 8.217,
+        "common_errors": {
+          "Empty SPARQL results": 5
+        }
+      },
+      "location_based_summary": {
+        "total_tested": 5,
+        "successful": 5,
+        "success_rate": 1.0,
+        "avg_response_time": 13.463,
+        "common_errors": {
+          "Empty SPARQL results": 3
+        }
+      },
+      "monthly_aggregates": {
+        "total_tested": 5,
+        "successful": 5,
+        "success_rate": 1.0,
+        "avg_response_time": 9.6,
+        "common_errors": {
+          "SPARQL generation failure": 5
+        }
+      },
+      "monthly_mean_from_daily": {
+        "total_tested": 5,
+        "successful": 0,
+        "success_rate": 0.0,
+        "avg_response_time": 11.903,
+        "common_errors": {
+          "Empty SPARQL results": 5
+        }
+      },
+      "sample_observations": {
+        "total_tested": 5,
+        "successful": 5,
+        "success_rate": 1.0,
+        "avg_response_time": 9.982,
+        "common_errors": {
+          "Empty SPARQL results": 4,
+          "SPARQL generation failure": 1
+        }
+      },
+      "timeseries_statistics": {
+        "total_tested": 10,
+        "successful": 7,
+        "success_rate": 0.7,
+        "avg_response_time": 9.775,
+        "common_errors": {
+          "SPARQL generation failure": 9,
+          "Empty SPARQL results": 1
+        }
+      },
+      "timeseries_statistics_by_feature": {
+        "total_tested": 5,
+        "successful": 5,
+        "success_rate": 1.0,
+        "avg_response_time": 10.793,
+        "common_errors": {
+          "Empty SPARQL results": 4,
+          "SPARQL generation failure": 1
+        }
+      },
+      "top_extremes_for_property": {
+        "total_tested": 5,
+        "successful": 5,
+        "success_rate": 1.0,
+        "avg_response_time": 9.587,
+        "common_errors": {
+          "SPARQL generation failure": 5
+        }
+      }
+    },
+    "error_analysis": {
+      "Empty SPARQL results": 43,
+      "SPARQL generation failure": 26,
+      "Formatting failure": 4,
+      "Unknown failure": 2
+    }
+  },
+  "per_run_results": [
+    {
+      "run_number": 1,
+      "timestamp": "2026-07-04T17:41:45.507416",
+      "total_tests": 16,
+      "test_results": [
+        {
+          "test_id": 1,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "Provide an overview of observation variables in the dataset",
+          "expected_template": "list_properties",
+          "predicted_template": "list_properties",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 8.259,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data found.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent correctly states that no data is available, which aligns with the evidence.",
+            "missing_coverage": [
+              "Lists climate variables",
+              "Shows observation counts"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 2,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "What are grids available in the dataset?",
+          "expected_template": "list_features_of_interest",
+          "predicted_template": "list_features_of_interest",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 8.15,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data found.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent correctly states that no data was found, which aligns with the evidence.",
+            "missing_coverage": [
+              "Lists grid points",
+              "Shows feature URIs"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 3,
+          "category": "subsampling",
+          "difficulty": "easy",
+          "selected_question": "Show me some sample observations",
+          "expected_template": "sample_observations",
+          "predicted_template": "sample_observations",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.652,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for any observations from 1950 to 2024 (Source: EOBS).",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer claims no data is available, but it does not provide any sample observations or values as requested.",
+            "missing_coverage": [
+              "Sample data points",
+              "Time stamps",
+              "Values"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 4,
+          "category": "overview",
+          "difficulty": "medium",
+          "selected_question": "Give me an overview of climate observations for 2024",
+          "expected_template": "all_properties_summary",
+          "predicted_template": "all_properties_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 8.992,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No climate observations are available for the year 2024 (Source: EOBS).",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent's answer accurately reflects the absence of climate observations for 2024 as indicated by the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 5,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "What are statistics about relative humidity for 1960?",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "timeseries_statistics",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.612,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer does not provide any statistics or relevant data for relative humidity in 1960, nor does it address any of the expected coverage items.",
+            "missing_coverage": [
+              "Mean",
+              "Min",
+              "Max",
+              "Count",
+              "Temperature",
+              "Date range: 1960",
+              "Date range: 2010",
+              "Date range: 2024"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 6,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "Show me average precipitation in March 1975",
+          "expected_template": "average_for_property_date_range",
+          "predicted_template": "average_for_property_date_range",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.406,
+          "sparql_success": true,
+          "returned_rows": 1,
+          "answer": "There is no average precipitation data available for March 1975 (Result count: 1).",
+          "answer_correctness": "partially_correct",
+          "error_category": null,
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer incorrectly states that there is data available when the evidence shows there is none.",
+            "missing_coverage": [
+              "Temperature",
+              "Average",
+              "Date range: 2020",
+              "Date range: 2010"
+            ],
+            "incorrect_claims": [
+              "There is average precipitation data available for March 1975."
+            ]
+          }
+        },
+        {
+          "test_id": 7,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "Calculate monthly precipitation totals for 1965",
+          "expected_template": "monthly_aggregates",
+          "predicted_template": "monthly_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.628,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer does not provide any data or calculations for monthly precipitation totals for 1965, and it incorrectly states that the data is unavailable when it is simply not present in the evidence.",
+            "missing_coverage": [
+              "Monthly aggregates",
+              "Precipitation"
+            ],
+            "incorrect_claims": [
+              "The system only contains climate observations for 1950-01-01 to 2024-12-31."
+            ]
+          }
+        },
+        {
+          "test_id": 8,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "Give me daily precipitation statistics for June 1970",
+          "expected_template": "daily_aggregates",
+          "predicted_template": "daily_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.766,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer does not provide any data for June 1970 and incorrectly states that it cannot answer the question despite the date being within the available range.",
+            "missing_coverage": [
+              "Daily aggregates",
+              "Temperature",
+              "Humidity",
+              "Precipitation"
+            ],
+            "incorrect_claims": [
+              "The system does not have data for June 1970."
+            ]
+          }
+        },
+        {
+          "test_id": 9,
+          "category": "extreme-values",
+          "difficulty": "medium",
+          "selected_question": "What were the highest temperature values in 2023?",
+          "expected_template": "top_extremes_for_property",
+          "predicted_template": "top_extremes_for_property",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.702,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent did not provide any temperature values for 2023, nor did it address the expected coverage items.",
+            "missing_coverage": [
+              "Temperature",
+              "Precipitation",
+              "Humidity",
+              "Maximum values",
+              "Minimum values"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 10,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Show me humidity values between 30 and 40 percent in 2022",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 12.141,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data was found for humidity values between 30 and 40 percent in 2022 (Source: EOBS).",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent correctly states that no data was found for the specified humidity range in 2022.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 11,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Find precipitation values above 30 mm in 2000",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.178,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data was found for precipitation values above 30 mm in 2000. Therefore, I cannot provide any specific observations for that year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer fails to address the expected coverage items and incorrectly states the date range as 2000 instead of 2024.",
+            "missing_coverage": [
+              "Temperature",
+              "Threshold filter",
+              "Humidity",
+              "Date range: Summer 2024",
+              "Date range: 1995"
+            ],
+            "incorrect_claims": [
+              "No data was found for precipitation values above 30 mm in 2000."
+            ]
+          }
+        },
+        {
+          "test_id": 12,
+          "category": "location-based",
+          "difficulty": "medium",
+          "selected_question": "What are grids near lat: 67.8, lon: 20.3",
+          "expected_template": "features_near_coordinates",
+          "predicted_template": "features_near_coordinates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.879,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "Found nearest observation station 'sensor_823' (1977.2 km from None) via lamah_ce geometry graph.\n\nNo data is available for the grids near latitude 67.8 and longitude 20.3. Therefore, I cannot provide any specific information about that location.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer incorrectly claims to have found a nearby observation station and provides a distance without any supporting evidence.",
+            "missing_coverage": [
+              "Nearby features"
+            ],
+            "incorrect_claims": [
+              "Found nearest observation station 'sensor_823' (1977.2 km from None)",
+              "I cannot provide any specific information about that location."
+            ]
+          }
+        },
+        {
+          "test_id": 13,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "What was the weather in France during 1985?",
+          "expected_template": "location_based_summary",
+          "predicted_template": "location_based_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 28.503,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for the weather in France during 1985.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that there is no data available for the specified time and location.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 14,
+          "category": "nested-aggregation",
+          "difficulty": "hard",
+          "selected_question": "What was the mean daily temperature in 2011?",
+          "expected_template": "monthly_mean_from_daily",
+          "predicted_template": "daily_aggregates",
+          "template_match": false,
+          "execution_success": true,
+          "execution_time_seconds": 13.277,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for the mean daily temperature in 2011. Therefore, I cannot provide any specific temperature information for that year.",
+          "answer_correctness": "partially_correct",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent correctly states that there is no data available for the mean daily temperature in 2011.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 15,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "Compare humidity across different grid points in 2019",
+          "expected_template": "timeseries_statistics_by_feature",
+          "predicted_template": "timeseries_statistics_by_feature",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.739,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for humidity across different grid points in 2019. Therefore, I cannot provide any comparisons.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that there is no data available for humidity in 2019, which aligns with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 16,
+          "category": "multi-year-comparison",
+          "difficulty": "hard",
+          "selected_question": "Show me wind speed trends for the last 5 years",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "timeseries_statistics",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.412,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent did not provide any data or analysis regarding wind speed trends, humidity, or decadal analysis despite the question asking for specific trends.",
+            "missing_coverage": [
+              "Wind speed",
+              "Humidity",
+              "Decadal analysis"
+            ],
+            "incorrect_claims": []
+          }
+        }
+      ],
+      "summary": {
+        "total": 16,
+        "template_accuracy": 0.9375,
+        "execution_success_rate": 1.0,
+        "sparql_success_rate": 0.6875,
+        "answer_correct": 0,
+        "answer_partial": 2,
+        "answer_incorrect": 14,
+        "avg_execution_time": 11.331,
+        "min_execution_time": 8.15,
+        "max_execution_time": 28.503,
+        "std_execution_time": 4.774,
+        "judge_correct": 7,
+        "judge_partial": 0,
+        "judge_incorrect": 9,
+        "judge_error": 0,
+        "judge_not_evaluated": 0,
+        "avg_judge_score": 0.4375
+      }
+    },
+    {
+      "run_number": 2,
+      "timestamp": "2026-07-04T17:45:26.666089",
+      "total_tests": 16,
+      "test_results": [
+        {
+          "test_id": 1,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "What variables are available?",
+          "expected_template": "list_properties",
+          "predicted_template": "list_properties",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 8.17,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data found.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that no data is available, which aligns with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 2,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "What are grids available in the dataset?",
+          "expected_template": "list_features_of_interest",
+          "predicted_template": "list_features_of_interest",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 8.196,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data found.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent correctly states that no data was found, which aligns with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 3,
+          "category": "subsampling",
+          "difficulty": "easy",
+          "selected_question": "Show me some sample observations",
+          "expected_template": "sample_observations",
+          "predicted_template": "sample_observations",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.12,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for any observations from 1950 to 2024 (Source: EOBS).",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer claims no data is available, but it does not provide any sample observations or values as requested.",
+            "missing_coverage": [
+              "Sample data points",
+              "Time stamps",
+              "Values"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 4,
+          "category": "overview",
+          "difficulty": "medium",
+          "selected_question": "What was the climate like in 1950?",
+          "expected_template": "all_properties_summary",
+          "predicted_template": "all_properties_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 13.339,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for the climate in 1950. Therefore, I cannot provide any specific information about the climate during that year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that there is no data available for 1950, which aligns with the evidence provided.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 5,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "Calculate temperature statistics for 2024",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "timeseries_statistics",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.558,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer does not provide any temperature statistics for the specified date ranges and incorrectly states the available data range.",
+            "missing_coverage": [
+              "Mean",
+              "Min",
+              "Max",
+              "Count",
+              "Temperature",
+              "Date range: 1960",
+              "Date range: 2010",
+              "Date range: 2024"
+            ],
+            "incorrect_claims": [
+              "The system only contains climate observations for 1950-01-01 to 2024-12-31."
+            ]
+          }
+        },
+        {
+          "test_id": 6,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "What is the average humidity for 2010?",
+          "expected_template": "average_for_property_date_range",
+          "predicted_template": "average_for_property_date_range",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.162,
+          "sparql_success": true,
+          "returned_rows": 1,
+          "answer": "The average humidity for the year 2010 is not available (N/A) based on the data provided. There is only one observation for the time range from January 1, 2010, to January 1, 2011.",
+          "answer_correctness": "incorrect",
+          "error_category": "Unknown failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "partially_correct",
+            "score": 0.6,
+            "reason": "The agent correctly states that the average humidity for 2010 is not available, but it does not address the expected coverage items related to temperature and precipitation.",
+            "missing_coverage": [
+              "Temperature",
+              "Precipitation",
+              "Average"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 7,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "Calculate monthly precipitation totals for 1965",
+          "expected_template": "monthly_aggregates",
+          "predicted_template": "monthly_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.892,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer does not provide any data or calculations for monthly precipitation totals for 1965, and it incorrectly states that the data is unavailable when it is simply not present in the evidence.",
+            "missing_coverage": [
+              "Monthly aggregates",
+              "Precipitation"
+            ],
+            "incorrect_claims": [
+              "The system only contains climate observations for 1950-01-01 to 2024-12-31."
+            ]
+          }
+        },
+        {
+          "test_id": 8,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "What are daily humidity averages for March 2000",
+          "expected_template": "daily_aggregates",
+          "predicted_template": "daily_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.372,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer does not provide any information about daily humidity averages for March 2000 and incorrectly states that it cannot answer due to lack of data, despite the question being within the available date range.",
+            "missing_coverage": [
+              "Daily aggregates",
+              "Temperature",
+              "Humidity",
+              "Precipitation",
+              "Date range: March 2000"
+            ],
+            "incorrect_claims": [
+              "The system does not have data for March 2000."
+            ]
+          }
+        },
+        {
+          "test_id": 9,
+          "category": "extreme-values",
+          "difficulty": "medium",
+          "selected_question": "What were the highest humidity values in 1970",
+          "expected_template": "top_extremes_for_property",
+          "predicted_template": "top_extremes_for_property",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.602,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent did not provide any information regarding humidity values for 1970, nor did it address the expected coverage items.",
+            "missing_coverage": [
+              "Temperature",
+              "Precipitation",
+              "Humidity",
+              "Maximum values",
+              "Minimum values"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 10,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Show me wind speed between 5 and 15 m/s in 2020",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.424,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data was found for wind speed between 5 and 15 m/s in 2020. Therefore, I cannot provide any observations for that year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that no data was found for the specified wind speed range in 2020, which is consistent with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 11,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Find precipitation values above 30 mm in 2000",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.832,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "There is no data available for precipitation values in 2000 (Source: EOBS). Therefore, I cannot provide any values above 30 mm for that year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer fails to address the expected coverage items and incorrectly states the absence of data for 2000 without supporting evidence.",
+            "missing_coverage": [
+              "Temperature",
+              "Threshold filter",
+              "Humidity",
+              "Precipitation",
+              "Date range: Summer 2024",
+              "Date range: 1995"
+            ],
+            "incorrect_claims": [
+              "There is no data available for precipitation values in 2000."
+            ]
+          }
+        },
+        {
+          "test_id": 12,
+          "category": "location-based",
+          "difficulty": "medium",
+          "selected_question": "What are grids near lat: 67.8, lon: 20.3",
+          "expected_template": "features_near_coordinates",
+          "predicted_template": "features_near_coordinates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.9,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "Found nearest observation station 'sensor_823' (1977.2 km from None) via lamah_ce geometry graph.\n\nNo data is available for the grids near latitude 67.8 and longitude 20.3 from the EOBS source. Therefore, I cannot provide any specific information about that location.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer incorrectly claims to have found a nearby observation station and provides unsupported distance information, while also failing to address the lack of data for the specified location.",
+            "missing_coverage": [
+              "Nearby features"
+            ],
+            "incorrect_claims": [
+              "Found nearest observation station 'sensor_823' (1977.2 km from None)",
+              "Specific information about that location is available"
+            ]
+          }
+        },
+        {
+          "test_id": 13,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "What was the weather in France during 1985?",
+          "expected_template": "location_based_summary",
+          "predicted_template": "location_based_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.408,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for the weather in France during 1985 (Source: EOBS).",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that there is no data available for the weather in France during 1985, which aligns with the evidence provided.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 14,
+          "category": "nested-aggregation",
+          "difficulty": "hard",
+          "selected_question": "What was the mean daily temperature in 2001?",
+          "expected_template": "monthly_mean_from_daily",
+          "predicted_template": "daily_aggregates",
+          "template_match": false,
+          "execution_success": true,
+          "execution_time_seconds": 14.399,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for the mean daily temperature in 2001. Therefore, I cannot provide any specific temperature information for that year.",
+          "answer_correctness": "partially_correct",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that there is no data available for the mean daily temperature in 2001, which is consistent with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 15,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "Compare temperature across different grid points in 2019",
+          "expected_template": "timeseries_statistics_by_feature",
+          "predicted_template": "timeseries_statistics_by_feature",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.159,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent did not provide any information or data regarding temperature comparisons for 2019, and the evidence shows no data available.",
+            "missing_coverage": [
+              "Multiple locations",
+              "Statistics per feature",
+              "Date range: 2019"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 16,
+          "category": "multi-year-comparison",
+          "difficulty": "hard",
+          "selected_question": "Show me wind speed trends for the last 5 years",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "timeseries_statistics",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.752,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer does not provide any information about wind speed trends or humidity, and it fails to address the expected coverage items.",
+            "missing_coverage": [
+              "Wind speed",
+              "Humidity",
+              "Decadal analysis"
+            ],
+            "incorrect_claims": []
+          }
+        }
+      ],
+      "summary": {
+        "total": 16,
+        "template_accuracy": 0.9375,
+        "execution_success_rate": 1.0,
+        "sparql_success_rate": 0.625,
+        "answer_correct": 0,
+        "answer_partial": 1,
+        "answer_incorrect": 15,
+        "avg_execution_time": 10.393,
+        "min_execution_time": 8.17,
+        "max_execution_time": 14.399,
+        "std_execution_time": 1.658,
+        "judge_correct": 6,
+        "judge_partial": 1,
+        "judge_incorrect": 9,
+        "judge_error": 0,
+        "judge_not_evaluated": 0,
+        "avg_judge_score": 0.4125
+      }
+    },
+    {
+      "run_number": 3,
+      "timestamp": "2026-07-04T17:48:50.874209",
+      "total_tests": 16,
+      "test_results": [
+        {
+          "test_id": 1,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "What variables are available?",
+          "expected_template": "list_properties",
+          "predicted_template": "list_properties",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 8.168,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data found.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that no data is available, which aligns with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 2,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "What are locations of observations available in the dataset?",
+          "expected_template": "list_features_of_interest",
+          "predicted_template": "list_features_of_interest",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 8.162,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data found.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent correctly states that no data is available, which aligns with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 3,
+          "category": "subsampling",
+          "difficulty": "easy",
+          "selected_question": "Show me some sample observations",
+          "expected_template": "sample_observations",
+          "predicted_template": "sample_observations",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.007,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for any observations from 1950 to 2024 (Source: EOBS).",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer claims no data is available, but it does not provide any sample observations or values as requested.",
+            "missing_coverage": [
+              "Sample data points",
+              "Time stamps",
+              "Values"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 4,
+          "category": "overview",
+          "difficulty": "medium",
+          "selected_question": "Show me climate data for 2000",
+          "expected_template": "all_properties_summary",
+          "predicted_template": "all_properties_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.268,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No climate data is available for the year 2000 (Source: EOBS).",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer incorrectly states that no climate data is available for 2000, while the evidence does not provide any data to support this claim.",
+            "missing_coverage": [
+              "All variables",
+              "Statistics",
+              "Date range: 1950",
+              "Date range: 2000",
+              "Date range: 2024"
+            ],
+            "incorrect_claims": [
+              "No climate data is available for the year 2000"
+            ]
+          }
+        },
+        {
+          "test_id": 5,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "Calculate temperature statistics for 2024",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "timeseries_statistics",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.591,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer does not provide any temperature statistics for the specified date ranges and incorrectly states the available data range.",
+            "missing_coverage": [
+              "Mean",
+              "Min",
+              "Max",
+              "Count",
+              "Temperature",
+              "Date range: 1960",
+              "Date range: 2010",
+              "Date range: 2024"
+            ],
+            "incorrect_claims": [
+              "The system contains data from 1950-01-01 to 2024-12-31."
+            ]
+          }
+        },
+        {
+          "test_id": 6,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "Show me average precipitation in March 1975",
+          "expected_template": "average_for_property_date_range",
+          "predicted_template": "average_for_property_date_range",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.136,
+          "sparql_success": true,
+          "returned_rows": 1,
+          "answer": "There is no average precipitation data available for March 1975 (1 observation).",
+          "answer_correctness": "partially_correct",
+          "error_category": null,
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer incorrectly states there is one observation when the evidence indicates there are zero observations.",
+            "missing_coverage": [
+              "Temperature",
+              "Average",
+              "Date range: 2020",
+              "Date range: 2010"
+            ],
+            "incorrect_claims": [
+              "There is no average precipitation data available for March 1975 (1 observation)"
+            ]
+          }
+        },
+        {
+          "test_id": 7,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "What was the wettest month in 2023?",
+          "expected_template": "monthly_aggregates",
+          "predicted_template": "monthly_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.602,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent did not provide any information regarding the wettest month in 2023 and failed to address the expected coverage items.",
+            "missing_coverage": [
+              "Monthly aggregates",
+              "Temperature",
+              "Precipitation"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 8,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "Give me daily precipitation statistics for June 1970",
+          "expected_template": "daily_aggregates",
+          "predicted_template": "daily_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.751,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer does not provide any data or address the specific request for June 1970 precipitation statistics.",
+            "missing_coverage": [
+              "Daily aggregates",
+              "Temperature",
+              "Humidity",
+              "Precipitation",
+              "Date range: June 1970"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 9,
+          "category": "extreme-values",
+          "difficulty": "medium",
+          "selected_question": "What were the highest humidity values in 1970",
+          "expected_template": "top_extremes_for_property",
+          "predicted_template": "top_extremes_for_property",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.568,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent did not provide any information regarding humidity values for 1970, nor did it address the expected coverage items.",
+            "missing_coverage": [
+              "Temperature",
+              "Precipitation",
+              "Humidity",
+              "Maximum values",
+              "Minimum values"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 10,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Show me wind speed between 5 and 15 m/s in 2020",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.753,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data was found for wind speed between 5 and 15 m/s in 2020. Therefore, I cannot provide any observations for that year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that no data was found for the specified wind speed range in 2020.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 11,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Find precipitation values above 30 mm in 2000",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.039,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data was found for precipitation values in 2000 (Source: EOBS). Therefore, I cannot provide any values above 30 mm for that year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer fails to address the expected coverage items and does not provide any relevant data for the specified year.",
+            "missing_coverage": [
+              "Temperature",
+              "Threshold filter",
+              "Humidity",
+              "Precipitation",
+              "Date range: Summer 2024",
+              "Date range: 1995",
+              "Date range: 2000"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 12,
+          "category": "location-based",
+          "difficulty": "medium",
+          "selected_question": "Find observation points around lat: 52.5, lon: 13.4",
+          "expected_template": "features_near_coordinates",
+          "predicted_template": "features_near_coordinates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.752,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "Found nearest observation station 'sensor_661' (310.6 km from None) via lamah_ce geometry graph.\n\nNo data was found regarding observation points around latitude 52.5 and longitude 13.4. Therefore, I cannot provide any specific information on this location.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer contains unsupported claims about a nearby observation station and fails to acknowledge the absence of data correctly.",
+            "missing_coverage": [
+              "Nearby features"
+            ],
+            "incorrect_claims": [
+              "Found nearest observation station 'sensor_661' (310.6 km from None)"
+            ]
+          }
+        },
+        {
+          "test_id": 13,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "Show me climate data in Germany during 2024",
+          "expected_template": "location_based_summary",
+          "predicted_template": "location_based_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.143,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "Found nearest observation station 'sensor_612' (13.2 km from Germany) via lamah_ce geometry graph.\n\nNo climate data is available for Germany during 2024 (Source: EOBS).",
+          "answer_correctness": "partially_correct",
+          "error_category": null,
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent correctly states that no climate data is available for Germany during 2024, which aligns with the evidence provided.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 14,
+          "category": "nested-aggregation",
+          "difficulty": "hard",
+          "selected_question": "What was the mean daily temperature in 2011?",
+          "expected_template": "monthly_mean_from_daily",
+          "predicted_template": "daily_aggregates",
+          "template_match": false,
+          "execution_success": true,
+          "execution_time_seconds": 10.711,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for the mean daily temperature in 2011. Therefore, I cannot provide any specific temperature information for that year.",
+          "answer_correctness": "partially_correct",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent correctly states that there is no data available for the mean daily temperature in 2011.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 15,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "Compare wind speed across different grid points in 2019",
+          "expected_template": "timeseries_statistics_by_feature",
+          "predicted_template": "timeseries_statistics_by_feature",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.883,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for wind speed across different grid points in 2019. Therefore, I cannot provide any comparisons.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that there is no data available for wind speed in 2019, which aligns with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 16,
+          "category": "multi-year-comparison",
+          "difficulty": "hard",
+          "selected_question": "Compare humidity between 1950 and 2024",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "timeseries_statistics_by_feature",
+          "template_match": false,
+          "execution_success": true,
+          "execution_time_seconds": 12.583,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "There is no data available for humidity in either 1950 or 2024 (Source: EOBS). Therefore, I cannot provide a comparison between these years.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that there is no data available for humidity in the specified years, which aligns with the evidence.",
+            "missing_coverage": [
+              "Wind speed",
+              "Decadal analysis"
+            ],
+            "incorrect_claims": []
+          }
+        }
+      ],
+      "summary": {
+        "total": 16,
+        "template_accuracy": 0.875,
+        "execution_success_rate": 1.0,
+        "sparql_success_rate": 0.75,
+        "answer_correct": 0,
+        "answer_partial": 3,
+        "answer_incorrect": 13,
+        "avg_execution_time": 10.195,
+        "min_execution_time": 8.162,
+        "max_execution_time": 12.583,
+        "std_execution_time": 1.134,
+        "judge_correct": 7,
+        "judge_partial": 0,
+        "judge_incorrect": 9,
+        "judge_error": 0,
+        "judge_not_evaluated": 0,
+        "avg_judge_score": 0.4375
+      }
+    },
+    {
+      "run_number": 4,
+      "timestamp": "2026-07-04T17:52:06.937364",
+      "total_tests": 16,
+      "test_results": [
+        {
+          "test_id": 1,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "What variables are available?",
+          "expected_template": "list_properties",
+          "predicted_template": "list_properties",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 8.194,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data found.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that no data is available, which aligns with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 2,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "What are locations of observations available in the dataset?",
+          "expected_template": "list_features_of_interest",
+          "predicted_template": "list_features_of_interest",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 8.212,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data found.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent correctly states that no data is available, which aligns with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 3,
+          "category": "subsampling",
+          "difficulty": "easy",
+          "selected_question": "Show me some sample observations",
+          "expected_template": "sample_observations",
+          "predicted_template": "sample_observations",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.256,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "Could you please specify which climate property you are interested in?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent did not provide any sample observations or data points as requested.",
+            "missing_coverage": [
+              "Sample data points",
+              "Time stamps",
+              "Values"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 4,
+          "category": "overview",
+          "difficulty": "medium",
+          "selected_question": "Show me climate data for 2000",
+          "expected_template": "all_properties_summary",
+          "predicted_template": "all_properties_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 8.912,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No climate data is available for the year 2000 (Source: EOBS).",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer incorrectly states that no climate data is available for 2000, while the evidence does not provide any data to support this claim.",
+            "missing_coverage": [
+              "All variables",
+              "Statistics",
+              "Date range: 1950",
+              "Date range: 2000",
+              "Date range: 2024"
+            ],
+            "incorrect_claims": [
+              "No climate data is available for the year 2000"
+            ]
+          }
+        },
+        {
+          "test_id": 5,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "Show me wind speed statistics for 2010",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "timeseries_statistics",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.188,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent did not provide any wind speed statistics or relevant data despite the question asking for specific statistics for 2010.",
+            "missing_coverage": [
+              "Mean",
+              "Min",
+              "Max",
+              "Count",
+              "Temperature",
+              "Date range: 1960",
+              "Date range: 2010",
+              "Date range: 2024"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 6,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "What is the average humidity for 2010?",
+          "expected_template": "average_for_property_date_range",
+          "predicted_template": "average_for_property_date_range",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.495,
+          "sparql_success": true,
+          "returned_rows": 1,
+          "answer": "The average humidity for the year 2010 is not available (N/A) based on the data from EOBS.",
+          "answer_correctness": "incorrect",
+          "error_category": "Unknown failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent correctly states that the average humidity for 2010 is not available based on the evidence provided.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 7,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "Show monthly temperature averages for 2022",
+          "expected_template": "monthly_aggregates",
+          "predicted_template": "monthly_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.296,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer does not provide any data or address the user's request for monthly temperature averages for 2022.",
+            "missing_coverage": [
+              "Monthly aggregates",
+              "Temperature",
+              "Precipitation"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 8,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "Show daily temperature averages for January 2024",
+          "expected_template": "daily_aggregates",
+          "predicted_template": "daily_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.577,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer does not provide any data or address the expected coverage items, and it incorrectly states the date range of available data.",
+            "missing_coverage": [
+              "Daily aggregates",
+              "Temperature",
+              "Humidity",
+              "Precipitation",
+              "Date range: January 2024",
+              "Date range: March 2000",
+              "Date range: June 1970"
+            ],
+            "incorrect_claims": [
+              "The system only contains climate observations for 1950-01-01 to 2024-12-31."
+            ]
+          }
+        },
+        {
+          "test_id": 9,
+          "category": "extreme-values",
+          "difficulty": "medium",
+          "selected_question": "What were the highest humidity values in 1970",
+          "expected_template": "top_extremes_for_property",
+          "predicted_template": "top_extremes_for_property",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.494,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent did not provide any information regarding humidity values for 1970, nor did it address the expected coverage items.",
+            "missing_coverage": [
+              "Temperature",
+              "Precipitation",
+              "Humidity",
+              "Maximum values",
+              "Minimum values"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 10,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Show me wind speed between 5 and 15 m/s in 2020",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.011,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data was found for wind speed between 5 and 15 m/s in 2020. Therefore, I cannot provide any observations for that year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that no data was found for the specified wind speed range in 2020, which is consistent with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 11,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Find precipitation values above 30 mm in 2000",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.081,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "There is no data available for precipitation values in 2000 (Source: EOBS). Therefore, I cannot provide any values above 30 mm for that year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer fails to address the expected coverage items and does not provide any relevant information about temperature, humidity, or the specified date ranges.",
+            "missing_coverage": [
+              "Temperature",
+              "Humidity",
+              "Precipitation",
+              "Date range: Summer 2024",
+              "Date range: 1995"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 12,
+          "category": "location-based",
+          "difficulty": "medium",
+          "selected_question": "What locations are near coordinates 48.5, 9.0?",
+          "expected_template": "features_near_coordinates",
+          "predicted_template": "features_near_coordinates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.66,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "Found nearest observation station 'sensor_750' (27.1 km from None) via lamah_ce geometry graph.\n\nNo data found for locations near coordinates 48.5, 9.0.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer claims to find a nearby observation station but provides no valid data or locations, and the distance is nonsensical.",
+            "missing_coverage": [
+              "Nearby features"
+            ],
+            "incorrect_claims": [
+              "Found nearest observation station 'sensor_750' (27.1 km from None)"
+            ]
+          }
+        },
+        {
+          "test_id": 13,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "What was the weather in France during 1985?",
+          "expected_template": "location_based_summary",
+          "predicted_template": "location_based_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.455,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for the weather in France during 1985 (Source: EOBS).",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that there is no data available for the weather in France during 1985, which aligns with the evidence provided.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 14,
+          "category": "nested-aggregation",
+          "difficulty": "hard",
+          "selected_question": "What was the mean daily temperature in 2001?",
+          "expected_template": "monthly_mean_from_daily",
+          "predicted_template": "daily_aggregates",
+          "template_match": false,
+          "execution_success": true,
+          "execution_time_seconds": 10.323,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for the mean daily temperature in 2001. Therefore, I cannot provide any specific information for that year.",
+          "answer_correctness": "partially_correct",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that there is no data available for the mean daily temperature in 2001, which is consistent with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 15,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "Compare wind speed across different grid points in 2019",
+          "expected_template": "timeseries_statistics_by_feature",
+          "predicted_template": "timeseries_statistics_by_feature",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.553,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for wind speed across different grid points in 2019. Therefore, I cannot provide a comparison.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that there is no data available for wind speed in 2019, addressing all expected coverage items.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 16,
+          "category": "multi-year-comparison",
+          "difficulty": "hard",
+          "selected_question": "Show temperature patterns decade by decade from 1950 to 2024",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "monthly_aggregates",
+          "template_match": false,
+          "execution_success": true,
+          "execution_time_seconds": 9.36,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer does not provide any information on temperature patterns or the expected coverage items, and it incorrectly states a lack of data despite the specified date range.",
+            "missing_coverage": [
+              "Wind speed",
+              "Humidity",
+              "Decadal analysis"
+            ],
+            "incorrect_claims": [
+              "I don't have enough information to answer that question.",
+              "This system only contains climate observations for 1950-01-01 to 2024-12-31."
+            ]
+          }
+        }
+      ],
+      "summary": {
+        "total": 16,
+        "template_accuracy": 0.875,
+        "execution_success_rate": 1.0,
+        "sparql_success_rate": 0.625,
+        "answer_correct": 0,
+        "answer_partial": 1,
+        "answer_incorrect": 15,
+        "avg_execution_time": 9.629,
+        "min_execution_time": 8.194,
+        "max_execution_time": 11.081,
+        "std_execution_time": 0.866,
+        "judge_correct": 7,
+        "judge_partial": 0,
+        "judge_incorrect": 9,
+        "judge_error": 0,
+        "judge_not_evaluated": 0,
+        "avg_judge_score": 0.4375
+      }
+    },
+    {
+      "run_number": 5,
+      "timestamp": "2026-07-04T17:55:15.870150",
+      "total_tests": 16,
+      "test_results": [
+        {
+          "test_id": 1,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "What variables are available?",
+          "expected_template": "list_properties",
+          "predicted_template": "list_properties",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 8.296,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data found.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that no data is available, which aligns with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 2,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "List all locations of observations available",
+          "expected_template": "list_features_of_interest",
+          "predicted_template": "list_features_of_interest",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 8.174,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data found.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent correctly states that there are no observations available, which aligns with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 3,
+          "category": "subsampling",
+          "difficulty": "easy",
+          "selected_question": "Show me some sample observations",
+          "expected_template": "sample_observations",
+          "predicted_template": "sample_observations",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.874,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for any observations from 1950 to 2024 (Source: EOBS).",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer claims no data is available, but it does not provide any sample observations or values as requested.",
+            "missing_coverage": [
+              "Sample data points",
+              "Time stamps",
+              "Values"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 4,
+          "category": "overview",
+          "difficulty": "medium",
+          "selected_question": "Give me an overview of climate observations for 2024",
+          "expected_template": "all_properties_summary",
+          "predicted_template": "all_properties_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.398,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "There are no climate observations available for the year 2024 (Source: EOBS).",
+          "answer_correctness": "incorrect",
+          "error_category": "Formatting failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that there are no climate observations available for 2024, which is supported by the absence of data in the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 5,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "What are statistics about relative humidity for 1960?",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "timeseries_statistics",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.419,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer does not provide any statistics or relevant data for relative humidity in 1960, nor does it address any of the expected coverage items.",
+            "missing_coverage": [
+              "Mean",
+              "Min",
+              "Max",
+              "Count",
+              "Temperature",
+              "Date range: 1960",
+              "Date range: 2010",
+              "Date range: 2024"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 6,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "Show me average precipitation in March 1975",
+          "expected_template": "average_for_property_date_range",
+          "predicted_template": "average_for_property_date_range",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.544,
+          "sparql_success": true,
+          "returned_rows": 1,
+          "answer": "There is no average precipitation data available for March 1975 (Result count: 1).",
+          "answer_correctness": "partially_correct",
+          "error_category": null,
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer incorrectly states that there is data available when the evidence shows there is none.",
+            "missing_coverage": [
+              "Temperature",
+              "Average",
+              "Date range: 2020",
+              "Date range: 2010"
+            ],
+            "incorrect_claims": [
+              "There is average precipitation data available for March 1975."
+            ]
+          }
+        },
+        {
+          "test_id": 7,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "Show monthly temperature averages for 2022",
+          "expected_template": "monthly_aggregates",
+          "predicted_template": "monthly_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.584,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer does not provide any data or address the user's request for monthly temperature averages for 2022.",
+            "missing_coverage": [
+              "Monthly aggregates",
+              "Temperature",
+              "Precipitation"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 8,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "What are daily humidity averages for March 2000",
+          "expected_template": "daily_aggregates",
+          "predicted_template": "daily_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.6,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer does not provide any information about daily humidity averages for March 2000 and incorrectly states that it cannot answer due to lack of data, despite the date being within the available range.",
+            "missing_coverage": [
+              "Daily aggregates",
+              "Temperature",
+              "Humidity",
+              "Precipitation",
+              "Date range: March 2000"
+            ],
+            "incorrect_claims": [
+              "The system does not have data for March 2000."
+            ]
+          }
+        },
+        {
+          "test_id": 9,
+          "category": "extreme-values",
+          "difficulty": "medium",
+          "selected_question": "What were the highest humidity values in 1970",
+          "expected_template": "top_extremes_for_property",
+          "predicted_template": "top_extremes_for_property",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.567,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent did not provide any information regarding humidity values for 1970, nor did it address the expected coverage items.",
+            "missing_coverage": [
+              "Temperature",
+              "Precipitation",
+              "Humidity",
+              "Maximum values",
+              "Minimum values"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 10,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Show me wind speed between 5 and 15 m/s in 2020",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.588,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data was found for wind speed between 5 and 15 m/s in 2020. Therefore, I cannot provide any observations for that year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that no data was found for the specified wind speed range in 2020.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 11,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Find humidity values below 20% in 1995",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 11.356,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data was found for humidity values in 1995 (Source: EOBS). Therefore, I cannot provide any humidity values below 20% for that year.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer fails to address the expected coverage items and incorrectly states the absence of data without acknowledging the specified date ranges.",
+            "missing_coverage": [
+              "Temperature",
+              "Threshold filter",
+              "Humidity",
+              "Precipitation",
+              "Date range: Summer 2024",
+              "Date range: 2000"
+            ],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 12,
+          "category": "location-based",
+          "difficulty": "medium",
+          "selected_question": "What locations are near coordinates 48.5, 9.0?",
+          "expected_template": "features_near_coordinates",
+          "predicted_template": "features_near_coordinates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.742,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "Found nearest observation station 'sensor_750' (27.1 km from None) via lamah_ce geometry graph.\n\nNo data is available regarding locations near the coordinates 48.5, 9.0. Therefore, I cannot provide specific information about nearby locations.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The agent's answer contains unsupported claims and does not provide any evidence-based information about nearby features.",
+            "missing_coverage": [
+              "Nearby features"
+            ],
+            "incorrect_claims": [
+              "Found nearest observation station 'sensor_750' (27.1 km from None)"
+            ]
+          }
+        },
+        {
+          "test_id": 13,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "Show me climate data in Germany during 2024",
+          "expected_template": "location_based_summary",
+          "predicted_template": "location_based_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 9.807,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "Found nearest observation station 'sensor_612' (13.2 km from Germany) via lamah_ce geometry graph.\n\nNo data is available for Germany during 2024 (Source: EOBS).",
+          "answer_correctness": "partially_correct",
+          "error_category": null,
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent correctly states that there is no data available for Germany during 2024, which aligns with the evidence provided.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 14,
+          "category": "nested-aggregation",
+          "difficulty": "hard",
+          "selected_question": "What was the mean daily temperature in 2001?",
+          "expected_template": "monthly_mean_from_daily",
+          "predicted_template": "daily_aggregates",
+          "template_match": false,
+          "execution_success": true,
+          "execution_time_seconds": 10.807,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for the mean daily temperature in 2001. Therefore, I cannot provide any specific temperature information for that year.",
+          "answer_correctness": "partially_correct",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that there is no data available for the mean daily temperature in 2001, which is consistent with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 15,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "Compare wind speed across different grid points in 2019",
+          "expected_template": "timeseries_statistics_by_feature",
+          "predicted_template": "timeseries_statistics_by_feature",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 10.631,
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "No data is available for wind speed across different grid points in 2019. Therefore, I cannot provide any comparisons.",
+          "answer_correctness": "incorrect",
+          "error_category": "Empty SPARQL results",
+          "notes": "",
+          "llm_judge": {
+            "label": "correct",
+            "score": 1.0,
+            "reason": "The agent accurately states that there is no data available for wind speed in 2019, which aligns with the evidence.",
+            "missing_coverage": [],
+            "incorrect_claims": []
+          }
+        },
+        {
+          "test_id": 16,
+          "category": "multi-year-comparison",
+          "difficulty": "hard",
+          "selected_question": "Show temperature patterns decade by decade from 1950 to 2024",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "monthly_aggregates",
+          "template_match": false,
+          "execution_success": true,
+          "execution_time_seconds": 9.274,
+          "sparql_success": false,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "answer_correctness": "incorrect",
+          "error_category": "SPARQL generation failure",
+          "notes": "",
+          "llm_judge": {
+            "label": "incorrect",
+            "score": 0.0,
+            "reason": "The answer does not provide any information on temperature patterns or the expected coverage items, and it incorrectly states a lack of data despite the specified date range.",
+            "missing_coverage": [
+              "Wind speed",
+              "Humidity",
+              "Decadal analysis"
+            ],
+            "incorrect_claims": [
+              "I don't have enough information to answer that question.",
+              "This system only contains climate observations for 1950-01-01 to 2024-12-31."
+            ]
+          }
+        }
+      ],
+      "summary": {
+        "total": 16,
+        "template_accuracy": 0.875,
+        "execution_success_rate": 1.0,
+        "sparql_success_rate": 0.6875,
+        "answer_correct": 0,
+        "answer_partial": 3,
+        "answer_incorrect": 13,
+        "avg_execution_time": 9.791,
+        "min_execution_time": 8.174,
+        "max_execution_time": 11.356,
+        "std_execution_time": 0.854,
+        "judge_correct": 7,
+        "judge_partial": 0,
+        "judge_incorrect": 9,
+        "judge_error": 0,
+        "judge_not_evaluated": 0,
+        "avg_judge_score": 0.4375
+      }
+    }
+  ],
+  "per_run_summaries": [
+    {
+      "total": 16,
+      "template_accuracy": 0.9375,
+      "execution_success_rate": 1.0,
+      "sparql_success_rate": 0.6875,
+      "answer_correct": 0,
+      "answer_partial": 2,
+      "answer_incorrect": 14,
+      "avg_execution_time": 11.331,
+      "min_execution_time": 8.15,
+      "max_execution_time": 28.503,
+      "std_execution_time": 4.774,
+      "judge_correct": 7,
+      "judge_partial": 0,
+      "judge_incorrect": 9,
+      "judge_error": 0,
+      "judge_not_evaluated": 0,
+      "avg_judge_score": 0.4375
+    },
+    {
+      "total": 16,
+      "template_accuracy": 0.9375,
+      "execution_success_rate": 1.0,
+      "sparql_success_rate": 0.625,
+      "answer_correct": 0,
+      "answer_partial": 1,
+      "answer_incorrect": 15,
+      "avg_execution_time": 10.393,
+      "min_execution_time": 8.17,
+      "max_execution_time": 14.399,
+      "std_execution_time": 1.658,
+      "judge_correct": 6,
+      "judge_partial": 1,
+      "judge_incorrect": 9,
+      "judge_error": 0,
+      "judge_not_evaluated": 0,
+      "avg_judge_score": 0.4125
+    },
+    {
+      "total": 16,
+      "template_accuracy": 0.875,
+      "execution_success_rate": 1.0,
+      "sparql_success_rate": 0.75,
+      "answer_correct": 0,
+      "answer_partial": 3,
+      "answer_incorrect": 13,
+      "avg_execution_time": 10.195,
+      "min_execution_time": 8.162,
+      "max_execution_time": 12.583,
+      "std_execution_time": 1.134,
+      "judge_correct": 7,
+      "judge_partial": 0,
+      "judge_incorrect": 9,
+      "judge_error": 0,
+      "judge_not_evaluated": 0,
+      "avg_judge_score": 0.4375
+    },
+    {
+      "total": 16,
+      "template_accuracy": 0.875,
+      "execution_success_rate": 1.0,
+      "sparql_success_rate": 0.625,
+      "answer_correct": 0,
+      "answer_partial": 1,
+      "answer_incorrect": 15,
+      "avg_execution_time": 9.629,
+      "min_execution_time": 8.194,
+      "max_execution_time": 11.081,
+      "std_execution_time": 0.866,
+      "judge_correct": 7,
+      "judge_partial": 0,
+      "judge_incorrect": 9,
+      "judge_error": 0,
+      "judge_not_evaluated": 0,
+      "avg_judge_score": 0.4375
+    },
+    {
+      "total": 16,
+      "template_accuracy": 0.875,
+      "execution_success_rate": 1.0,
+      "sparql_success_rate": 0.6875,
+      "answer_correct": 0,
+      "answer_partial": 3,
+      "answer_incorrect": 13,
+      "avg_execution_time": 9.791,
+      "min_execution_time": 8.174,
+      "max_execution_time": 11.356,
+      "std_execution_time": 0.854,
+      "judge_correct": 7,
+      "judge_partial": 0,
+      "judge_incorrect": 9,
+      "judge_error": 0,
+      "judge_not_evaluated": 0,
+      "avg_judge_score": 0.4375
+    }
+  ]
+}

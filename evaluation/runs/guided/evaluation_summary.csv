@@ -1,0 +1,30 @@
+Metric,Value
+avg_template_accuracy,0.9
+std_template_accuracy,0.0342
+min_template_accuracy,0.875
+max_template_accuracy,0.9375
+avg_execution_success_rate,1.0
+avg_answer_correct,0
+avg_answer_partial,2
+avg_answer_incorrect,14
+avg_latency,10.268
+min_latency,8.15
+max_latency,28.503
+std_latency,0.668
+overall_score,0.738
+
+Category,Total,TemplateAccuracy,ExecSuccessRate,AvgTime
+aggregation,20,1.0,1.0,9.909
+extreme-values,5,1.0,1.0,9.587
+filtering,10,1.0,1.0,11.14
+location-based,15,1.0,1.0,11.348
+multi-year-comparison,5,0.4,1.0,10.076
+nested-aggregation,5,0.0,1.0,11.903
+overview,15,1.0,1.0,8.926
+subsampling,5,1.0,1.0,9.982
+
+ErrorCategory,Count
+Empty SPARQL results,43
+SPARQL generation failure,26
+Formatting failure,4
+Unknown failure,2

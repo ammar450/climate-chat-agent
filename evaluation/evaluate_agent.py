@@ -31,6 +31,110 @@ from collections import defaultdict, Counter
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.agent.graph_agent import run_agent
+from src.llm.llm_client import chat as llm_chat, LLMError
+
+
+# ──────────────────────────────────────────────
+# LLM-AS-JUDGE
+# ──────────────────────────────────────────────
+
+JUDGE_SYSTEM_PROMPT = """
+You are a strict, evidence-based evaluation judge for a climate data Q&A system.
+You will be given:
+  - A user question
+  - A list of expected coverage items the answer should address
+  - The raw SPARQL evidence (data rows returned by the query)
+  - The agent's answer
+
+Your task: evaluate whether the agent's answer is accurate, complete, and grounded.
+
+Rules:
+1. ONLY use the provided evidence to judge — do not use external knowledge.
+2. Every factual claim in the answer must be traceable to the evidence.
+3. Expected coverage items should be addressed (exact wording not required — semantic equivalence is fine).
+4. Units, time periods, locations, and climate variable names must be correct.
+5. Penalise hallucinated values, unsupported claims, or missing critical information.
+
+Return ONLY valid JSON in this exact schema (no markdown, no prose outside the JSON):
+{
+  "label": "correct" | "partially_correct" | "incorrect",
+  "score": <float 0.0–1.0>,
+  "reason": "<concise single sentence>",
+  "missing_coverage": ["<item1>", ...],
+  "incorrect_claims": ["<claim1>", ...]
+}
+
+Scoring guide:
+  correct          → score 0.8–1.0  (all key coverage present, no unsupported claims)
+  partially_correct→ score 0.4–0.79 (mostly correct but incomplete or minor issues)
+  incorrect        → score 0.0–0.39 (major hallucinations, wrong data, or critically incomplete)
+"""
+
+
+def run_llm_judge(
+    question: str,
+    answer: str,
+    expected_coverage: List[str],
+    evidence_rows: List[Any],
+    model: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Use an LLM to judge the answer quality against the evidence.
+    Returns a dict with keys: label, score, reason, missing_coverage, incorrect_claims.
+    On failure returns label='judge_error'.
+    """
+    # Truncate evidence to avoid token overflow (keep first 30 rows)
+    evidence_sample = evidence_rows[:30] if evidence_rows else []
+    evidence_text = json.dumps(evidence_sample, ensure_ascii=False, default=str)
+    if len(evidence_text) > 3000:
+        evidence_text = evidence_text[:3000] + "... [truncated]"
+
+    coverage_text = "\n".join(f"- {c}" for c in expected_coverage) if expected_coverage else "(none specified)"
+
+    user_content = f"""Question: {question}
+
+Expected coverage items:
+{coverage_text}
+
+Evidence (raw SPARQL results):
+{evidence_text}
+
+Agent answer:
+{answer}"""
+
+    messages = [
+        {"role": "system", "content": JUDGE_SYSTEM_PROMPT.strip()},
+        {"role": "user", "content": user_content},
+    ]
+
+    # Parse model spec "provider:model_name"
+    provider, model_name = None, None
+    if model and ":" in model:
+        provider, model_name = model.split(":", 1)
+
+    try:
+        raw = llm_chat(messages, provider=provider, model=model_name, temperature=0.0, max_tokens=500)
+        # Strip markdown code fences if present
+        raw = raw.strip()
+        if raw.startswith("```"):
+            raw = raw.split("\n", 1)[-1]
+            raw = raw.rsplit("```", 1)[0].strip()
+        parsed = json.loads(raw)
+        return {
+            "label": parsed.get("label", "judge_error"),
+            "score": float(parsed.get("score", 0.0)),
+            "reason": parsed.get("reason", ""),
+            "missing_coverage": parsed.get("missing_coverage", []),
+            "incorrect_claims": parsed.get("incorrect_claims", []),
+        }
+    except (LLMError, json.JSONDecodeError, Exception) as exc:
+        return {
+            "label": "judge_error",
+            "score": 0.0,
+            "reason": str(exc)[:200],
+            "missing_coverage": [],
+            "incorrect_claims": [],
+        }
 
 
 # ──────────────────────────────────────────────
@@ -66,7 +170,7 @@ def classify_error(result: Dict[str, Any], exception: Optional[Exception] = None
     if not result.get("sparql"):
         return "SPARQL generation failure"
 
-    if not result.get("results") or len(result.get("results", [])) == 0:
+    if not result.get("rows") or len(result.get("rows", [])) == 0:
         if any(p in answer for p in ["no data", "i don't have", "i'm sorry", "no results"]):
             return "Empty SPARQL results"
         return "Formatting failure"
@@ -87,7 +191,7 @@ def evaluate_answer_correctness(result: Dict[str, Any], test_case: Dict[str, Any
     template = result.get("used_template", "")
     expected = test_case.get("expected_template", "")
     expected_coverage = [c.lower() for c in test_case.get("expected_coverage", [])]
-    rows = result.get("results", [])
+    rows = result.get("rows", [])
 
     if not answer or any(p in answer for p in ["i'm sorry", "i don't have enough", "error"]):
         return "incorrect"
@@ -123,6 +227,7 @@ def run_single_evaluation(
     test_cases: List[Dict],
     model: str = None,
     run_number: int = 1,
+    use_llm_judge: bool = False,
 ) -> Dict[str, Any]:
     """Run one evaluation pass over all test cases with random question selection."""
     run_results = {
@@ -168,7 +273,7 @@ def run_single_evaluation(
 
             predicted = result.get("used_template", "error")
             answer = result.get("answer", "")
-            rows = result.get("results", [])
+            rows = result.get("rows", [])
 
             result_entry["predicted_template"] = predicted
             result_entry["template_match"] = (predicted == expected_template)
@@ -178,6 +283,23 @@ def run_single_evaluation(
             result_entry["returned_rows"] = len(rows) if rows else 0
             result_entry["answer"] = answer[:500]
             result_entry["answer_correctness"] = evaluate_answer_correctness(result, tc)
+
+            # LLM-as-judge (optional)
+            if use_llm_judge:
+                if result_entry["execution_success"] and answer:
+                    print(f"  🤖 Running LLM-as-judge for test {qid}...")
+                    judge = run_llm_judge(
+                        question=selected_question,
+                        answer=answer,
+                        expected_coverage=tc.get("expected_coverage", []),
+                        evidence_rows=rows or [],
+                        model=model,
+                    )
+                else:
+                    judge = {"label": "not_evaluated", "score": 0.0, "reason": "execution failed",
+                             "missing_coverage": [], "incorrect_claims": []}
+                result_entry["llm_judge"] = judge
+                print(f"    Label: {judge['label']}  Score: {judge['score']:.2f}  | {judge['reason'][:80]}")
 
             if not result_entry["template_match"] or result_entry["answer_correctness"] == "incorrect":
                 result_entry["error_category"] = classify_error(result)
@@ -199,6 +321,21 @@ def run_single_evaluation(
     times = [r["execution_time_seconds"] for r in run_results["test_results"]]
     correctness = Counter(r["answer_correctness"] for r in run_results["test_results"])
 
+    # LLM judge summary (only when judge ran)
+    judge_results = [r["llm_judge"] for r in run_results["test_results"] if "llm_judge" in r]
+    judge_summary: Dict[str, Any] = {}
+    if judge_results:
+        evaluated = [j for j in judge_results if j["label"] not in ("judge_error", "not_evaluated")]
+        label_counts = Counter(j["label"] for j in judge_results)
+        judge_summary = {
+            "judge_correct": label_counts.get("correct", 0),
+            "judge_partial": label_counts.get("partially_correct", 0),
+            "judge_incorrect": label_counts.get("incorrect", 0),
+            "judge_error": label_counts.get("judge_error", 0),
+            "judge_not_evaluated": label_counts.get("not_evaluated", 0),
+            "avg_judge_score": round(statistics.mean([j["score"] for j in evaluated]), 4) if evaluated else 0.0,
+        }
+
     run_results["summary"] = {
         "total": total,
         "template_accuracy": round(template_matches / total, 4) if total else 0,
@@ -211,6 +348,7 @@ def run_single_evaluation(
         "min_execution_time": round(min(times), 3) if times else 0,
         "max_execution_time": round(max(times), 3) if times else 0,
         "std_execution_time": round(statistics.stdev(times), 3) if len(times) > 1 else 0,
+        **judge_summary,
     }
 
     return run_results
@@ -236,8 +374,18 @@ def aggregate_runs(all_runs: List[Dict[str, Any]], test_cases: List[Dict]) -> Di
             "avg_execution_success_rate": round(statistics.mean([s["execution_success_rate"] for s in summaries]), 4),
             "avg_answer_correct": round(statistics.mean([s["answer_correct"] for s in summaries]), 1),
             "avg_answer_partial": round(statistics.mean([s["answer_partial"] for s in summaries]), 1),
-            "avg_answer_incorrect": round(statistics.mean([s["answer_incorrect"] for s in summaries]), 1),
-            "avg_latency": round(statistics.mean([s["avg_execution_time"] for s in summaries]), 3),
+            "avg_answer_incorrect": round(statistics.mean([s["answer_incorrect"] for s in summaries]), 1),        # LLM judge aggregate (present only when --llm-judge was used)
+        **(
+            {
+                "avg_judge_score": round(statistics.mean([s.get("avg_judge_score", 0.0) for s in summaries]), 4),
+                "avg_judge_correct": round(statistics.mean([s.get("judge_correct", 0) for s in summaries]), 1),
+                "avg_judge_partial": round(statistics.mean([s.get("judge_partial", 0) for s in summaries]), 1),
+                "avg_judge_incorrect": round(statistics.mean([s.get("judge_incorrect", 0) for s in summaries]), 1),
+                "avg_judge_error": round(statistics.mean([s.get("judge_error", 0) for s in summaries]), 1),
+            }
+            if any("avg_judge_score" in s for s in summaries)
+            else {}
+        ),            "avg_latency": round(statistics.mean([s["avg_execution_time"] for s in summaries]), 3),
             "min_latency": round(min(s["min_execution_time"] for s in summaries), 3),
             "max_latency": round(max(s["max_execution_time"] for s in summaries), 3),
             "std_latency": round(statistics.stdev([s["avg_execution_time"] for s in summaries]), 3) if num_runs > 1 else 0,
@@ -246,7 +394,11 @@ def aggregate_runs(all_runs: List[Dict[str, Any]], test_cases: List[Dict]) -> Di
             statistics.mean([
                 s["template_accuracy"] * 0.35 +
                 s["execution_success_rate"] * 0.25 +
-                (s["answer_correct"] / s["total"]) * 0.40
+                (
+                    s.get("avg_judge_score", s["answer_correct"] / s["total"]) * 0.40
+                    if "avg_judge_score" in s
+                    else (s["answer_correct"] / s["total"]) * 0.40
+                )
                 for s in summaries
             ]), 4
         ),
@@ -378,16 +530,31 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, o
     L.append(f"| Answer Correct | {m.get('avg_answer_correct', 0):.0f} / run |")
     L.append(f"| Answer Partial | {m.get('avg_answer_partial', 0):.0f} / run |")
     L.append(f"| Answer Incorrect | {m.get('avg_answer_incorrect', 0):.0f} / run |")
+    if "avg_judge_score" in m:
+        L.append(f"| **LLM Judge Score** | **{m.get('avg_judge_score', 0):.3f}** |")
+        L.append(f"| Judge Correct | {m.get('avg_judge_correct', 0):.0f} / run |")
+        L.append(f"| Judge Partial | {m.get('avg_judge_partial', 0):.0f} / run |")
+        L.append(f"| Judge Incorrect | {m.get('avg_judge_incorrect', 0):.0f} / run |")
+        L.append(f"| Judge Errors | {m.get('avg_judge_error', 0):.0f} / run |")
     L.append(f"| Avg Latency | {m.get('avg_latency', 0):.2f}s |")
     L.append(f"| Latency Range | {m.get('min_latency', 0):.2f}s – {m.get('max_latency', 0):.2f}s |")
     L.append(f"| **Overall Score** | **{aggregate.get('overall_score', 0):.1%}** |")
     L.append("")
     L.append("## 📋 Per-Run Summary")
-    L.append("| Run | Templ Acc | Exec Success | Correct | Partial | Incorrect | Avg Time |")
-    L.append("|--- |--- |--- |--- |--- |--- |--- |")
-    for run in all_runs:
-        s = run["summary"]
-        L.append(f"| {run['run_number']} | {s['template_accuracy']:.1%} | {s['execution_success_rate']:.1%} | {s['answer_correct']} | {s['answer_partial']} | {s['answer_incorrect']} | {s['avg_execution_time']:.2f}s |")
+    has_judge = any("avg_judge_score" in r["summary"] for r in all_runs)
+    if has_judge:
+        L.append("| Run | Templ Acc | Exec Success | Correct | Partial | Incorrect | Judge Score | Judge C/P/I | Avg Time |")
+        L.append("|--- |--- |--- |--- |--- |--- |--- |--- |--- |")
+        for run in all_runs:
+            s = run["summary"]
+            jcpi = f"{s.get('judge_correct',0)}/{s.get('judge_partial',0)}/{s.get('judge_incorrect',0)}"
+            L.append(f"| {run['run_number']} | {s['template_accuracy']:.1%} | {s['execution_success_rate']:.1%} | {s['answer_correct']} | {s['answer_partial']} | {s['answer_incorrect']} | {s.get('avg_judge_score',0):.3f} | {jcpi} | {s['avg_execution_time']:.2f}s |")
+    else:
+        L.append("| Run | Templ Acc | Exec Success | Correct | Partial | Incorrect | Avg Time |")
+        L.append("|--- |--- |--- |--- |--- |--- |--- |")
+        for run in all_runs:
+            s = run["summary"]
+            L.append(f"| {run['run_number']} | {s['template_accuracy']:.1%} | {s['execution_success_rate']:.1%} | {s['answer_correct']} | {s['answer_partial']} | {s['answer_incorrect']} | {s['avg_execution_time']:.2f}s |")
     L.append("")
     L.append("## 🏷️ Category-wise Analysis")
     L.append("| Category | Tests | Templ Acc | Exec Success | Avg Time | Common Errors |")
@@ -419,12 +586,22 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, o
         L.append(row)
     L.append("")
     L.append("## 📝 Detailed Results (Run 1)")
-    L.append("| ID | Cat | Question | Expected | Predicted | Match | Rows | Correct | Time |")
-    L.append("|--- |--- |--- |--- |--- |--- |--- |--- |--- |")
-    for tr in all_runs[0]["test_results"]:
-        q = tr["selected_question"][:60]
-        mch = "✅" if tr["template_match"] else "❌"
-        L.append(f"| {tr['test_id']} | {tr['category']} | {q} | {tr['expected_template']} | {tr['predicted_template']} | {mch} | {tr['returned_rows']} | {tr['answer_correctness']} | {tr['execution_time_seconds']:.2f}s |")
+    run1_has_judge = any("llm_judge" in tr for tr in all_runs[0]["test_results"])
+    if run1_has_judge:
+        L.append("| ID | Cat | Question | Expected | Predicted | Match | Rows | Rule | Judge | Score | Time |")
+        L.append("|--- |--- |--- |--- |--- |--- |--- |--- |--- |--- |--- |")
+        for tr in all_runs[0]["test_results"]:
+            q = tr["selected_question"][:55]
+            mch = "✅" if tr["template_match"] else "❌"
+            j = tr.get("llm_judge", {})
+            L.append(f"| {tr['test_id']} | {tr['category']} | {q} | {tr['expected_template']} | {tr['predicted_template']} | {mch} | {tr['returned_rows']} | {tr['answer_correctness']} | {j.get('label','—')} | {j.get('score',0):.2f} | {tr['execution_time_seconds']:.2f}s |")
+    else:
+        L.append("| ID | Cat | Question | Expected | Predicted | Match | Rows | Correct | Time |")
+        L.append("|--- |--- |--- |--- |--- |--- |--- |--- |--- |")
+        for tr in all_runs[0]["test_results"]:
+            q = tr["selected_question"][:60]
+            mch = "✅" if tr["template_match"] else "❌"
+            L.append(f"| {tr['test_id']} | {tr['category']} | {q} | {tr['expected_template']} | {tr['predicted_template']} | {mch} | {tr['returned_rows']} | {tr['answer_correctness']} | {tr['execution_time_seconds']:.2f}s |")
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(L))
     print(f"[REPORT] MD -> {output_path}")
@@ -441,11 +618,17 @@ def main():
     parser.add_argument("--model", type=str, default="openai:gpt-4o-mini", help="LLM model")
     parser.add_argument("--test-file", type=str, default="evaluation/test_questions.json")
     parser.add_argument("--output-dir", type=str, default="evaluation")
+    parser.add_argument("--llm-judge", action="store_true", help="Enable LLM-as-judge answer evaluation")
     args = parser.parse_args()
 
     seed = args.seed if args.seed is not None else random.randint(1, 99999)
     random.seed(seed)
-    print(f"[EVAL] Seed: {seed} | Runs: {args.runs} | Model: {args.model}")
+    use_llm_judge = args.llm_judge
+    print(f"[EVAL] Seed: {seed} | Runs: {args.runs} | Model: {args.model} | LLM-Judge: {use_llm_judge}")
+    if use_llm_judge:
+        print("[EVAL] " + "=" * 60)
+        print("[EVAL] 🤖 LLM-AS-JUDGE MODE ENABLED")
+        print("[EVAL] " + "=" * 60)
 
     test_file = os.path.join(os.path.dirname(__file__), "test_questions.json")
     with open(test_file, "r", encoding="utf-8") as f:
@@ -456,10 +639,15 @@ def main():
     all_runs = []
     for rn in range(1, args.runs + 1):
         print(f"\n[EVAL] === Run {rn}/{args.runs} ===")
-        rr = run_single_evaluation(test_cases, model=args.model, run_number=rn)
+        rr = run_single_evaluation(test_cases, model=args.model, run_number=rn, use_llm_judge=use_llm_judge)
         s = rr["summary"]
+        judge_info = ""
+        if use_llm_judge:
+            judge_info = (f" | judge_score={s.get('avg_judge_score', 0):.3f}"
+                          f" JC={s.get('judge_correct', 0)} JP={s.get('judge_partial', 0)}"
+                          f" JI={s.get('judge_incorrect', 0)}")
         print(f"[EVAL] Run {rn}: acc={s['template_accuracy']:.1%} ok={s['execution_success_rate']:.1%} "
-              f"C={s['answer_correct']} P={s['answer_partial']} I={s['answer_incorrect']} t={s['avg_execution_time']:.2f}s")
+              f"C={s['answer_correct']} P={s['answer_partial']} I={s['answer_incorrect']} t={s['avg_execution_time']:.2f}s{judge_info}")
         all_runs.append(rr)
 
     print(f"\n[EVAL] Aggregating...")
@@ -478,6 +666,9 @@ def main():
     print(f"  Template Accuracy:  {m['avg_template_accuracy']:.1%} +/- {m['std_template_accuracy']:.1%}")
     print(f"  Execution Success:  {m['avg_execution_success_rate']:.1%}")
     print(f"  Correct/Partial/Incorrect: {m['avg_answer_correct']:.0f}/{m['avg_answer_partial']:.0f}/{m['avg_answer_incorrect']:.0f}")
+    if use_llm_judge and "avg_judge_score" in m:
+        print(f"  LLM Judge Score:    {m['avg_judge_score']:.3f}")
+        print(f"  Judge C/P/I/Err:    {m.get('avg_judge_correct',0):.0f}/{m.get('avg_judge_partial',0):.0f}/{m.get('avg_judge_incorrect',0):.0f}/{m.get('avg_judge_error',0):.0f}")
     print(f"  Avg Latency:        {m['avg_latency']:.2f}s")
     print(f"  Overall Score:      {agg['overall_score']:.1%}")
     print("=" * 60)

@@ -320,6 +320,16 @@ def resolve_node(state: AgentState) -> AgentState:
             state["selected_feature_uri"] = f"http://obs.nfdi4earth.de/resource/feature/{feature_id}"
             print(f"[RESOLVE] Feature: {state['selected_feature_uri']}")
     
+    # Pre-detect explicit lat/lon coordinates BEFORE city/country detection.
+    # This prevents e.g. 'lon' in 'lat: 67.8, lon: 20.3' from fuzzy-matching to 'Lyon'.
+    _pre_latlon_re = re.compile(
+        r'(?:lat(?:itude)?)[:\s]+([\-\+]?\d+\.?\d*)[,\s]+(?:lon(?:gitude)?)[:\s]+([\-\+]?\d+\.?\d*)',
+        re.IGNORECASE,
+    )
+    has_explicit_coords = bool(_pre_latlon_re.search(user_message))
+    if has_explicit_coords:
+        print("[RESOLVE] Explicit lat/lon detected — skipping city/country name detection")
+
     # Parse location: country name or coordinates
     # European and Mediterranean countries (dataset contains primarily European data from 1950-2024)
     available_countries = [
@@ -390,7 +400,9 @@ def resolve_node(state: AgentState) -> AgentState:
                 "autumn", "fall", "january", "february", "march", "april", "may", "june",
                 "july", "august", "september", "october", "november", "december",
                 "highest", "lowest", "wettest", "driest", "coldest", "warmest",
-                "above", "below", "decade", "patterns", "last", "next", "recent"
+                "above", "below", "decade", "patterns", "last", "next", "recent",
+                # coordinate keywords — must never fuzzy-match to city names
+                "lat", "lon", "lng", "latitude", "longitude", "coord", "coords",
             }
             words = re.findall(r'[a-z]+', msg_lower)
             best_city = None
@@ -425,8 +437,10 @@ def resolve_node(state: AgentState) -> AgentState:
                 state["location_name"] = country_detected
                 print(f"[RESOLVE] City detected (fuzzy, dist={best_dist}): {state['location_name']}")
     
-    # If location detected, try to resolve to coordinates and feature URI
-    if country_detected and not state.get("coordinates"):
+    # If location detected, try to resolve to coordinates and feature URI.
+    # Skip when the query already contains explicit lat/lon — avoids contaminating
+    # the coordinate query with an unrelated city's lamah_ce sensor.
+    if country_detected and not state.get("coordinates") and not has_explicit_coords:
         # Try country bbox from lamah_ce geometry graph first
         print(f"[RESOLVE] Trying lamah_ce geometry for '{country_detected}'...")
         country_bbox = location_resolver.get_country_bbox(country_detected, run_sparql)
