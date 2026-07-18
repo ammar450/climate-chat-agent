@@ -4,6 +4,7 @@ Property URI resolver with domain dictionary and caching.
 
 from typing import Optional, List, Tuple
 from src.query.sparql_client import run_sparql, GRAPH
+import os
 import threading
 
 
@@ -461,7 +462,7 @@ class LocationResolver:
         "amman": (31.96, 35.95),
     }
     
-    # Country name to ISO A3 code mapping (for lamah_ce geometry lookups)
+    # Country name to ISO A3 code mapping (for EOBS geometry lookups)
     COUNTRY_ISO_MAP = {
         "germany": "DEU", "deutschland": "DEU",
         "austria": "AUT", "österreich": "AUT",
@@ -481,8 +482,8 @@ class LocationResolver:
         "finland": "FIN",
     }
     
-    # LAMAH_CE geometry graph
-    GEOMETRY_GRAPH = "hydroturtle/lamah_ce"
+    # Geometry graph for spatial lookups (uses the configured EOBS graph)
+    GEOMETRY_GRAPH = os.getenv("GRAPH_IRI", "climateobservations/eobs-v31")
     
     @staticmethod
     def get_country_iso_code(country_name: str) -> Optional[str]:
@@ -492,7 +493,7 @@ class LocationResolver:
     @staticmethod
     def get_country_bbox(country_name: str, sparql_client_func) -> Optional[dict]:
         """
-        Get bounding box of sensor stations in a country from lamah_ce geometry graph.
+        Get bounding box of sensor stations in a country from EOBS geometry graph.
         Parses WKT in Python for reliability.
         """
         import re
@@ -538,13 +539,13 @@ class LocationResolver:
                 "min_lat": min(lats), "max_lat": max(lats),
                 "min_lng": min(lngs), "max_lng": max(lngs),
                 "feature_count": len(lats),
-                "source": "lamah_ce", "iso_code": iso_code,
+                "source": "eobs", "iso_code": iso_code,
             }
             print(f"[GEOMETRY] {country_name} ({iso_code}): {len(lats)} stations, "
                   f"bbox=({bbox['min_lat']:.2f},{bbox['min_lng']:.2f})-({bbox['max_lat']:.2f},{bbox['max_lng']:.2f})")
             return bbox
         except Exception as e:
-            print(f"[GEOMETRY] lamah_ce query failed for {iso_code}: {e}")
+            print(f"[GEOMETRY] EOBS query failed for {iso_code}: {e}")
         return None
     
     @staticmethod
@@ -591,7 +592,7 @@ class LocationResolver:
     def find_nearest_feature(lat: float, lon: float, sparql_client_func) -> Optional[str]:
         """
         Find the nearest feature URI given coordinates.
-        Tries lamah_ce geometry first, then EOBS URI extraction.
+        Tries EOBS geometry first, then EOBS URI extraction.
         """
         result = LocationResolver.find_nearest_feature_with_distance(lat, lon, sparql_client_func)
         if result:
@@ -599,8 +600,8 @@ class LocationResolver:
         return None
     
     @staticmethod
-    def find_nearest_lamah_ce_feature(lat: float, lon: float, sparql_client_func) -> Optional[tuple]:
-        """Find nearest feature from lamah_ce geometry graph using actual POINT geometry."""
+    def find_nearest_geometry_feature(lat: float, lon: float, sparql_client_func) -> Optional[tuple]:
+        """Find nearest feature from EOBS geometry graph using actual POINT geometry."""
         import math, re
         query = f"""
         PREFIX geo: <http://www.opengis.net/ont/geosparql#>
@@ -629,10 +630,10 @@ class LocationResolver:
                     nearest_feature = row["feature"]["value"]
                     nearest_name = row.get("name", {}).get("value")
             if nearest_feature:
-                print(f"[GEOMETRY] Nearest lamah_ce: {nearest_feature} ({min_distance:.2f}km) name={nearest_name}")
+                print(f"[GEOMETRY] Nearest EOBS: {nearest_feature} ({min_distance:.2f}km) name={nearest_name}")
                 return nearest_feature, min_distance
         except Exception as e:
-            print(f"[GEOMETRY] lamah_ce nearest error: {e}")
+            print(f"[GEOMETRY] EOBS nearest error: {e}")
         return None
 
     @staticmethod

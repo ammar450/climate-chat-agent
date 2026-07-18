@@ -439,26 +439,26 @@ def resolve_node(state: AgentState) -> AgentState:
     
     # If location detected, try to resolve to coordinates and feature URI.
     # Skip when the query already contains explicit lat/lon — avoids contaminating
-    # the coordinate query with an unrelated city's lamah_ce sensor.
+    # the coordinate query with an unrelated city's sensor.
     if country_detected and not state.get("coordinates") and not has_explicit_coords:
-        # Try country bbox from lamah_ce geometry graph first
-        print(f"[RESOLVE] Trying lamah_ce geometry for '{country_detected}'...")
+        # Try country bbox from EOBS geometry graph first
+        print(f"[RESOLVE] Trying EOBS geometry for '{country_detected}'...")
         country_bbox = location_resolver.get_country_bbox(country_detected, run_sparql)
         if country_bbox:
             # Use center of bbox as coordinates
             center_lat = (country_bbox["min_lat"] + country_bbox["max_lat"]) / 2
             center_lon = (country_bbox["min_lng"] + country_bbox["max_lng"]) / 2
             state["coordinates"] = {"lat": center_lat, "lon": center_lon}
-            state["location_resolution_method"] = "lamah_ce_geometry"
+            state["location_resolution_method"] = "eobs_geometry"
             state["debug"]["country_bbox"] = country_bbox
             state["nearest_grid_message"] = (
                 f"Using {country_bbox['feature_count']} station locations in '{country_detected}' "
-                f"(via lamah_ce geometry graph). Bounding box: "
+                f"(via EOBS geometry graph). Bounding box: "
                 f"({country_bbox['min_lat']:.1f}°-{country_bbox['max_lat']:.1f}°N, "
                 f"{country_bbox['min_lng']:.1f}°-{country_bbox['max_lng']:.1f}°E). "
-                f"[Sources: EOBS + lamah_ce]"
+                f"[Sources: EOBS]"
             )
-            print(f"[RESOLVE] Country '{country_detected}' resolved via lamah_ce: "
+            print(f"[RESOLVE] Country '{country_detected}' resolved via EOBS: "
                   f"bbox=({country_bbox['min_lat']:.2f},{country_bbox['min_lng']:.2f})-"
                   f"({country_bbox['max_lat']:.2f},{country_bbox['max_lng']:.2f})")
         else:
@@ -529,22 +529,22 @@ def resolve_node(state: AgentState) -> AgentState:
     # If we have coordinates but no feature URI, try to find nearest feature
     if state.get("coordinates") and not state.get("selected_feature_uri"):
         coords = state["coordinates"]
-        # Try lamah_ce geometry first (real POINT data)
-        print(f"[RESOLVE] Looking up nearest feature via lamah_ce geometry...")
-        lamah_result = location_resolver.find_nearest_lamah_ce_feature(
+        # Try EOBS geometry first (real POINT data)
+        print(f"[RESOLVE] Looking up nearest feature via EOBS geometry...")
+        geom_result = location_resolver.find_nearest_geometry_feature(
             coords["lat"], coords["lon"], run_sparql
         )
-        if lamah_result:
-            feature_uri, dist_km = lamah_result
+        if geom_result:
+            feature_uri, dist_km = geom_result
             state["selected_feature_uri"] = feature_uri
-            state["location_resolution_method"] = "lamah_ce_geometry"
+            state["location_resolution_method"] = "eobs_geometry"
             loc_label = state.get("location_name", f"{coords['lat']:.4f},{coords['lon']:.4f}")
             state["nearest_grid_message"] = (
                 f"Found nearest observation station '{feature_uri.split('/')[-1]}' "
-                f"({dist_km:.1f} km from {loc_label}) via lamah_ce geometry graph."
+                f"({dist_km:.1f} km from {loc_label}) via EOBS geometry graph."
             )
-            state["debug"]["geometry_source"] = "lamah_ce"
-            print(f"[RESOLVE] lamah_ce match: {feature_uri} ({dist_km:.1f} km)")
+            state["debug"]["geometry_source"] = "eobs"
+            print(f"[RESOLVE] EOBS match: {feature_uri} ({dist_km:.1f} km)")
         else:
             # Fallback to EOBS URI coordinate extraction
             try:
@@ -1119,12 +1119,12 @@ def build_query_node(state: AgentState) -> AgentState:
         print(f"[BUILD_QUERY] Using property URI from state: {state['selected_property_uri']}")
     
     if state.get("selected_feature_uri"):
-        # Skip lamah_ce feature URIs - they don't exist in EOBS observation graph
-        if state.get("location_resolution_method") == "lamah_ce_geometry":
-            print(f"[BUILD_QUERY] Skipping lamah_ce feature URI (not in EOBS): {state['selected_feature_uri']}")
-            # For location_based_summary with lamah_ce, fallback to all_properties_summary
+        # Skip EOBS geometry feature URIs that don't match the observation graph
+        if state.get("location_resolution_method") == "eobs_geometry":
+            print(f"[BUILD_QUERY] Skipping EOBS geometry feature URI (not in EOBS observations): {state['selected_feature_uri']}")
+            # For location_based_summary with eobs_geometry, fallback to all_properties_summary
             if template_name == "location_based_summary":
-                print(f"[BUILD_QUERY] Falling back to all_properties_summary (lamah_ce feature not in EOBS)")
+                print(f"[BUILD_QUERY] Falling back to all_properties_summary (geometry feature not in EOBS obs)")
                 template_name = "all_properties_summary"
         else:
             params["feature_uri"] = state["selected_feature_uri"]
@@ -1222,11 +1222,21 @@ def execute_sparql_node(state: AgentState) -> AgentState:
     except SPARQLSecurityError as e:
         state["sparql_rows"] = []
         state["debug"]["execute_error"] = f"Security error: {str(e)}"
+        state["debug"]["error_type"] = "security"
         state["final_answer"] = f"Security violation: {str(e)}"
     except Exception as e:
         state["sparql_rows"] = []
-        state["debug"]["execute_error"] = str(e)
-        state["final_answer"] = f"Query execution failed: {str(e)}"
+        error_str = str(e)
+        state["debug"]["execute_error"] = error_str
+        # Categorize the error for better user messaging
+        error_lower = error_str.lower()
+        if any(kw in error_lower for kw in ["connection refused", "connectionrefused", "errno 10061", "no connection", "unreachable", "timed out", "timeout", "name or service not known", "getaddrinfo failed", "nodename nor servname"]):
+            state["debug"]["error_type"] = "endpoint_unreachable"
+        elif "sparql" in error_lower:
+            state["debug"]["error_type"] = "sparql_error"
+        else:
+            state["debug"]["error_type"] = "unknown"
+        state["final_answer"] = f"Query execution failed: {error_str}"
     
     return state
 
@@ -1872,6 +1882,22 @@ def _friendly_unable_to_answer_message() -> str:
     )
 
 
+def _sparql_endpoint_unreachable_message(error_detail: str = "") -> str:
+    """
+    Clear message when the SPARQL knowledge graph endpoint is unreachable.
+    """
+    return (
+        "⚠️ The climate knowledge graph database is currently unreachable. "
+        "This means I cannot retrieve any climate observation data right now.\n\n"
+        "Possible causes:\n"
+        "- The SPARQL endpoint server may be down or restarting\n"
+        "- A VPN or network connection may be required to access it\n"
+        "- The endpoint URL may have changed\n\n"
+        "Please check that the SPARQL endpoint is running and accessible, "
+        "then try again. You can verify the endpoint with the /health endpoint."
+    )
+
+
 # ============================================================================
 # CONVENIENCE FUNCTION
 # ============================================================================
@@ -1965,14 +1991,23 @@ def run_agent(
         # Format response and sanitize technical errors into friendly user messages
         raw_answer = result.get("final_answer") or ""
         raw_tech = result.get("technical_details") or "No technical details available."
+        debug_info = result.get("debug") or {}
 
-        # Only suppress the answer if it looks like a raw Python exception/traceback,
-        # not if it naturally contains words like 'error' or 'not available'.
+        # Pattern to detect raw technical errors that should not be shown to users
         _TECHNICAL_ERROR_PATTERN = re.compile(
             r"(Traceback \(most recent call|Exception:|SPARQLSecurityError:|Query execution failed:|Error building query:)",
             re.IGNORECASE,
         )
-        if _TECHNICAL_ERROR_PATTERN.search(raw_answer):
+
+        # Check if the SPARQL endpoint was unreachable — give a clear message
+        if debug_info.get("error_type") == "endpoint_unreachable":
+            user_answer = _sparql_endpoint_unreachable_message(
+                debug_info.get("execute_error", "")
+            )
+            tech_details = raw_tech
+        # Only suppress the answer if it looks like a raw Python exception/traceback,
+        # not if it naturally contains words like 'error' or 'not available'.
+        elif _TECHNICAL_ERROR_PATTERN.search(raw_answer):
             user_answer = _friendly_unable_to_answer_message()
             tech_details = "Internal error (logged)."
         else:
@@ -1994,8 +2029,24 @@ def run_agent(
         # Catch any unexpected errors and return a safe response
         import traceback
         error_trace = traceback.format_exc()
+        error_str = str(e)
         print(f"[ERROR] Agent execution failed: {e}")
         print(error_trace)
+        
+        # Detect if the error is due to SPARQL endpoint being unreachable
+        error_lower = error_str.lower()
+        if any(kw in error_lower for kw in ["connection refused", "connectionrefused", "errno 10061", "no connection", "unreachable", "timed out", "timeout", "name or service not known", "getaddrinfo failed"]):
+            return {
+                "answer": _sparql_endpoint_unreachable_message(error_str),
+                "technical_details": f"SPARQL endpoint unreachable: {error_str}",
+                "used_template": "error",
+                "sparql": "",
+                "rows": [],
+                "evidence": "",
+                "typo_corrections": {},
+                "response_format": "auto",
+                "debug": {"error": str(e), "error_type": "endpoint_unreachable"}
+            }
         
         return {
             "answer": _friendly_unable_to_answer_message(),

@@ -5,8 +5,8 @@ WORKDIR /app
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        gcc \
-        libffi-dev \
+    gcc \
+    libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy and install Python dependencies into a prefix so we can copy them later
@@ -25,6 +25,10 @@ COPY --from=builder /install /usr/local
 # Copy application code
 COPY . .
 
+# SPARQL configuration (override via .env or docker-compose environment)
+ENV GRAPH_IRI=climateobservations/eobs-v31
+ENV SPARQL_ENDPOINT=http://141.76.19.254:8890/sparql
+
 # Non-root user for security
 RUN useradd --no-create-home --shell /bin/false appuser \
     && chown -R appuser:appuser /app
@@ -32,5 +36,5 @@ USER appuser
 
 EXPOSE 8000
 
-# Use uvicorn directly so Docker signals are forwarded cleanly
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+# Single worker: in-memory cache & rate-limiting are not shared across workers
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

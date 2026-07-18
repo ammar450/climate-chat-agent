@@ -9,14 +9,23 @@ services:
     env_file:
       - .env
     environment:
-      # Override PORT if needed; app reads os.getenv("PORT", "8000")
+      # Server
       PORT: "8000"
+      # SPARQL / Graph configuration (overrides .env if set)
+      GRAPH_IRI: "climateobservations/eobs-v31"
+      SPARQL_ENDPOINT: "http://141.76.19.254:8890/sparql"
     # Makes host.docker.internal resolve to the host machine on Linux too
     # (Docker Desktop on Windows/Mac does this automatically)
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
