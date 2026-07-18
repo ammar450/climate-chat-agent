@@ -3,7 +3,7 @@
     "dataset": "E-OBS Gridded Climate Data",
     "temporal_coverage": "1950-2024 (75 years)",
     "total_questions_types": 16,
-    "total_questions": 46,
+    "total_questions": 48,
     "templates_covered": 13,
     "last_updated": "2026-06-26"
   },
@@ -28,7 +28,7 @@
     },
     {
       "id": 3,
-      "question": ["Show me some sample observations"], 
+      "question": ["Show me some sample observations", "Give me examples of observations in the dataset", "What are examples of observations from the current dataset"], 
       "expected_template": "sample_observations",
       "category": "subsampling",
       "difficulty": "easy",
