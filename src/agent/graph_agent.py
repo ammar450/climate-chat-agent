@@ -65,30 +65,10 @@ class AgentState(TypedDict):
 
 
 # ============================================================================
-# IN-MEMORY SESSION STORE (fallback if Redis not available)
+# IN-MEMORY SESSION STORE
 # ============================================================================
 
 _memory_store: Dict[str, Dict[str, Any]] = {}
-
-
-def _get_redis_client():
-    """Get Redis client if available, else None."""
-    redis_url = os.getenv("REDIS_URL")
-    if not redis_url:
-        return None
-    
-    try:
-        import redis
-        return redis.from_url(redis_url, decode_responses=True)
-    except ImportError:
-        print("[MEMORY] Redis not installed, using in-memory store")
-        return None
-    except Exception as e:
-        print(f"[MEMORY] Redis connection failed: {e}, using in-memory store")
-        return None
-
-
-_redis_client = _get_redis_client()
 
 
 # ============================================================================
@@ -133,32 +113,17 @@ def calculate_statistics(values: List[float]) -> Dict[str, float]:
 # ============================================================================
 
 def load_memory_node(state: AgentState) -> AgentState:
-    """Load session memory from Redis or in-memory dict."""
+    """Load session memory from in-memory store."""
     session_id = state["session_id"]
     
-    if _redis_client:
-        try:
-            data = _redis_client.get(f"session:{session_id}")
-            if data:
-                memory = json.loads(data)
-                state["selected_property_uri"] = memory.get("selected_property_uri")
-                state["selected_feature_uri"] = memory.get("selected_feature_uri")
-                state["time_range"] = memory.get("time_range")
-                state["location_name"] = memory.get("location_name")
-                state["coordinates"] = memory.get("coordinates")
-                print(f"[MEMORY] Loaded from Redis: {session_id}")
-        except Exception as e:
-            print(f"[MEMORY] Redis load error: {e}")
-    else:
-        # In-memory fallback
-        if session_id in _memory_store:
-            memory = _memory_store[session_id]
-            state["selected_property_uri"] = memory.get("selected_property_uri")
-            state["selected_feature_uri"] = memory.get("selected_feature_uri")
-            state["time_range"] = memory.get("time_range")
-            state["location_name"] = memory.get("location_name")
-            state["coordinates"] = memory.get("coordinates")
-            print(f"[MEMORY] Loaded from in-memory: {session_id}")
+    if session_id in _memory_store:
+        memory = _memory_store[session_id]
+        state["selected_property_uri"] = memory.get("selected_property_uri")
+        state["selected_feature_uri"] = memory.get("selected_feature_uri")
+        state["time_range"] = memory.get("time_range")
+        state["location_name"] = memory.get("location_name")
+        state["coordinates"] = memory.get("coordinates")
+        print(f"[MEMORY] Loaded from in-memory: {session_id}")
     
     state["debug"]["memory_loaded"] = True
     return state
@@ -441,24 +406,24 @@ def resolve_node(state: AgentState) -> AgentState:
     # Skip when the query already contains explicit lat/lon — avoids contaminating
     # the coordinate query with an unrelated city's sensor.
     if country_detected and not state.get("coordinates") and not has_explicit_coords:
-        # Try country bbox from EOBS geometry graph first
-        print(f"[RESOLVE] Trying EOBS geometry for '{country_detected}'...")
+        # Try country bbox from known city coordinates
+        print(f"[RESOLVE] Computing country bbox for '{country_detected}'...")
         country_bbox = location_resolver.get_country_bbox(country_detected, run_sparql)
         if country_bbox:
             # Use center of bbox as coordinates
             center_lat = (country_bbox["min_lat"] + country_bbox["max_lat"]) / 2
             center_lon = (country_bbox["min_lng"] + country_bbox["max_lng"]) / 2
             state["coordinates"] = {"lat": center_lat, "lon": center_lon}
-            state["location_resolution_method"] = "eobs_geometry"
+            state["location_resolution_method"] = "country_bbox"
             state["debug"]["country_bbox"] = country_bbox
             state["nearest_grid_message"] = (
-                f"Using {country_bbox['feature_count']} station locations in '{country_detected}' "
-                f"(via EOBS geometry graph). Bounding box: "
+                f"Using {country_bbox['feature_count']} known cities in '{country_detected}' "
+                f"to estimate bounding box: "
                 f"({country_bbox['min_lat']:.1f}°-{country_bbox['max_lat']:.1f}°N, "
                 f"{country_bbox['min_lng']:.1f}°-{country_bbox['max_lng']:.1f}°E). "
                 f"[Sources: EOBS]"
             )
-            print(f"[RESOLVE] Country '{country_detected}' resolved via EOBS: "
+            print(f"[RESOLVE] Country '{country_detected}' resolved via city coordinates: "
                   f"bbox=({country_bbox['min_lat']:.2f},{country_bbox['min_lng']:.2f})-"
                   f"({country_bbox['max_lat']:.2f},{country_bbox['max_lng']:.2f})")
         else:
@@ -1119,26 +1084,19 @@ def build_query_node(state: AgentState) -> AgentState:
         print(f"[BUILD_QUERY] Using property URI from state: {state['selected_property_uri']}")
     
     if state.get("selected_feature_uri"):
-        # Skip EOBS geometry feature URIs that don't match the observation graph
-        if state.get("location_resolution_method") == "eobs_geometry":
-            print(f"[BUILD_QUERY] Skipping EOBS geometry feature URI (not in EOBS observations): {state['selected_feature_uri']}")
-            # For location_based_summary with eobs_geometry, fallback to all_properties_summary
-            if template_name == "location_based_summary":
-                print(f"[BUILD_QUERY] Falling back to all_properties_summary (geometry feature not in EOBS obs)")
-                template_name = "all_properties_summary"
-        else:
-            params["feature_uri"] = state["selected_feature_uri"]
-            print(f"[BUILD_QUERY] Using feature URI from state: {state['selected_feature_uri']}")
-            
-            # Switch to feature-specific template if available
-            feature_templates = {
-                "timeseries_statistics": "timeseries_statistics_with_feature",
-                "daily_aggregates": "daily_aggregates_with_feature",
-                "monthly_aggregates": "monthly_aggregates_with_feature",
-            }
-            if template_name in feature_templates:
-                template_name = feature_templates[template_name]
-                print(f"[BUILD_QUERY] Switched to feature-specific template: {template_name}")
+        # Feature URI is from EOBS geometry — valid for observation filtering
+        params["feature_uri"] = state["selected_feature_uri"]
+        print(f"[BUILD_QUERY] Using feature URI from state: {state['selected_feature_uri']}")
+        
+        # Switch to feature-specific template if available
+        feature_templates = {
+            "timeseries_statistics": "timeseries_statistics_with_feature",
+            "daily_aggregates": "daily_aggregates_with_feature",
+            "monthly_aggregates": "monthly_aggregates_with_feature",
+        }
+        if template_name in feature_templates:
+            template_name = feature_templates[template_name]
+            print(f"[BUILD_QUERY] Switched to feature-specific template: {template_name}")
     elif template_name == "location_based_summary":
         # No feature URI available for location-based query - fallback to all_properties_summary
         print(f"[BUILD_QUERY] No feature URI for location_based_summary, falling back to all_properties_summary")
@@ -1766,7 +1724,7 @@ Answer the question briefly and directly in a friendly, layman-friendly way."""
 
 
 def save_memory_node(state: AgentState) -> AgentState:
-    """Save session memory to Redis or in-memory dict."""
+    """Save session memory to in-memory store."""
     session_id = state["session_id"]
     
     memory = {
@@ -1777,20 +1735,8 @@ def save_memory_node(state: AgentState) -> AgentState:
         "coordinates": state.get("coordinates"),
     }
     
-    if _redis_client:
-        try:
-            _redis_client.setex(
-                f"session:{session_id}",
-                3600,  # 1 hour TTL
-                json.dumps(memory)
-            )
-            print(f"[MEMORY] Saved to Redis: {session_id}")
-        except Exception as e:
-            print(f"[MEMORY] Redis save error: {e}")
-    else:
-        # In-memory fallback
-        _memory_store[session_id] = memory
-        print(f"[MEMORY] Saved to in-memory: {session_id}")
+    _memory_store[session_id] = memory
+    print(f"[MEMORY] Saved to in-memory: {session_id}")
     
     state["debug"]["memory_saved"] = True
     return state

@@ -11,9 +11,6 @@ langchain-core==0.1.52
 langchain-community==0.0.38  # For ChatOllama (requires langsmith>=0.1.0, compatible with core 0.1.52)
 langchain-openai==0.0.8      # For ChatOpenAI (SAIA, compatible with core 0.1.x)
 
-# Optional: Redis for session memory
-redis==5.0.1
-
 # Development
 pytest==7.4.3
 httpx==0.26.0

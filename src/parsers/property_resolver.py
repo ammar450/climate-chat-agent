@@ -493,59 +493,100 @@ class LocationResolver:
     @staticmethod
     def get_country_bbox(country_name: str, sparql_client_func) -> Optional[dict]:
         """
-        Get bounding box of sensor stations in a country from EOBS geometry graph.
-        Parses WKT in Python for reliability.
+        Get approximate bounding box for a country from known city coordinates.
+        Uses the static CITY_COORDINATES dict to derive a bounding box.
         """
-        import re
-        iso_code = LocationResolver.get_country_iso_code(country_name)
-        if not iso_code:
-            print(f"[GEOMETRY] No ISO code for '{country_name}'")
+        country_lower = country_name.lower().strip()
+        
+        # Collect all city coordinates belonging to this country
+        lats, lngs = [], []
+        for city, (lat, lon) in LocationResolver.CITY_COORDINATES.items():
+            # Determine which country this city belongs to based on coordinate ranges
+            city_country = LocationResolver._guess_country_from_coords(lat, lon)
+            if city_country and city_country.lower() == country_lower:
+                lats.append(lat)
+                lngs.append(lon)
+        
+        if not lats:
+            print(f"[GEOMETRY] No cities found for '{country_name}' in static dict")
             return None
         
-        query = f"""
-        PREFIX esco: <http://data.europa.eu/esco/model#>
-        PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-        SELECT ?wkt
-        FROM <{LocationResolver.GEOMETRY_GRAPH}>
-        WHERE {{
-          ?feature esco:isoCountryCodeA3 ?cc .
-          ?feature geo:hasGeometry ?g .
-          ?g geo:asWKT ?wkt .
-          FILTER(STR(?cc) = "{iso_code}")
-        }}
-        LIMIT 500
-        """
-        try:
-            result = sparql_client_func(query)
-            rows = result.get("results", {}).get("bindings", [])
-            if not rows:
-                print(f"[GEOMETRY] No geometry found for {iso_code}")
-                return None
-            
-            lats, lngs = [], []
-            for row in rows:
-                wkt = row.get("wkt", {}).get("value", "")
-                # Parse POINT(lon lat) or other WKT
-                m = re.search(r'POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)', wkt)
-                if m:
-                    lngs.append(float(m.group(1)))
-                    lats.append(float(m.group(2)))
-            
-            if not lats:
-                print(f"[GEOMETRY] No POINT geometries parsed for {iso_code}")
-                return None
-            
-            bbox = {
-                "min_lat": min(lats), "max_lat": max(lats),
-                "min_lng": min(lngs), "max_lng": max(lngs),
-                "feature_count": len(lats),
-                "source": "eobs", "iso_code": iso_code,
-            }
-            print(f"[GEOMETRY] {country_name} ({iso_code}): {len(lats)} stations, "
-                  f"bbox=({bbox['min_lat']:.2f},{bbox['min_lng']:.2f})-({bbox['max_lat']:.2f},{bbox['max_lng']:.2f})")
-            return bbox
-        except Exception as e:
-            print(f"[GEOMETRY] EOBS query failed for {iso_code}: {e}")
+        bbox = {
+            "min_lat": min(lats), "max_lat": max(lats),
+            "min_lng": min(lngs), "max_lng": max(lngs),
+            "feature_count": len(lats),
+            "source": "static_cities", "iso_code": LocationResolver.get_country_iso_code(country_name) or country_lower,
+        }
+        print(f"[GEOMETRY] {country_name}: {len(lats)} cities, "
+              f"bbox=({bbox['min_lat']:.2f},{bbox['min_lng']:.2f})-({bbox['max_lat']:.2f},{bbox['max_lng']:.2f})")
+        return bbox
+    
+    @staticmethod
+    def _guess_country_from_coords(lat: float, lon: float) -> Optional[str]:
+        """Rough country detection from coordinates for European region."""
+        # Germany: ~47-55N, 5-15E
+        if 47.0 <= lat <= 55.5 and 5.5 <= lon <= 15.5:
+            return "germany"
+        # France: ~42-51N, -5-8E
+        if 41.5 <= lat <= 51.5 and -5.5 <= lon <= 8.5:
+            return "france"
+        # UK: ~50-59N, -10-2E
+        if 49.5 <= lat <= 59.5 and -10.5 <= lon <= 2.5:
+            return "united kingdom"
+        # Italy: ~36-47N, 6-19E
+        if 36.0 <= lat <= 47.5 and 6.0 <= lon <= 19.0:
+            return "italy"
+        # Spain: ~36-44N, -10-4E
+        if 35.5 <= lat <= 44.5 and -10.5 <= lon <= 4.5:
+            return "spain"
+        # Poland: ~49-55N, 14-25E
+        if 48.5 <= lat <= 55.5 and 13.5 <= lon <= 25.0:
+            return "poland"
+        # Netherlands: ~50-54N, 3-8E
+        if 50.5 <= lat <= 54.0 and 3.0 <= lon <= 7.5:
+            return "netherlands"
+        # Belgium: ~49-52N, 2-7E
+        if 49.0 <= lat <= 52.0 and 2.0 <= lon <= 7.0:
+            return "belgium"
+        # Austria: ~46-49N, 9-17E
+        if 46.0 <= lat <= 49.5 and 9.0 <= lon <= 17.5:
+            return "austria"
+        # Switzerland: ~45-48N, 5-11E
+        if 45.5 <= lat <= 48.0 and 5.5 <= lon <= 11.0:
+            return "switzerland"
+        # Czech Republic: ~48-51N, 12-19E
+        if 48.0 <= lat <= 51.5 and 12.0 <= lon <= 19.0:
+            return "czech republic"
+        # Sweden: ~55-69N, 11-24E
+        if 55.0 <= lat <= 69.5 and 10.5 <= lon <= 24.5:
+            return "sweden"
+        # Norway: ~57-72N, 4-32E
+        if 57.0 <= lat <= 72.0 and 3.5 <= lon <= 32.0:
+            return "norway"
+        # Finland: ~59-70N, 19-32E
+        if 59.0 <= lat <= 70.5 and 19.0 <= lon <= 32.0:
+            return "finland"
+        # Denmark: ~54-58N, 8-15E
+        if 54.0 <= lat <= 58.5 and 7.5 <= lon <= 15.5:
+            return "denmark"
+        # Portugal: ~36-43N, -10 to -6W
+        if 36.0 <= lat <= 43.0 and -10.5 <= lon <= -6.0:
+            return "portugal"
+        # Greece: ~34-42N, 19-29E
+        if 34.0 <= lat <= 42.5 and 19.0 <= lon <= 29.0:
+            return "greece"
+        # Ireland: ~51-56N, -11 to -5W
+        if 51.0 <= lat <= 56.0 and -11.0 <= lon <= -5.0:
+            return "ireland"
+        # Hungary: ~45-49N, 16-23E
+        if 45.0 <= lat <= 49.0 and 16.0 <= lon <= 23.0:
+            return "hungary"
+        # Romania: ~43-49N, 20-30E
+        if 43.0 <= lat <= 49.0 and 20.0 <= lon <= 30.0:
+            return "romania"
+        # Turkey: ~36-42N, 26-45E
+        if 35.5 <= lat <= 42.5 and 25.5 <= lon <= 45.0:
+            return "turkey"
         return None
     
     @staticmethod
