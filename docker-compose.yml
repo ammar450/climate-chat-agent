@@ -13,7 +13,7 @@ services:
       PORT: "8000"
       # SPARQL / Graph configuration (overrides .env if set)
       GRAPH_IRI: "climateobservations/eobs-v31"
-      SPARQL_ENDPOINT: "http://141.76.19.254:8890/sparql"
+      SPARQL_ENDPOINT: "https://obs.knowledgehub.nfdi4earth.de/sparql/"
     # Makes host.docker.internal resolve to the host machine on Linux too
     # (Docker Desktop on Windows/Mac does this automatically)
     extra_hosts:

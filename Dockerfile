@@ -27,7 +27,7 @@ COPY . .
 
 # SPARQL configuration (override via .env or docker-compose environment)
 ENV GRAPH_IRI=climateobservations/eobs-v31
-ENV SPARQL_ENDPOINT=http://141.76.19.254:8890/sparql
+ENV SPARQL_ENDPOINT=https://obs.knowledgehub.nfdi4earth.de/sparql/
 
 # Non-root user for security
 RUN useradd --no-create-home --shell /bin/false appuser \
