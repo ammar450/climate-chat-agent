@@ -42,7 +42,7 @@ from src.llm.llm_client import chat as llm_chat, LLMError
 JUDGE_SYSTEM_PROMPT = """
 You are judge to assess whether the execution of a SPARQL query has been successful. 
 You will receive a question and a set of rows. Your role is to make an assessment. 
-If you think that the query has been successful, return Yes. If not, return No. 
+If you think that the query has been successful, return TRUE. If not, return FALSE. 
 In each case, provide a short explanation. Also, if the query has not been successful, provide likely reasons for the failure, only based on what you see in the rows.
 
 Return ONLY a valid JSON object.
@@ -50,7 +50,7 @@ Return ONLY a valid JSON object.
 The JSON object must have exactly this structure:
 
 {
-  "success": "Yes" | "No",
+  "success": TRUE | FALSE,
   "explanation": "<short explanation>",
   "failure_reasons": ["<reason1>", "<reason2>", ...]
 }
@@ -58,40 +58,8 @@ The JSON object must have exactly this structure:
 Rules:
 - Do not wrap the JSON in markdown.
 - Do not include any extra text before or after the JSON.
-- If success is "Yes", failure_reasons must be an empty array
+- If success is TRUE, failure_reasons must be an empty array
 """
-
-response_format = {
-    "type": "json_schema",
-    "json_schema": {
-        "name": "execution_assessment",
-        "schema": {
-            "type": "object",
-            "properties": {
-                "success": {
-                    "type": "string",
-                    "enum": ["Yes", "No"],
-                    "description": "Whether the query execution was successful."
-                },
-                "explanation": {
-                    "type": "string",
-                    "description": "Brief explanation of the assessment."
-                },
-                "failure_reasons": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "List of likely reasons for failure. Empty if success is 'Yes'."
-                }
-            },
-            "required": [
-                "success",
-                "explanation",
-                "failure_reasons"
-            ],
-            "additionalProperties": False
-        }
-    }
-}
 
 def run_llm_judge(
     question: str,
@@ -238,9 +206,8 @@ def run_single_evaluation(
             sparql_query = result.get("sparql").replace("\n", " ")
             answer = result.get("answer", "")
             rows = result.get("rows", [])
-
             exec_assessment = run_llm_judge(selected_question, rows)
-            #print("EXEC_ASSESSMENT", exec_assessment)
+            
             result_entry["predicted_template"] = predicted
             result_entry["template_match"] = (predicted == expected_template)
             result_entry["execution_success"] = bool(exec_assessment['assessment']) # compare bindings and question to see if the question has likely been a success          

@@ -3,22 +3,22 @@ avg_template_accuracy,1.0
 std_template_accuracy,0
 min_template_accuracy,1.0
 max_template_accuracy,1.0
-avg_execution_success_rate,1.0
-avg_sparql_success_rate,1.0
-avg_latency,36.452
-min_latency,4.096
-max_latency,68.587
+avg_execution_success_rate,0.1875
+avg_sparql_success_rate,0.9375
+avg_latency,28.418
+min_latency,2.146
+max_latency,60.709
 std_latency,0
-overall_score,1.0
+overall_score,0.5938
 
 Category,Total,TemplateAccuracy,ExecSuccessRate,AvgTime
-aggregation,4,1.0,1.0,34.23
-extreme-values,1,1.0,1.0,42.827
-filtering,2,1.0,1.0,43.372
-location-based,3,1.0,1.0,22.327
-multi-year-comparison,1,1.0,1.0,42.473
-nested-aggregation,1,1.0,1.0,53.492
-overview,3,1.0,1.0,30.727
-subsampling,1,1.0,1.0,61.614
+aggregation,4,1.0,0.25,24.165
+extreme-values,1,1.0,0.0,37.337
+filtering,2,1.0,0.0,37.886
+location-based,3,1.0,0.0,14.719
+multi-year-comparison,1,1.0,0.0,60.709
+nested-aggregation,1,1.0,0.0,54.003
+overview,3,1.0,0.3333,15.682
+subsampling,1,1.0,1.0,38.999
 
 ErrorCategory,Count
