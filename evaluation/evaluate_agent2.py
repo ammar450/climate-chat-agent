@@ -27,11 +27,117 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 from collections import defaultdict, Counter
 
+
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.agent.graph_agent import run_agent
 from src.llm.llm_client import chat as llm_chat, LLMError
+
+
+# ──────────────────────────────────────────────
+# LLM-AS-JUDGE
+# ──────────────────────────────────────────────
+
+JUDGE_SYSTEM_PROMPT = """
+You are judge to assess whether the execution of a SPARQL query has been successful. 
+You will receive a question and a set of rows. Your role is to make an assessment. 
+If you think that the query has been successful, return Yes. If not, return No. 
+In each case, provide a short explanation. Also, if the query has not been successful, provide likely reasons for the failure, only based on what you see in the rows.
+
+Return ONLY a valid JSON object.
+
+The JSON object must have exactly this structure:
+
+{
+  "success": "Yes" | "No",
+  "explanation": "<short explanation>",
+  "failure_reasons": ["<reason1>", "<reason2>", ...]
+}
+
+Rules:
+- Do not wrap the JSON in markdown.
+- Do not include any extra text before or after the JSON.
+- If success is "Yes", failure_reasons must be an empty array
+"""
+
+response_format = {
+    "type": "json_schema",
+    "json_schema": {
+        "name": "execution_assessment",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "string",
+                    "enum": ["Yes", "No"],
+                    "description": "Whether the query execution was successful."
+                },
+                "explanation": {
+                    "type": "string",
+                    "description": "Brief explanation of the assessment."
+                },
+                "failure_reasons": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "List of likely reasons for failure. Empty if success is 'Yes'."
+                }
+            },
+            "required": [
+                "success",
+                "explanation",
+                "failure_reasons"
+            ],
+            "additionalProperties": False
+        }
+    }
+}
+
+def run_llm_judge(
+    question: str,
+    sparql_bindings: str,
+    model: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Use an LLM to assess if the execution of the SPARQL query has been successful.
+    """
+
+    user_content = f"""Question: {question}
+
+Evidence (raw SPARQL results):
+{sparql_bindings}
+
+"""
+
+    messages = [
+        {"role": "system", "content": JUDGE_SYSTEM_PROMPT.strip()},
+        {"role": "user", "content": user_content},
+    ]
+
+    # Parse model spec "provider:model_name"
+    provider, model_name = None, None
+    if model and ":" in model:
+        provider, model_name = model.split(":", 1)
+
+    try:
+        raw = llm_chat(messages, provider=provider, model=model_name, temperature=0.0, max_tokens=500)
+        # Strip markdown code fences if present
+        raw = raw.strip()
+        if raw.startswith("```"):
+            raw = raw.split("\n", 1)[-1]
+            raw = raw.rsplit("```", 1)[0].strip()
+        parsed = json.loads(raw)
+        return {
+            "assessment": parsed['success'],
+            "explanation": parsed['explanation'],
+            "failure_reasons": parsed['failure_reasons']
+        }
+    except (LLMError, json.JSONDecodeError, Exception) as exc:
+        return {
+            "assessment": False,
+            "explanation": None,
+            "failure_reasons": str(exc)
+        }
 
 
 # ──────────────────────────────────────────────
@@ -92,6 +198,7 @@ def run_single_evaluation(
         "test_results": [],
         "summary": {},
     }
+
     i = 0  
     for tc in test_cases:
         qid = tc["id"]
@@ -111,12 +218,13 @@ def run_single_evaluation(
             "predicted_template": None,
             "template_match": False,
             "execution_success": False,
+            "execution_explanation": "",
+            "execution_failure_reasons": None,
             "execution_time_seconds": 0,
             "sparql_query": "",
             "sparql_success": False,
             "returned_rows": 0,
             "answer": "",
-            "error_category": None,
             "notes": "",
         }
 
@@ -131,30 +239,30 @@ def run_single_evaluation(
             answer = result.get("answer", "")
             rows = result.get("rows", [])
 
+            exec_assessment = run_llm_judge(selected_question, rows)
+            #print("EXEC_ASSESSMENT", exec_assessment)
             result_entry["predicted_template"] = predicted
             result_entry["template_match"] = (predicted == expected_template)
-            result_entry["execution_success"] = True
+            result_entry["execution_success"] = bool(exec_assessment['assessment']) # compare bindings and question to see if the question has likely been a success          
             result_entry["execution_time_seconds"] = round(elapsed, 3)
+            result_entry["execution_explanation"] = exec_assessment['explanation']
             result_entry["sparql_query"] = sparql_query # sparql query generated
-            #result_entry["sparql_success"] = bool(result.get("sparql")) # check if there is a SPARQL query generated
             result_entry["sparql_success"] = bool(sparql_query) # check if there is a SPARQL query generated
             result_entry["returned_rows"] = len(rows) if rows else 0
             result_entry["answer"] = answer[:500]
-
-            if not result_entry["template_match"]:
-                result_entry["error_category"] = classify_error(result)
+            result_entry["execution_failure_reasons"] = exec_assessment['failure_reasons']
 
         except Exception as e:
             elapsed = time.time() - start if 'start' in dir() else 0
             result_entry["execution_success"] = False
             result_entry["execution_time_seconds"] = round(elapsed, 3)
-            result_entry["error_category"] = classify_error({}, e)
+            result_entry["execution_failure_reasons"] = exec_assessment['failure_reasons'] # classify_error({}, e)
             result_entry["notes"] = str(e)[:200]
 
         run_results["test_results"].append(result_entry)
         i = i+1
-        if i == 3: 
-            break
+       # if i == 3: 
+        #    break
 
     # Compute summary
     total = len(run_results["test_results"])
@@ -224,7 +332,7 @@ def aggregate_runs(all_runs: List[Dict[str, Any]], test_cases: List[Dict]) -> Di
             if tr["template_match"]: cat_stats[cat]["template_match"] += 1
             if tr["execution_success"]: cat_stats[cat]["exec_success"] += 1
             cat_stats[cat]["times"].append(tr["execution_time_seconds"])
-            if tr["error_category"]: cat_stats[cat]["errors"][tr["error_category"]] += 1
+            #if tr["error_category"]: cat_stats[cat]["errors"][tr["error_category"]] += 1
 
     agg["category_analysis"] = {}
     for cat, stats in sorted(cat_stats.items()):
@@ -245,7 +353,7 @@ def aggregate_runs(all_runs: List[Dict[str, Any]], test_cases: List[Dict]) -> Di
             tpl_stats[tpl]["total"] += 1
             if tr["execution_success"] and tr["template_match"]: tpl_stats[tpl]["success"] += 1
             tpl_stats[tpl]["times"].append(tr["execution_time_seconds"])
-            if tr["error_category"]: tpl_stats[tpl]["errors"][tr["error_category"]] += 1
+            #if tr["error_category"]: tpl_stats[tpl]["errors"][tr["error_category"]] += 1
 
     agg["template_analysis"] = {}
     for tpl, stats in sorted(tpl_stats.items()):
@@ -258,12 +366,13 @@ def aggregate_runs(all_runs: List[Dict[str, Any]], test_cases: List[Dict]) -> Di
         }
 
     # Error analysis
+    '''
     error_counts = Counter()
     for run in all_runs:
         for tr in run["test_results"]:
             if tr["error_category"]: error_counts[tr["error_category"]] += 1
     agg["error_analysis"] = dict(error_counts.most_common())
-
+    '''
     return agg
 
 
@@ -388,7 +497,7 @@ def main():
     parser = argparse.ArgumentParser(description="Climate Chat Agent — Comprehensive Evaluation v2")
     parser.add_argument("--runs", type=int, default=5, help="Number of evaluation runs")
     parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducibility")
-    parser.add_argument("--model", type=str, default="openai:gpt-4o-mini", help="LLM model")
+    parser.add_argument("--model", type=str, default="gpt-5.4-nano", help="LLM model")
     parser.add_argument("--test-file", type=str, default="evaluation/test_questions.json")
     parser.add_argument("--output-dir", type=str, default="evaluation/to-delete")
     args = parser.parse_args()
@@ -401,10 +510,12 @@ def main():
         data = json.load(f)
     test_cases = data["test_cases"]
     print(f"[EVAL] Loaded {len(test_cases)} test cases")
+    print(f"[EVAL] Model used for the evaluation {args.model}")
 
     all_runs = []
     for rn in range(1, args.runs + 1):
         print(f"\n[EVAL] === Run {rn}/{args.runs} ===")
+
         rr = run_single_evaluation(test_cases, model=args.model, run_number=rn)
         s = rr["summary"]
 

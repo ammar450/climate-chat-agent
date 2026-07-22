@@ -5,14 +5,20 @@ min_template_accuracy,1.0
 max_template_accuracy,1.0
 avg_execution_success_rate,1.0
 avg_sparql_success_rate,1.0
-avg_latency,26.3
-min_latency,15.941
-max_latency,46.243
+avg_latency,36.452
+min_latency,4.096
+max_latency,68.587
 std_latency,0
 overall_score,1.0
 
 Category,Total,TemplateAccuracy,ExecSuccessRate,AvgTime
-overview,2,1.0,1.0,16.329
-subsampling,1,1.0,1.0,46.243
+aggregation,4,1.0,1.0,34.23
+extreme-values,1,1.0,1.0,42.827
+filtering,2,1.0,1.0,43.372
+location-based,3,1.0,1.0,22.327
+multi-year-comparison,1,1.0,1.0,42.473
+nested-aggregation,1,1.0,1.0,53.492
+overview,3,1.0,1.0,30.727
+subsampling,1,1.0,1.0,61.614
 
 ErrorCategory,Count
