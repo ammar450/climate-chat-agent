@@ -1,46 +1,225 @@
 {
   "metadata": {
-    "evaluation_timestamp": "2026-07-22T20:55:22.744231",
-    "random_seed": 87946,
+    "evaluation_timestamp": "2026-07-22T22:34:19.686243",
+    "random_seed": 87281,
     "num_runs": 1,
     "test_questions_file": "evaluation/test_questions.json"
   },
   "aggregate_metrics": {
     "num_runs": 1,
-    "total_tests_per_run": 1,
+    "total_tests_per_run": 16,
     "aggregate_metrics": {
       "avg_template_accuracy": 1.0,
       "std_template_accuracy": 0,
       "min_template_accuracy": 1.0,
       "max_template_accuracy": 1.0,
-      "avg_execution_success_rate": 1.0,
+      "avg_execution_success_rate": 0.8125,
       "avg_sparql_success_rate": 1.0,
-      "avg_latency": 15.745,
-      "min_latency": 15.745,
-      "max_latency": 15.745,
+      "avg_latency": 31.117,
+      "min_latency": 1.864,
+      "max_latency": 60.717,
       "std_latency": 0
     },
-    "overall_score": 1.0,
+    "overall_score": 0.9062,
     "confusion_matrix": {
       "list_properties": {
         "list_properties": 1
+      },
+      "list_features_of_interest": {
+        "list_features_of_interest": 1
+      },
+      "sample_observations": {
+        "sample_observations": 1
+      },
+      "all_properties_summary": {
+        "all_properties_summary": 1
+      },
+      "timeseries_statistics": {
+        "timeseries_statistics": 2
+      },
+      "average_for_property_date_range": {
+        "average_for_property_date_range": 1
+      },
+      "monthly_aggregates": {
+        "monthly_aggregates": 1
+      },
+      "daily_aggregates": {
+        "daily_aggregates": 1
+      },
+      "top_extremes_for_property": {
+        "top_extremes_for_property": 1
+      },
+      "filtered_timeseries": {
+        "filtered_timeseries": 2
+      },
+      "features_near_coordinates": {
+        "features_near_coordinates": 1
+      },
+      "location_based_summary": {
+        "location_based_summary": 1
+      },
+      "monthly_mean_from_daily": {
+        "monthly_mean_from_daily": 1
+      },
+      "timeseries_statistics_by_feature": {
+        "timeseries_statistics_by_feature": 1
       }
     },
     "category_analysis": {
-      "overview": {
+      "aggregation": {
+        "total": 4,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 38.488,
+        "common_errors": {}
+      },
+      "extreme-values": {
         "total": 1,
         "template_accuracy": 1.0,
         "execution_success_rate": 1.0,
-        "avg_execution_time": 15.745,
+        "avg_execution_time": 33.355,
+        "common_errors": {}
+      },
+      "filtering": {
+        "total": 2,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 0.5,
+        "avg_execution_time": 34.2,
+        "common_errors": {}
+      },
+      "location-based": {
+        "total": 3,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 0.6667,
+        "avg_execution_time": 13.019,
+        "common_errors": {}
+      },
+      "multi-year-comparison": {
+        "total": 1,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 0.0,
+        "avg_execution_time": 60.717,
+        "common_errors": {}
+      },
+      "nested-aggregation": {
+        "total": 1,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 53.923,
+        "common_errors": {}
+      },
+      "overview": {
+        "total": 3,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 18.161,
+        "common_errors": {}
+      },
+      "subsampling": {
+        "total": 1,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 33.982,
         "common_errors": {}
       }
     },
     "template_analysis": {
+      "all_properties_summary": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 21.019,
+        "common_errors": {}
+      },
+      "average_for_property_date_range": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 48.736,
+        "common_errors": {}
+      },
+      "daily_aggregates": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 3.499,
+        "common_errors": {}
+      },
+      "features_near_coordinates": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 1.864,
+        "common_errors": {}
+      },
+      "filtered_timeseries": {
+        "total_tested": 2,
+        "successful": 1,
+        "success_rate": 0.5,
+        "avg_response_time": 34.2,
+        "common_errors": {}
+      },
+      "list_features_of_interest": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 17.974,
+        "common_errors": {}
+      },
       "list_properties": {
         "total_tested": 1,
         "successful": 1,
         "success_rate": 1.0,
-        "avg_response_time": 15.745,
+        "avg_response_time": 15.489,
+        "common_errors": {}
+      },
+      "location_based_summary": {
+        "total_tested": 1,
+        "successful": 0,
+        "success_rate": 0.0,
+        "avg_response_time": 2.992,
+        "common_errors": {}
+      },
+      "monthly_aggregates": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 52.46,
+        "common_errors": {}
+      },
+      "monthly_mean_from_daily": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 53.923,
+        "common_errors": {}
+      },
+      "sample_observations": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 33.982,
+        "common_errors": {}
+      },
+      "timeseries_statistics": {
+        "total_tested": 2,
+        "successful": 1,
+        "success_rate": 0.5,
+        "avg_response_time": 54.987,
+        "common_errors": {}
+      },
+      "timeseries_statistics_by_feature": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 34.2,
+        "common_errors": {}
+      },
+      "top_extremes_for_property": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 33.355,
         "common_errors": {}
       }
     }
@@ -48,50 +227,327 @@
   "per_run_results": [
     {
       "run_number": 1,
-      "timestamp": "2026-07-22T20:55:06.047876",
+      "timestamp": "2026-07-22T22:25:44.646430",
       "total_tests": 16,
       "test_results": [
         {
           "test_id": 1,
           "category": "overview",
           "difficulty": "easy",
-          "selected_question": "What variables are available?",
+          "selected_question": "Which variables can be queried?",
           "expected_template": "list_properties",
           "predicted_template": "list_properties",
           "template_match": true,
           "execution_success": true,
-          "execution_explanation": "The query successfully retrieved a list of available variables along with their counts.",
+          "execution_explanation": "The query successfully returned a list of variables that can be queried along with their respective counts.",
           "execution_failure_reasons": [],
-          "execution_time_seconds": 15.745,
+          "execution_time_seconds": 15.489,
           "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?property (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:observedProperty ?property . } GROUP BY ?property ORDER BY DESC(?count)",
           "sparql_success": true,
           "returned_rows": 5,
           "answer": "Query type: list_properties\nResult count: 5\nAvailable climate variables:\n  1. Air Temperature (177784295 observations)\n  2. Precipitation Amount (59441640 observations)\n  3. Relative Humidity (42603920 observations)\n  4. Surface Downwelling Shortwave Flux In Air (37308459 observations)\n  5. Wind Speed (24136086 observations)",
           "notes": ""
+        },
+        {
+          "test_id": 2,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "What are grids available in the dataset?",
+          "expected_template": "list_features_of_interest",
+          "predicted_template": "list_features_of_interest",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully retrieved a list of grids available in the dataset along with their respective counts.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 17.974,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?feature (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:hasFeatureOfInterest ?feature . } GROUP BY ?feature ORDER BY DESC(?count) LIMIT 50",
+          "sparql_success": true,
+          "returned_rows": 10,
+          "answer": "Query type: list_features_of_interest\nResult count: 50\nHere are the available observation locations:\n  1. https://w3id.org/climateobservations/eobs-v31/data/grid_43p38_16p62\n  2. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_m0p62\n  3. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_0p88\n  4. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_3p12\n  5. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_m1p38\n  6. https://w3id.org/climateobserva",
+          "notes": ""
+        },
+        {
+          "test_id": 3,
+          "category": "subsampling",
+          "difficulty": "easy",
+          "selected_question": "What are examples of observations from the current dataset",
+          "expected_template": "sample_observations",
+          "predicted_template": "sample_observations",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully returned a set of observations with relevant data including time, value, property, feature, and unit.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 33.982,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT ?time ?value ?property ?feature ?unit FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:resultTime ?time ;        sosa:observedProperty ?property ;        sosa:hasFeatureOfInterest ?feature ;        sosa:hasResult ?result .   ?result qudt:numericValue ?value .   OPTIONAL { ?result qudt:unit ?unit }         FILTER(?time >= \"2024-01-01T00:00:00\"^^xsd:dateTime && ?time < \"2025-01-01T00:00:00\"^^xsd:dateTime) } ORDER BY ?time LIMIT 200",
+          "sparql_success": true,
+          "returned_rows": 10,
+          "answer": "Here are some examples of observations from the dataset for January 1, 2024:\n\n1. 1.45 meters per second (M-PER-SEC)\n2. 1.88 meters per second (M-PER-SEC)\n3. 1.33 meters per second (M-PER-SEC)\n4. 1.89 meters per second (M-PER-SEC)\n5. 1.62 meters per second (M-PER-SEC)\n\nThese values are part of a total of 200 observations.",
+          "notes": ""
+        },
+        {
+          "test_id": 4,
+          "category": "overview",
+          "difficulty": "medium",
+          "selected_question": "Show me climate data for 2000",
+          "expected_template": "all_properties_summary",
+          "predicted_template": "all_properties_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully returned climate data for the year 2000, including properties like relative humidity and wind speed with their respective values.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 21.019,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT ?property         (AVG(?value) AS ?avg_value)         (MIN(?value) AS ?min_value)         (MAX(?value) AS ?max_value)         (COUNT(?value) AS ?count)        (SAMPLE(?unit) AS ?unit) FROM <climateobservations/eobs-v31> WHERE {   {     SELECT ?property ?value ?unit     WHERE {       ?obs a sosa:Observation ;            sosa:resultTime ?time ;            sosa:observedProperty ?property ;            sosa:hasResult ?result .       ?result qudt:numericValue ?value .       OPTIONAL { ?result qudt:unit ?unit }       FILTER (?time >= \"2000-01-01T00:00:00\"^^xsd:dateTime && ?time < \"2001-01-01T00:00:00\"^^xsd:dateTime)     }     LIMIT 1000000   } } GROUP BY ?property ORDER BY ?property",
+          "sparql_success": true,
+          "returned_rows": 2,
+          "answer": "In 2000, the average relative humidity was 72.78% with a range from 13.90% to 94.40% based on 415,095 observations. The average wind speed was 2.54 meters per second, ranging from 0.13 to 16.00 meters per second, with 584,905 observations.",
+          "notes": ""
+        },
+        {
+          "test_id": 5,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "What are statistics about relative humidity for 1960?",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "timeseries_statistics",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully retrieved statistics about relative humidity for 1960, including mean, min, max, count, and unit.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 49.257,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT    (AVG(?value) AS ?mean)    (MIN(?value) AS ?min)    (MAX(?value) AS ?max)    (COUNT(?value) AS ?count)   (SAMPLE(?unit) AS ?unit) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:resultTime ?time ;        sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/relative_humidity> ;        sosa:hasResult ?result .   ?result qudt:numericValue ?value .   OPTIONAL { ?result qudt:unit ?unit }   FILTER(?time >= \"1960-01-01T00:00:00\"^^xsd:dateTime && ?time < \"1961-01-01T00:00:00\"^^xsd:dateTime) }",
+          "sparql_success": true,
+          "returned_rows": 1,
+          "answer": "In 1960, the average relative humidity was 77.26% based on 586,711 observations. The minimum recorded was 14.20%, while the maximum reached 94.40%. The standard deviation was approximately 13.37%, indicating some variability in humidity levels throughout the year.",
+          "notes": ""
+        },
+        {
+          "test_id": 6,
+          "category": "aggregation",
+          "difficulty": "medium",
+          "selected_question": "What was the average temperature in 2020?",
+          "expected_template": "average_for_property_date_range",
+          "predicted_template": "average_for_property_date_range",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully returned the average temperature for 2020 along with additional relevant data.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 48.736,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT    (AVG(?value) AS ?avg)    (MIN(?value) AS ?min)    (MAX(?value) AS ?max)    (COUNT(?value) AS ?count)   (SAMPLE(?unit) AS ?unit) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:resultTime ?time ;        sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/air_temperature> ;        sosa:hasResult ?result .   ?result qudt:numericValue ?value .   OPTIONAL { ?result qudt:unit ?unit }   FILTER(?time >= \"2020-01-01T00:00:00\"^^xsd:dateTime && ?time < \"2021-01-01T00:00:00\"^^xsd:dateTime) }",
+          "sparql_success": true,
+          "returned_rows": 1,
+          "answer": "In 2020, the average air temperature was 10.18 °C. This data is based on 2,426,477 observations, with a minimum temperature of -38.76 °C and a maximum of 49.93 °C during that year.",
+          "notes": ""
+        },
+        {
+          "test_id": 7,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "Show monthly temperature averages for 2022",
+          "expected_template": "monthly_aggregates",
+          "predicted_template": "monthly_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully retrieved monthly temperature averages for each month of 2022.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 52.46,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT    (SUBSTR(STR(?time), 1, 7) AS ?month)   (AVG(?value) AS ?mean)   (MIN(?value) AS ?min)   (MAX(?value) AS ?max)   (COUNT(?value) AS ?count)   (SAMPLE(?unit) AS ?unit) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:resultTime ?time ;        sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/air_temperature> ;        sosa:hasResult ?result .   ?result qudt:numericValue ?value .   OPTIONAL { ?result qudt:unit ?unit }   FILTER(?time >= \"2022-01-01T00:00:00\"^^xsd:dateTime && ?time < \"2023-01-01T00:00:00\"^^xsd:dateTime) } GROUP BY (SUBSTR(STR(?time), 1, 7)) ORDER BY ?month LIMIT 500",
+          "sparql_success": true,
+          "returned_rows": 10,
+          "answer": "Here are the monthly average temperatures for 2022:\n\n1. January: -0.52 °C\n2. February: 1.67 °C\n3. March: 2.59 °C\n4. April: 7.34 °C\n5. May: 12.61 °C\n6. June: 18.05 °C\n7. July: 20.09 °C\n8. August: 20.60 °C\n9. September: 13.99 °C\n10. October: 11.12 °C\n11. November: 5.22 °C\n12. December: 1.04 °C\n\nThis data is based on 12 observations for the year 2022 (Source: EOBS).",
+          "notes": ""
+        },
+        {
+          "test_id": 8,
+          "category": "aggregation",
+          "difficulty": "hard",
+          "selected_question": "Give me daily precipitation statistics for June 1970",
+          "expected_template": "daily_aggregates",
+          "predicted_template": "daily_aggregates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully returned daily precipitation statistics for June 1970, with data for multiple days.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 3.499,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT    (SUBSTR(STR(?time), 1, 10) AS ?date)   (AVG(?value) AS ?mean)   (MIN(?value) AS ?min)   (MAX(?value) AS ?max)   (COUNT(?value) AS ?count)   (SAMPLE(?unit) AS ?unit) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:resultTime ?time ;        sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/precipitation_amount> ;        sosa:hasResult ?result .   ?result qudt:numericValue ?value .   OPTIONAL { ?result qudt:unit ?unit }   FILTER(?time >= \"1970-06-01T00:00:00\"^^xsd:dateTime && ?time < \"1970-07-01T00:00:00\"^^xsd:dateTime) } GROUP BY (SUBSTR(STR(?time), 1, 10)) ORDER BY ?date LIMIT 500",
+          "sparql_success": true,
+          "returned_rows": 10,
+          "answer": "In June 1970, there were 30 daily precipitation observations. The daily mean precipitation ranged from 0.77 millimeters (mm) to 2.02 mm. The highest daily mean was on June 30, 1970, with 2.02 mm, while the lowest was on June 26, 1970, with 0.77 mm.",
+          "notes": ""
+        },
+        {
+          "test_id": 9,
+          "category": "extreme-values",
+          "difficulty": "medium",
+          "selected_question": "What were the highest humidity values in 1970",
+          "expected_template": "top_extremes_for_property",
+          "predicted_template": "top_extremes_for_property",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully returned humidity values for the year 1970.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 33.355,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT ?time ?feature ?value ?unit FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:resultTime ?time ;        sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/relative_humidity> ;        sosa:hasFeatureOfInterest ?feature ;        sosa:hasResult ?result .   ?result qudt:numericValue ?value .   OPTIONAL { ?result qudt:unit ?unit }   FILTER(?time >= \"1970-01-01T00:00:00\"^^xsd:dateTime && ?time < \"1971-01-01T00:00:00\"^^xsd:dateTime)   {     SELECT (MAX(?value2) AS ?extreme)     WHERE {       ?obs2 a sosa:Observation ;             sosa:resultTime ?time2 ;             sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/relative_humidity> ;             sosa:hasResult ?result2 .       ?result2 qudt:numericValue ?value2 .       FILTER(?time2 >= \"1970-01-01T00:00:00\"^^xsd:dateTime && ?time2 < \"1971-01-01T00:00:00\"^^xsd:dateTime)     }   }   FILTER(?value = ?extreme) } LIMIT 20",
+          "sparql_success": true,
+          "returned_rows": 2,
+          "answer": "In 1970, the highest relative humidity values were both 94.2% recorded on February 5 and August 9. There were 2 observations for this year.",
+          "notes": ""
+        },
+        {
+          "test_id": 10,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Find precipitation values below 12 mm and above 10 mm in 2001",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": false,
+          "execution_explanation": "The query was not successful because there are no precipitation values in the specified range of 10 mm to 12 mm.",
+          "execution_failure_reasons": [
+            "No values found in the specified range of 10 mm to 12 mm."
+          ],
+          "execution_time_seconds": 34.321,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT ?time ?value ?feature ?unit FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:resultTime ?time ;        sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/precipitation_amount> ;        sosa:hasFeatureOfInterest ?feature ;        sosa:hasResult ?result .   ?result qudt:numericValue ?value .   OPTIONAL { ?result qudt:unit ?unit }   FILTER(?time >= \"2001-01-01T00:00:00\"^^xsd:dateTime && ?time < \"2002-01-01T00:00:00\"^^xsd:dateTime)   FILTER(?value >= 10.0 && ?value <= 1000000) } ORDER BY ?time LIMIT 500",
+          "sparql_success": true,
+          "returned_rows": 10,
+          "answer": "In 2001, there were 500 observations of precipitation. The values below 12 mm and above 10 mm included: 11.1 mm, 11.5 mm, and 11.9 mm. These values show that there was some light rain during that year!",
+          "notes": ""
+        },
+        {
+          "test_id": 11,
+          "category": "filtering",
+          "difficulty": "hard",
+          "selected_question": "Find precipitation values above 30 mm in 2000",
+          "expected_template": "filtered_timeseries",
+          "predicted_template": "filtered_timeseries",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully retrieved precipitation values above 30 mm for the year 2000.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 34.079,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT ?time ?value ?feature ?unit FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:resultTime ?time ;        sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/precipitation_amount> ;        sosa:hasFeatureOfInterest ?feature ;        sosa:hasResult ?result .   ?result qudt:numericValue ?value .   OPTIONAL { ?result qudt:unit ?unit }   FILTER(?time >= \"2000-01-01T00:00:00\"^^xsd:dateTime && ?time < \"2001-01-01T00:00:00\"^^xsd:dateTime)   FILTER(?value >= 30.0 && ?value <= 1000000) } ORDER BY ?time LIMIT 500",
+          "sparql_success": true,
+          "returned_rows": 10,
+          "answer": "In 2000, there were 500 observations of precipitation. The values ranged from 30.70 mm to 98.30 mm. All recorded values were above 30 mm, with the lowest being 30.70 mm and the highest reaching 98.30 mm.",
+          "notes": ""
+        },
+        {
+          "test_id": 12,
+          "category": "location-based",
+          "difficulty": "medium",
+          "selected_question": "Find observation points around lat: 52.5, lon: 13.4",
+          "expected_template": "features_near_coordinates",
+          "predicted_template": "features_near_coordinates",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully returned multiple observation points around the specified latitude and longitude.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 1.864,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX wgs84: <http://www.w3.org/2003/01/geo/wgs84_pos#> SELECT DISTINCT ?feature ?lat ?lng FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:hasFeatureOfInterest ?feature .   OPTIONAL { ?feature wgs84:lat ?lat }   OPTIONAL { ?feature wgs84:long ?lng } } LIMIT 200",
+          "sparql_success": true,
+          "returned_rows": 10,
+          "answer": "Found nearest observation station 'grid_47p88_13p62' (514.0 km from None) via EOBS geometry graph.\n\nThere are 200 observation points near the coordinates latitude 52.5 and longitude 13.4. However, specific details about the individual observation points are not provided in the evidence.",
+          "notes": ""
+        },
+        {
+          "test_id": 13,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "Show me climate data in Germany during 2024",
+          "expected_template": "location_based_summary",
+          "predicted_template": "location_based_summary",
+          "template_match": true,
+          "execution_success": false,
+          "execution_explanation": "The query was intended to retrieve climate data for Germany during 2024, but the provided data does not specify the year 2024.",
+          "execution_failure_reasons": [
+            "Data does not include a time reference for the year 2024."
+          ],
+          "execution_time_seconds": 2.992,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> PREFIX wgs84: <http://www.w3.org/2003/01/geo/wgs84_pos#> PREFIX geo: <http://www.opengis.net/ont/geosparql#> SELECT ?property ?feature ?lat ?lng        (AVG(?value) AS ?avg_value)         (MIN(?value) AS ?min_value)         (MAX(?value) AS ?max_value)         (COUNT(?value) AS ?count)        (SAMPLE(?unit) AS ?unit) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:resultTime ?time ;        sosa:observedProperty ?property ;        sosa:hasFeatureOfInterest ?feature ;        sosa:hasResult ?result .   ?result qudt:numericValue ?value .   OPTIONAL { ?result qudt:unit ?unit }   OPTIONAL { ?feature wgs84:lat ?lat }   OPTIONAL { ?feature wgs84:long ?lng }   FILTER (?time >= \"2024-01-01T00:00:00\"^^xsd:dateTime && ?time < \"2025-01-01T00:00:00\"^^xsd:dateTime)   FILTER(?feature = <https://w3id.org/climateobservations/eobs-v31/data/grid_47p88_10p62>) } GROUP BY ?property ?feature ?lat ?lng ORDER BY ?property",
+          "sparql_success": true,
+          "returned_rows": 4,
+          "answer": "Found nearest observation station 'grid_47p88_10p62' (313.1 km from Germany) via EOBS geometry graph.\n\nIn Germany during 2024, the climate data shows the following averages based on 1098 observations for air temperature: 10.03°C, with a range from -12.46°C to 30.48°C. Precipitation averaged 3.77 mm (with a range of 0.00 mm to 87.60 mm) based on 366 observations. The average relative humidity was 77.78% (range: 40.40% to 93.70%, n=334), and the average surface downwelling shortwave flux in air wa",
+          "notes": ""
+        },
+        {
+          "test_id": 14,
+          "category": "nested-aggregation",
+          "difficulty": "hard",
+          "selected_question": "What was the mean daily temperature in 2001?",
+          "expected_template": "monthly_mean_from_daily",
+          "predicted_template": "monthly_mean_from_daily",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully returned the mean daily temperature for the year 2001 along with additional relevant data.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 53.923,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT    (AVG(?daily_mean) AS ?overall_mean)   (MIN(?daily_mean) AS ?min_daily)   (MAX(?daily_mean) AS ?max_daily)   (COUNT(?daily_mean) AS ?day_count)   (SAMPLE(?unit) AS ?unit) FROM <climateobservations/eobs-v31> WHERE {   {     SELECT        (SUBSTR(STR(?time), 1, 10) AS ?date)       (AVG(?value) AS ?daily_mean)       (SAMPLE(?unit) AS ?unit)     WHERE {       ?obs a sosa:Observation ;            sosa:resultTime ?time ;            sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/air_temperature> ;            sosa:hasResult ?result .       ?result qudt:numericValue ?value .       OPTIONAL { ?result qudt:unit ?unit }       FILTER(?time >= \"2001-01-01T00:00:00\"^^xsd:dateTime && ?time < \"2002-01-01T00:00:00\"^^xsd:dateTime)     }     GROUP BY (SUBSTR(STR(?time), 1, 10))   } }",
+          "sparql_success": true,
+          "returned_rows": 1,
+          "answer": "In 2001, the overall mean daily temperature was 9.20 °C based on 365 observations. The temperature ranged from a minimum of -5.79 °C to a maximum of 21.90 °C during that year.",
+          "notes": ""
+        },
+        {
+          "test_id": 15,
+          "category": "location-based",
+          "difficulty": "hard",
+          "selected_question": "Compare wind speed across different grid points in 2019",
+          "expected_template": "timeseries_statistics_by_feature",
+          "predicted_template": "timeseries_statistics_by_feature",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully retrieved wind speed data across different grid points for the year 2019, including mean, min, max, and count values.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 34.2,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT    ?feature   (AVG(?value) AS ?mean)    (MIN(?value) AS ?min)    (MAX(?value) AS ?max)    (COUNT(?value) AS ?count)   (SAMPLE(?unit) AS ?unit) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:resultTime ?time ;        sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/wind_speed> ;        sosa:hasFeatureOfInterest ?feature ;        sosa:hasResult ?result .   ?result qudt:numericValue ?value .   OPTIONAL { ?result qudt:unit ?unit }   FILTER(?time >= \"2019-01-01T00:00:00\"^^xsd:dateTime && ?time < \"2020-01-01T00:00:00\"^^xsd:dateTime) } GROUP BY ?feature ORDER BY DESC(?mean) LIMIT 20",
+          "sparql_success": true,
+          "returned_rows": 10,
+          "answer": "In 2019, the average wind speeds across different grid points varied as follows (all in meters per second, M-PER-SEC) with 365 observations for each:\n\n1. Grid 58.88, 13.48: 5.90 M-PER-SEC\n2. Grid 54.38, -6.77: 5.66 M-PER-SEC\n3. Grid 54.38, -0.77: 5.05 M-PER-SEC\n4. Grid 53.62, -1.52: 5.03 M-PER-SEC\n5. Grid 56.62, -4.52: 4.82 M-PER-SEC\n6. Grid 70.12, 22.48: 4.75 M-PER-SEC\n7. Grid 43.12, 2.98: 4.64 M-PER-SEC\n8. Grid 56.62, 8.98: 4.58 M-PER-SEC\n9. Grid 50.62, -4.52: 4.57 M-PER-SEC\n10. Grid 52.88, -3",
+          "notes": ""
+        },
+        {
+          "test_id": 16,
+          "category": "multi-year-comparison",
+          "difficulty": "hard",
+          "selected_question": "Show temperature patterns decade by decade from 1950 to 2024",
+          "expected_template": "timeseries_statistics",
+          "predicted_template": "timeseries_statistics",
+          "template_match": true,
+          "execution_success": false,
+          "execution_explanation": "The query returned no results, indicating that there are no temperature patterns available for the specified decades.",
+          "execution_failure_reasons": [
+            "No data available for the specified time range (1950 to 2024)",
+            "The dataset may not contain temperature information or is incomplete"
+          ],
+          "execution_time_seconds": 60.717,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT    (AVG(?value) AS ?mean)    (MIN(?value) AS ?min)    (MAX(?value) AS ?max)    (COUNT(?value) AS ?count)   (SAMPLE(?unit) AS ?unit) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:resultTime ?time ;        sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/air_temperature> ;        sosa:hasResult ?result .   ?result qudt:numericValue ?value .   OPTIONAL { ?result qudt:unit ?unit }   FILTER(?time >= \"1950-01-01T00:00:00\"^^xsd:dateTime && ?time < \"2025-01-01T00:00:00\"^^xsd:dateTime) }",
+          "sparql_success": true,
+          "returned_rows": 0,
+          "answer": "I'm sorry — I don't have enough information to answer that question. I may not have the required data or the question is outside my scope. This system only contains climate observations for 1950-01-01 to 2024-12-31. Could you please rephrase your question or ask about a date within 1950-2024?",
+          "notes": ""
         }
       ],
       "summary": {
-        "total": 1,
+        "total": 16,
         "template_accuracy": 1.0,
-        "execution_success_rate": 1.0,
+        "execution_success_rate": 0.8125,
         "sparql_success_rate": 1.0,
-        "avg_execution_time": 15.745,
-        "min_execution_time": 15.745,
-        "max_execution_time": 15.745,
-        "std_execution_time": 0
+        "avg_execution_time": 31.117,
+        "min_execution_time": 1.864,
+        "max_execution_time": 60.717,
+        "std_execution_time": 19.081
       }
     }
   ],
   "per_run_summaries": [
     {
-      "total": 1,
+      "total": 16,
       "template_accuracy": 1.0,
-      "execution_success_rate": 1.0,
+      "execution_success_rate": 0.8125,
       "sparql_success_rate": 1.0,
-      "avg_execution_time": 15.745,
-      "min_execution_time": 15.745,
-      "max_execution_time": 15.745,
-      "std_execution_time": 0
+      "avg_execution_time": 31.117,
+      "min_execution_time": 1.864,
+      "max_execution_time": 60.717,
+      "std_execution_time": 19.081
     }
   ]
 }

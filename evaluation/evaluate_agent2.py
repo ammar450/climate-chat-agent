@@ -40,7 +40,7 @@ from src.llm.llm_client import chat as llm_chat, LLMError
 # ──────────────────────────────────────────────
 
 JUDGE_SYSTEM_PROMPT = """
-You are judge to assess whether the execution of a SPARQL query has been successful. 
+You are a judge to assess whether the execution of a SPARQL query has been successful. 
 You will receive a question and a set of rows. Your role is to make an assessment. 
 If you think that the query has been successful, return TRUE. If not, return FALSE. 
 In each case, provide a short explanation. Also, if the query has not been successful, provide likely reasons for the failure, only based on what you see in the rows.
@@ -223,13 +223,13 @@ def run_single_evaluation(
             elapsed = time.time() - start if 'start' in dir() else 0
             result_entry["execution_success"] = False
             result_entry["execution_time_seconds"] = round(elapsed, 3)
-            result_entry["execution_failure_reasons"] = exec_assessment['failure_reasons'] # classify_error({}, e)
+            result_entry["execution_failure_reasons"] = exec_assessment['failure_reasons'] 
             result_entry["notes"] = str(e)[:200]
 
         run_results["test_results"].append(result_entry)
-        i = i+1
-        if i == 1: 
-           break
+        #i = i+1
+        #if i == 1: 
+         #  break
 
     # Compute summary
     total = len(run_results["test_results"])
