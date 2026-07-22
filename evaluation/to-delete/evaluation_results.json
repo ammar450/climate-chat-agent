@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "evaluation_timestamp": "2026-07-22T10:18:44.261387",
-    "random_seed": 39491,
+    "evaluation_timestamp": "2026-07-22T10:24:18.246434",
+    "random_seed": 45862,
     "num_runs": 1,
     "test_questions_file": "evaluation/test_questions.json"
   },
@@ -14,9 +14,9 @@
       "min_template_accuracy": 1.0,
       "max_template_accuracy": 1.0,
       "avg_execution_success_rate": 1.0,
-      "avg_latency": 17.883,
-      "min_latency": 6.208,
-      "max_latency": 34.206,
+      "avg_latency": 21.248,
+      "min_latency": 15.486,
+      "max_latency": 33.009,
       "std_latency": 0
     },
     "overall_score": 1.0,
@@ -39,14 +39,14 @@
         "total": 3,
         "template_accuracy": 1.0,
         "execution_success_rate": 1.0,
-        "avg_execution_time": 12.441,
+        "avg_execution_time": 17.328,
         "common_errors": {}
       },
       "subsampling": {
         "total": 1,
         "template_accuracy": 1.0,
         "execution_success_rate": 1.0,
-        "avg_execution_time": 34.206,
+        "avg_execution_time": 33.009,
         "common_errors": {}
       }
     },
@@ -55,28 +55,28 @@
         "total_tested": 1,
         "successful": 1,
         "success_rate": 1.0,
-        "avg_response_time": 6.208,
+        "avg_response_time": 20.717,
         "common_errors": {}
       },
       "list_features_of_interest": {
         "total_tested": 1,
         "successful": 1,
         "success_rate": 1.0,
-        "avg_response_time": 15.439,
+        "avg_response_time": 15.781,
         "common_errors": {}
       },
       "list_properties": {
         "total_tested": 1,
         "successful": 1,
         "success_rate": 1.0,
-        "avg_response_time": 15.677,
+        "avg_response_time": 15.486,
         "common_errors": {}
       },
       "sample_observations": {
         "total_tested": 1,
         "successful": 1,
         "success_rate": 1.0,
-        "avg_response_time": 34.206,
+        "avg_response_time": 33.009,
         "common_errors": {}
       }
     },
@@ -85,7 +85,7 @@
   "per_run_results": [
     {
       "run_number": 1,
-      "timestamp": "2026-07-22T10:17:32.730759",
+      "timestamp": "2026-07-22T10:22:53.252413",
       "total_tests": 16,
       "test_results": [
         {
@@ -97,8 +97,8 @@
           "predicted_template": "list_properties",
           "template_match": true,
           "execution_success": true,
-          "execution_time_seconds": 15.677,
-          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/>\nSELECT DISTINCT ?property (COUNT(*) AS ?count)\nFROM <climateobservations/eobs-v31>\nWHERE {\n  ?obs a sosa:Observation ;\n       sosa:observedProperty ?property .\n}\nGROUP BY ?property\nORDER BY DESC(?count)",
+          "execution_time_seconds": 15.486,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?property (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:observedProperty ?property . } GROUP BY ?property ORDER BY DESC(?count)",
           "sparql_success": true,
           "returned_rows": 5,
           "answer": "Query type: list_properties\nResult count: 5\nAvailable climate variables:\n  1. Air Temperature (177784295 observations)\n  2. Precipitation Amount (59441640 observations)\n  3. Relative Humidity (42603920 observations)\n  4. Surface Downwelling Shortwave Flux In Air (37308459 observations)\n  5. Wind Speed (24136086 observations)",
@@ -114,8 +114,8 @@
           "predicted_template": "list_features_of_interest",
           "template_match": true,
           "execution_success": true,
-          "execution_time_seconds": 15.439,
-          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/>\nSELECT DISTINCT ?feature (COUNT(*) AS ?count)\nFROM <climateobservations/eobs-v31>\nWHERE {\n  ?obs a sosa:Observation ;\n       sosa:hasFeatureOfInterest ?feature .\n}\nGROUP BY ?feature\nORDER BY DESC(?count)\nLIMIT 50",
+          "execution_time_seconds": 15.781,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?feature (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:hasFeatureOfInterest ?feature . } GROUP BY ?feature ORDER BY DESC(?count) LIMIT 50",
           "sparql_success": true,
           "returned_rows": 10,
           "answer": "Query type: list_features_of_interest\nResult count: 50\nHere are the available observation locations:\n  1. https://w3id.org/climateobservations/eobs-v31/data/grid_43p38_16p62\n  2. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_m0p62\n  3. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_0p88\n  4. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_3p12\n  5. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_m1p38\n  6. https://w3id.org/climateobserva",
@@ -131,11 +131,11 @@
           "predicted_template": "sample_observations",
           "template_match": true,
           "execution_success": true,
-          "execution_time_seconds": 34.206,
-          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/>\nPREFIX qudt: <http://qudt.org/schema/qudt/>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\nSELECT ?time ?value ?property ?feature ?unit\nFROM <climateobservations/eobs-v31>\nWHERE {\n  ?obs a sosa:Observation ;\n       sosa:resultTime ?time ;\n       sosa:observedProperty ?property ;\n       sosa:hasFeatureOfInterest ?feature ;\n       sosa:hasResult ?result .\n  ?result qudt:numericValue ?value .\n  OPTIONAL { ?result qudt:unit ?unit }\n  \n  \n  FILTER(?time >= \"2024-01-01T00:00:00\"^^xsd:dateTime && ?time < \"2025-01-01T00:00:00\"^^xsd:dateTime)\n}\nORDER BY ?time\nLIMIT 200",
+          "execution_time_seconds": 33.009,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT ?time ?value ?property ?feature ?unit FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:resultTime ?time ;        sosa:observedProperty ?property ;        sosa:hasFeatureOfInterest ?feature ;        sosa:hasResult ?result .   ?result qudt:numericValue ?value .   OPTIONAL { ?result qudt:unit ?unit }         FILTER(?time >= \"2024-01-01T00:00:00\"^^xsd:dateTime && ?time < \"2025-01-01T00:00:00\"^^xsd:dateTime) } ORDER BY ?time LIMIT 200",
           "sparql_success": true,
           "returned_rows": 10,
-          "answer": "Here are some sample observations from January 1, 2024:\n\n1. 1.45 meters per second (m/s)\n2. 1.88 m/s\n3. 1.33 m/s\n4. 1.89 m/s\n5. 1.62 m/s\n\nThese values are part of a total of 200 observations, with an average of 1.55 m/s for that day.",
+          "answer": "Here are some sample observations for January 1, 2024:\n\n1. 1.45 meters per second (m/s)\n2. 1.88 m/s\n3. 1.33 m/s\n4. 1.89 m/s\n5. 1.62 m/s\n\nThese values are part of a total of 200 observations, with an average of 1.55 m/s.",
           "error_category": null,
           "notes": ""
         },
@@ -143,16 +143,16 @@
           "test_id": 4,
           "category": "overview",
           "difficulty": "medium",
-          "selected_question": "What was the climate like in 1950?",
+          "selected_question": "Show me climate data for 2000",
           "expected_template": "all_properties_summary",
           "predicted_template": "all_properties_summary",
           "template_match": true,
           "execution_success": true,
-          "execution_time_seconds": 6.208,
-          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/>\nPREFIX qudt: <http://qudt.org/schema/qudt/>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\nSELECT ?property \n       (AVG(?value) AS ?avg_value) \n       (MIN(?value) AS ?min_value) \n       (MAX(?value) AS ?max_value) \n       (COUNT(?value) AS ?count)\n       (SAMPLE(?unit) AS ?unit)\nFROM <climateobservations/eobs-v31>\nWHERE {\n  {\n    SELECT ?property ?value ?unit\n    WHERE {\n      ?obs a sosa:Observation ;\n           sosa:resultTime ?time ;\n           sosa:observedProperty ?property ;\n           sosa:hasResult ?result .\n      ?result qudt:numericValue ?value .\n      OPTIONAL { ?result qudt:unit ?unit }\n      FILTER (?time >= \"1950-01-01T00:00:00\"^^xsd:dateTime && ?time < \"1951-01-01T00:00:00\"^^xsd:dateTime)\n    }\n    LIMIT 1000000\n  }\n}\nGROUP BY ?property\nORDER BY ?property",
+          "execution_time_seconds": 20.717,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> PREFIX qudt: <http://qudt.org/schema/qudt/> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT ?property         (AVG(?value) AS ?avg_value)         (MIN(?value) AS ?min_value)         (MAX(?value) AS ?max_value)         (COUNT(?value) AS ?count)        (SAMPLE(?unit) AS ?unit) FROM <climateobservations/eobs-v31> WHERE {   {     SELECT ?property ?value ?unit     WHERE {       ?obs a sosa:Observation ;            sosa:resultTime ?time ;            sosa:observedProperty ?property ;            sosa:hasResult ?result .       ?result qudt:numericValue ?value .       OPTIONAL { ?result qudt:unit ?unit }       FILTER (?time >= \"2000-01-01T00:00:00\"^^xsd:dateTime && ?time < \"2001-01-01T00:00:00\"^^xsd:dateTime)     }     LIMIT 1000000   } } GROUP BY ?property ORDER BY ?property",
           "sparql_success": true,
-          "returned_rows": 3,
-          "answer": "In 1950, the average precipitation was 0.56 mm, with a range from 0.00 mm to 116.70 mm (n=117,579 observations). The average relative humidity was 76.36%, ranging from 9.80% to 94.20% (n=528,244 observations). Additionally, the average surface downwelling shortwave flux in air was 143.74 W/m², with a range from 0.00 W/m² to 909.00 W/m² (n=354,177 observations).",
+          "returned_rows": 2,
+          "answer": "In 2000, the average relative humidity was 72.78% with a range from 13.90% to 94.40%, based on 415,095 observations. The average wind speed was 2.54 meters per second, with a range from 0.13 to 16.00 meters per second, based on 584,905 observations.",
           "error_category": null,
           "notes": ""
         }
@@ -162,10 +162,10 @@
         "template_accuracy": 1.0,
         "execution_success_rate": 1.0,
         "sparql_success_rate": 1.0,
-        "avg_execution_time": 17.883,
-        "min_execution_time": 6.208,
-        "max_execution_time": 34.206,
-        "std_execution_time": 11.741
+        "avg_execution_time": 21.248,
+        "min_execution_time": 15.486,
+        "max_execution_time": 33.009,
+        "std_execution_time": 8.199
       }
     }
   ],
@@ -175,10 +175,10 @@
       "template_accuracy": 1.0,
       "execution_success_rate": 1.0,
       "sparql_success_rate": 1.0,
-      "avg_execution_time": 17.883,
-      "min_execution_time": 6.208,
-      "max_execution_time": 34.206,
-      "std_execution_time": 11.741
+      "avg_execution_time": 21.248,
+      "min_execution_time": 15.486,
+      "max_execution_time": 33.009,
+      "std_execution_time": 8.199
     }
   ]
 }

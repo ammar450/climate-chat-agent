@@ -127,7 +127,7 @@ def run_single_evaluation(
             elapsed = time.time() - start
 
             predicted = result.get("used_template", "error")
-            sparql_query = result.get("sparql")
+            sparql_query = result.get("sparql").replace("\n", " ")
             answer = result.get("answer", "")
             rows = result.get("rows", [])
 

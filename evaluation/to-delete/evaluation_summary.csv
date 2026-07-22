@@ -4,14 +4,14 @@ std_template_accuracy,0
 min_template_accuracy,1.0
 max_template_accuracy,1.0
 avg_execution_success_rate,1.0
-avg_latency,17.883
-min_latency,6.208
-max_latency,34.206
+avg_latency,21.248
+min_latency,15.486
+max_latency,33.009
 std_latency,0
 overall_score,1.0
 
 Category,Total,TemplateAccuracy,ExecSuccessRate,AvgTime
-overview,3,1.0,1.0,12.441
-subsampling,1,1.0,1.0,34.206
+overview,3,1.0,1.0,17.328
+subsampling,1,1.0,1.0,33.009
 
 ErrorCategory,Count
