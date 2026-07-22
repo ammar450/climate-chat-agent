@@ -50,7 +50,7 @@ Return ONLY a valid JSON object.
 The JSON object must have exactly this structure:
 
 {
-  "success": TRUE | FALSE,
+  "success": true | false,
   "explanation": "<short explanation>",
   "failure_reasons": ["<reason1>", "<reason2>", ...]
 }
@@ -95,15 +95,14 @@ Evidence (raw SPARQL results):
             raw = raw.split("\n", 1)[-1]
             raw = raw.rsplit("```", 1)[0].strip()
         parsed = json.loads(raw)
-        print("PARSED", parsed)
         return {
-            "assessment": parsed['success'],
+            "success": parsed['success'],
             "explanation": parsed['explanation'],
             "failure_reasons": parsed['failure_reasons']
         }
     except (LLMError, json.JSONDecodeError, Exception) as exc:
         return {
-            "assessment": False,
+            "success": None,
             "explanation": None,
             "failure_reasons": str(exc)[:200]
         }
@@ -207,11 +206,11 @@ def run_single_evaluation(
             sparql_query = result.get("sparql").replace("\n", " ")
             answer = result.get("answer", "")
             rows = result.get("rows", [])
-            exec_assessment = run_llm_judge(selected_question, rows)
-
+            exec_assessment = run_llm_judge(selected_question, rows, model=model)
+            #print("PARSED2", exec_assessment)
             result_entry["predicted_template"] = predicted
             result_entry["template_match"] = (predicted == expected_template)
-            result_entry["execution_success"] = bool(exec_assessment['assessment']) # compare bindings and question to see if the question has likely been a success          
+            result_entry["execution_success"] = exec_assessment['success'] # compare bindings and question to see if the question has likely been a success          
             result_entry["execution_time_seconds"] = round(elapsed, 3)
             result_entry["execution_explanation"] = exec_assessment['explanation']
             result_entry["sparql_query"] = sparql_query # sparql query generated
@@ -229,8 +228,8 @@ def run_single_evaluation(
 
         run_results["test_results"].append(result_entry)
         i = i+1
-       # if i == 3: 
-        #    break
+        if i == 1: 
+           break
 
     # Compute summary
     total = len(run_results["test_results"])
@@ -403,18 +402,18 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, o
     L.append("|--- |--- |")
     L.append(f"| Template Accuracy | {m.get('avg_template_accuracy', 0):.1%} ± {m.get('std_template_accuracy', 0):.1%} |")
     L.append(f"| Template Accuracy Range | {m.get('min_template_accuracy', 0):.1%} – {m.get('max_template_accuracy', 0):.1%} |")
-    L.append(f"| Success Rate - Query Execution | {m.get('avg_execution_success_rate', 0):.1%} |")
     L.append(f"| Success Rate - Query Creation | {m.get('avg_sparql_success_rate', 0):.1%} |")
+    L.append(f"| Success Rate - Query Execution | {m.get('avg_execution_success_rate', 0):.1%} |")
     L.append(f"| Avg Latency | {m.get('avg_latency', 0):.2f}s |")
     L.append(f"| Latency Range | {m.get('min_latency', 0):.2f}s – {m.get('max_latency', 0):.2f}s |")
     L.append(f"| **Overall Score** | **{aggregate.get('overall_score', 0):.1%}** |")
     L.append("")
     L.append("## 📋 Per-Run Summary")
-    L.append("| Run | Templ Acc | Exec Success | Avg Time |")
-    L.append("|--- |--- |--- |--- |")
+    L.append("| Run | Templ Acc | Generation Success | Execution Success | Avg Time |")
+    L.append("|--- |--- |--- |--- |--- |")
     for run in all_runs:
         s = run["summary"]
-        L.append(f"| {run['run_number']} | {s['template_accuracy']:.1%} | {s['execution_success_rate']:.1%} | {s['avg_execution_time']:.2f}s |")
+        L.append(f"| {run['run_number']} | {s['template_accuracy']:.1%} | {s['sparql_success_rate']:.1%} | {s['execution_success_rate']:.1%} | {s['avg_execution_time']:.2f}s |")
     L.append("")
     L.append("## 🏷️ Category-wise Analysis")
     L.append("| Category | Tests | Templ Acc | Exec Success | Avg Time | Common Errors |")
