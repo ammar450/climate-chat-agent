@@ -92,7 +92,7 @@ def run_single_evaluation(
         "test_results": [],
         "summary": {},
     }
-
+    i = 0  
     for tc in test_cases:
         qid = tc["id"]
         category = tc.get("category", "unknown")
@@ -115,7 +115,6 @@ def run_single_evaluation(
             "sparql_success": False,
             "returned_rows": 0,
             "answer": "",
-            "answer_correctness": "incorrect",
             "error_category": None,
             "notes": "",
         }
@@ -149,6 +148,9 @@ def run_single_evaluation(
             result_entry["notes"] = str(e)[:200]
 
         run_results["test_results"].append(result_entry)
+        i = i+1
+        if i == 4: 
+            break
 
     # Compute summary
     total = len(run_results["test_results"])

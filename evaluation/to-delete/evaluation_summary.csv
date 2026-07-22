@@ -1,0 +1,17 @@
+Metric,Value
+avg_template_accuracy,1.0
+std_template_accuracy,0
+min_template_accuracy,1.0
+max_template_accuracy,1.0
+avg_execution_success_rate,1.0
+avg_latency,23.204
+min_latency,15.413
+max_latency,33.194
+std_latency,0
+overall_score,1.0
+
+Category,Total,TemplateAccuracy,ExecSuccessRate,AvgTime
+overview,3,1.0,1.0,19.874
+subsampling,1,1.0,1.0,33.194
+
+ErrorCategory,Count

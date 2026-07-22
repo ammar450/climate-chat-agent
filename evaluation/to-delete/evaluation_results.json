@@ -1,0 +1,180 @@
+{
+  "metadata": {
+    "evaluation_timestamp": "2026-07-22T08:38:38.616477",
+    "random_seed": 40192,
+    "num_runs": 1,
+    "test_questions_file": "evaluation/test_questions.json"
+  },
+  "aggregate_metrics": {
+    "num_runs": 1,
+    "total_tests_per_run": 4,
+    "aggregate_metrics": {
+      "avg_template_accuracy": 1.0,
+      "std_template_accuracy": 0,
+      "min_template_accuracy": 1.0,
+      "max_template_accuracy": 1.0,
+      "avg_execution_success_rate": 1.0,
+      "avg_latency": 23.204,
+      "min_latency": 15.413,
+      "max_latency": 33.194,
+      "std_latency": 0
+    },
+    "overall_score": 1.0,
+    "confusion_matrix": {
+      "list_properties": {
+        "list_properties": 1
+      },
+      "list_features_of_interest": {
+        "list_features_of_interest": 1
+      },
+      "sample_observations": {
+        "sample_observations": 1
+      },
+      "all_properties_summary": {
+        "all_properties_summary": 1
+      }
+    },
+    "category_analysis": {
+      "overview": {
+        "total": 3,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 19.874,
+        "common_errors": {}
+      },
+      "subsampling": {
+        "total": 1,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "avg_execution_time": 33.194,
+        "common_errors": {}
+      }
+    },
+    "template_analysis": {
+      "all_properties_summary": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 28.716,
+        "common_errors": {}
+      },
+      "list_features_of_interest": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 15.413,
+        "common_errors": {}
+      },
+      "list_properties": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 15.492,
+        "common_errors": {}
+      },
+      "sample_observations": {
+        "total_tested": 1,
+        "successful": 1,
+        "success_rate": 1.0,
+        "avg_response_time": 33.194,
+        "common_errors": {}
+      }
+    },
+    "error_analysis": {}
+  },
+  "per_run_results": [
+    {
+      "run_number": 1,
+      "timestamp": "2026-07-22T08:37:05.800782",
+      "total_tests": 16,
+      "test_results": [
+        {
+          "test_id": 1,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "What variables are available?",
+          "expected_template": "list_properties",
+          "predicted_template": "list_properties",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 15.492,
+          "sparql_success": true,
+          "returned_rows": 5,
+          "answer": "Query type: list_properties\nResult count: 5\nAvailable climate variables:\n  1. Air Temperature (177784295 observations)\n  2. Precipitation Amount (59441640 observations)\n  3. Relative Humidity (42603920 observations)\n  4. Surface Downwelling Shortwave Flux In Air (37308459 observations)\n  5. Wind Speed (24136086 observations)",
+          "error_category": null,
+          "notes": ""
+        },
+        {
+          "test_id": 2,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "What are grids available in the dataset?",
+          "expected_template": "list_features_of_interest",
+          "predicted_template": "list_features_of_interest",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 15.413,
+          "sparql_success": true,
+          "returned_rows": 10,
+          "answer": "Query type: list_features_of_interest\nResult count: 50\nHere are the available observation locations:\n  1. https://w3id.org/climateobservations/eobs-v31/data/grid_43p38_16p62\n  2. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_m0p62\n  3. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_0p88\n  4. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_3p12\n  5. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_m1p38\n  6. https://w3id.org/climateobserva",
+          "error_category": null,
+          "notes": ""
+        },
+        {
+          "test_id": 3,
+          "category": "subsampling",
+          "difficulty": "easy",
+          "selected_question": "Show me some sample observations",
+          "expected_template": "sample_observations",
+          "predicted_template": "sample_observations",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 33.194,
+          "sparql_success": true,
+          "returned_rows": 10,
+          "answer": "Here are some sample observations for January 1, 2024:\n\n1. 1.45 meters per second (m/s)\n2. 1.88 m/s\n3. 1.33 m/s\n4. 1.89 m/s\n5. 1.62 m/s\n\nThese values are part of a total of 200 observations, with an average of 1.55 m/s for that day.",
+          "error_category": null,
+          "notes": ""
+        },
+        {
+          "test_id": 4,
+          "category": "overview",
+          "difficulty": "medium",
+          "selected_question": "Give me an overview of climate observations for 2024",
+          "expected_template": "all_properties_summary",
+          "predicted_template": "all_properties_summary",
+          "template_match": true,
+          "execution_success": true,
+          "execution_time_seconds": 28.716,
+          "sparql_success": true,
+          "returned_rows": 2,
+          "answer": "In 2024, the average relative humidity was 74.50% with a range from 10.50% to 94.40%, based on 376,771 observations. The average wind speed was 2.50 meters per second, with a range from 0.12 to 20.28 meters per second, based on 623,229 observations.",
+          "error_category": null,
+          "notes": ""
+        }
+      ],
+      "summary": {
+        "total": 4,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "sparql_success_rate": 1.0,
+        "avg_execution_time": 23.204,
+        "min_execution_time": 15.413,
+        "max_execution_time": 33.194,
+        "std_execution_time": 9.135
+      }
+    }
+  ],
+  "per_run_summaries": [
+    {
+      "total": 4,
+      "template_accuracy": 1.0,
+      "execution_success_rate": 1.0,
+      "sparql_success_rate": 1.0,
+      "avg_execution_time": 23.204,
+      "min_execution_time": 15.413,
+      "max_execution_time": 33.194,
+      "std_execution_time": 9.135
+    }
+  ]
+}
