@@ -314,4 +314,5 @@ def enrich_from_wikidata(
         except Exception as exc:
             print(f"[WIKIDATA] property lookup error (non-fatal): {exc}")
 
+    print("-------- DEBUG ------------")   
     return enrichment

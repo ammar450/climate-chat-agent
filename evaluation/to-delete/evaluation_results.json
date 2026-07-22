@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "evaluation_timestamp": "2026-07-22T08:38:38.616477",
-    "random_seed": 40192,
+    "evaluation_timestamp": "2026-07-22T10:08:36.646886",
+    "random_seed": 97958,
     "num_runs": 1,
     "test_questions_file": "evaluation/test_questions.json"
   },
@@ -14,9 +14,9 @@
       "min_template_accuracy": 1.0,
       "max_template_accuracy": 1.0,
       "avg_execution_success_rate": 1.0,
-      "avg_latency": 23.204,
-      "min_latency": 15.413,
-      "max_latency": 33.194,
+      "avg_latency": 22.161,
+      "min_latency": 15.68,
+      "max_latency": 34.405,
       "std_latency": 0
     },
     "overall_score": 1.0,
@@ -39,14 +39,14 @@
         "total": 3,
         "template_accuracy": 1.0,
         "execution_success_rate": 1.0,
-        "avg_execution_time": 19.874,
+        "avg_execution_time": 18.08,
         "common_errors": {}
       },
       "subsampling": {
         "total": 1,
         "template_accuracy": 1.0,
         "execution_success_rate": 1.0,
-        "avg_execution_time": 33.194,
+        "avg_execution_time": 34.405,
         "common_errors": {}
       }
     },
@@ -55,28 +55,28 @@
         "total_tested": 1,
         "successful": 1,
         "success_rate": 1.0,
-        "avg_response_time": 28.716,
+        "avg_response_time": 22.736,
         "common_errors": {}
       },
       "list_features_of_interest": {
         "total_tested": 1,
         "successful": 1,
         "success_rate": 1.0,
-        "avg_response_time": 15.413,
+        "avg_response_time": 15.68,
         "common_errors": {}
       },
       "list_properties": {
         "total_tested": 1,
         "successful": 1,
         "success_rate": 1.0,
-        "avg_response_time": 15.492,
+        "avg_response_time": 15.824,
         "common_errors": {}
       },
       "sample_observations": {
         "total_tested": 1,
         "successful": 1,
         "success_rate": 1.0,
-        "avg_response_time": 33.194,
+        "avg_response_time": 34.405,
         "common_errors": {}
       }
     },
@@ -85,19 +85,20 @@
   "per_run_results": [
     {
       "run_number": 1,
-      "timestamp": "2026-07-22T08:37:05.800782",
+      "timestamp": "2026-07-22T10:07:08.000531",
       "total_tests": 16,
       "test_results": [
         {
           "test_id": 1,
           "category": "overview",
           "difficulty": "easy",
-          "selected_question": "What variables are available?",
+          "selected_question": "Provide an overview of observation variables in the dataset",
           "expected_template": "list_properties",
           "predicted_template": "list_properties",
           "template_match": true,
           "execution_success": true,
-          "execution_time_seconds": 15.492,
+          "execution_time_seconds": 15.824,
+          "sparql_query": null,
           "sparql_success": true,
           "returned_rows": 5,
           "answer": "Query type: list_properties\nResult count: 5\nAvailable climate variables:\n  1. Air Temperature (177784295 observations)\n  2. Precipitation Amount (59441640 observations)\n  3. Relative Humidity (42603920 observations)\n  4. Surface Downwelling Shortwave Flux In Air (37308459 observations)\n  5. Wind Speed (24136086 observations)",
@@ -113,7 +114,8 @@
           "predicted_template": "list_features_of_interest",
           "template_match": true,
           "execution_success": true,
-          "execution_time_seconds": 15.413,
+          "execution_time_seconds": 15.68,
+          "sparql_query": null,
           "sparql_success": true,
           "returned_rows": 10,
           "answer": "Query type: list_features_of_interest\nResult count: 50\nHere are the available observation locations:\n  1. https://w3id.org/climateobservations/eobs-v31/data/grid_43p38_16p62\n  2. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_m0p62\n  3. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_0p88\n  4. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_3p12\n  5. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_m1p38\n  6. https://w3id.org/climateobserva",
@@ -124,15 +126,16 @@
           "test_id": 3,
           "category": "subsampling",
           "difficulty": "easy",
-          "selected_question": "Show me some sample observations",
+          "selected_question": "Give me examples of observations in the dataset",
           "expected_template": "sample_observations",
           "predicted_template": "sample_observations",
           "template_match": true,
           "execution_success": true,
-          "execution_time_seconds": 33.194,
+          "execution_time_seconds": 34.405,
+          "sparql_query": null,
           "sparql_success": true,
           "returned_rows": 10,
-          "answer": "Here are some sample observations for January 1, 2024:\n\n1. 1.45 meters per second (m/s)\n2. 1.88 m/s\n3. 1.33 m/s\n4. 1.89 m/s\n5. 1.62 m/s\n\nThese values are part of a total of 200 observations, with an average of 1.55 m/s for that day.",
+          "answer": "Here are some examples of observations from the dataset for January 1, 2024:\n\n1. 1.45 meters per second (m/s)\n2. 1.88 m/s\n3. 1.33 m/s\n4. 1.89 m/s\n5. 1.62 m/s\n\nThese values are part of a total of 200 observations, with a range from 0.26 m/s to 4.65 m/s.",
           "error_category": null,
           "notes": ""
         },
@@ -140,15 +143,16 @@
           "test_id": 4,
           "category": "overview",
           "difficulty": "medium",
-          "selected_question": "Give me an overview of climate observations for 2024",
+          "selected_question": "Show me climate data for 2000",
           "expected_template": "all_properties_summary",
           "predicted_template": "all_properties_summary",
           "template_match": true,
           "execution_success": true,
-          "execution_time_seconds": 28.716,
+          "execution_time_seconds": 22.736,
+          "sparql_query": null,
           "sparql_success": true,
           "returned_rows": 2,
-          "answer": "In 2024, the average relative humidity was 74.50% with a range from 10.50% to 94.40%, based on 376,771 observations. The average wind speed was 2.50 meters per second, with a range from 0.12 to 20.28 meters per second, based on 623,229 observations.",
+          "answer": "In 2000, the average relative humidity was 72.78% with a range from 13.90% to 94.40% based on 415,095 observations. The average wind speed was 2.54 meters per second, ranging from 0.13 to 16.00 meters per second, with 584,905 observations.",
           "error_category": null,
           "notes": ""
         }
@@ -158,10 +162,10 @@
         "template_accuracy": 1.0,
         "execution_success_rate": 1.0,
         "sparql_success_rate": 1.0,
-        "avg_execution_time": 23.204,
-        "min_execution_time": 15.413,
-        "max_execution_time": 33.194,
-        "std_execution_time": 9.135
+        "avg_execution_time": 22.161,
+        "min_execution_time": 15.68,
+        "max_execution_time": 34.405,
+        "std_execution_time": 8.802
       }
     }
   ],
@@ -171,10 +175,10 @@
       "template_accuracy": 1.0,
       "execution_success_rate": 1.0,
       "sparql_success_rate": 1.0,
-      "avg_execution_time": 23.204,
-      "min_execution_time": 15.413,
-      "max_execution_time": 33.194,
-      "std_execution_time": 9.135
+      "avg_execution_time": 22.161,
+      "min_execution_time": 15.68,
+      "max_execution_time": 34.405,
+      "std_execution_time": 8.802
     }
   ]
 }

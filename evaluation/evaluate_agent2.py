@@ -112,6 +112,7 @@ def run_single_evaluation(
             "template_match": False,
             "execution_success": False,
             "execution_time_seconds": 0,
+            "sparql_query": "",
             "sparql_success": False,
             "returned_rows": 0,
             "answer": "",
@@ -126,6 +127,7 @@ def run_single_evaluation(
             elapsed = time.time() - start
 
             predicted = result.get("used_template", "error")
+            sparql_query = result.get("sparql_query")
             answer = result.get("answer", "")
             rows = result.get("rows", [])
 
@@ -133,6 +135,7 @@ def run_single_evaluation(
             result_entry["template_match"] = (predicted == expected_template)
             result_entry["execution_success"] = True
             result_entry["execution_time_seconds"] = round(elapsed, 3)
+            result_entry["sparql_query"] = sparql_query
             result_entry["sparql_success"] = bool(result.get("sparql"))
             result_entry["returned_rows"] = len(rows) if rows else 0
             result_entry["answer"] = answer[:500]
