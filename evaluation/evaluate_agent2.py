@@ -135,7 +135,7 @@ def run_single_evaluation(
             result_entry["template_match"] = (predicted == expected_template)
             result_entry["execution_success"] = True
             result_entry["execution_time_seconds"] = round(elapsed, 3)
-            result_entry["sparql_query"] = sparql_query
+            result_entry["sparql_query"] = sparql_query # sparql query generated
             result_entry["sparql_success"] = bool(result.get("sparql"))
             result_entry["returned_rows"] = len(rows) if rows else 0
             result_entry["answer"] = answer[:500]
@@ -194,6 +194,7 @@ def aggregate_runs(all_runs: List[Dict[str, Any]], test_cases: List[Dict]) -> Di
             "min_template_accuracy": round(min(s["template_accuracy"] for s in summaries), 4),
             "max_template_accuracy": round(max(s["template_accuracy"] for s in summaries), 4),
             "avg_execution_success_rate": round(statistics.mean([s["execution_success_rate"] for s in summaries]), 4),
+            "avg_sparql_success_rate": round(statistics.mean([s["sparql_success_rate"] for s in summaries]), 4),
             "avg_latency": round(statistics.mean([s["avg_execution_time"] for s in summaries]), 3),
             "min_latency": round(min(s["min_execution_time"] for s in summaries), 3),
             "max_latency": round(max(s["max_execution_time"] for s in summaries), 3),
@@ -292,6 +293,7 @@ def generate_csv_report(aggregate: Dict, output_path: str):
         ["min_template_accuracy", m.get("min_template_accuracy", 0)],
         ["max_template_accuracy", m.get("max_template_accuracy", 0)],
         ["avg_execution_success_rate", m.get("avg_execution_success_rate", 0)],
+        ["avg_sparql_success_rate", m.get("avg_sparql_success_rate", 0)],
         ["avg_latency", m.get("avg_latency", 0)],
         ["min_latency", m.get("min_latency", 0)],
         ["max_latency", m.get("max_latency", 0)],
@@ -323,8 +325,8 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, o
     L.append("|--- |--- |")
     L.append(f"| Template Accuracy | {m.get('avg_template_accuracy', 0):.1%} ± {m.get('std_template_accuracy', 0):.1%} |")
     L.append(f"| Template Accuracy Range | {m.get('min_template_accuracy', 0):.1%} – {m.get('max_template_accuracy', 0):.1%} |")
-    L.append(f"| Execution Success Rate | {m.get('avg_execution_success_rate', 0):.1%} |")
-
+    L.append(f"| Success Rate - Query Execution | {m.get('avg_execution_success_rate', 0):.1%} |")
+    L.append(f"| Success Rate - Query Creation | {m.get('avg_sparql_success_rate', 0):.1%} |")
     L.append(f"| Avg Latency | {m.get('avg_latency', 0):.2f}s |")
     L.append(f"| Latency Range | {m.get('min_latency', 0):.2f}s – {m.get('max_latency', 0):.2f}s |")
     L.append(f"| **Overall Score** | **{aggregate.get('overall_score', 0):.1%}** |")
@@ -423,7 +425,8 @@ def main():
     print("FINAL SUMMARY")
     print("=" * 60)
     print(f"  Template Accuracy:  {m['avg_template_accuracy']:.1%} +/- {m['std_template_accuracy']:.1%}")
-    print(f"  Execution Success:  {m['avg_execution_success_rate']:.1%}")
+    print(f"  Success - Query Execution:  {m['avg_execution_success_rate']:.1%}")
+    print(f"  Success - Query Creation:  {m['avg_sparql_success_rate']:.1%}")
     print(f"  Avg Latency:        {m['avg_latency']:.2f}s")
     print(f"  Overall Score:      {agg['overall_score']:.1%}")
     print("=" * 60)
