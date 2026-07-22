@@ -95,6 +95,7 @@ Evidence (raw SPARQL results):
             raw = raw.split("\n", 1)[-1]
             raw = raw.rsplit("```", 1)[0].strip()
         parsed = json.loads(raw)
+        print("PARSED", parsed)
         return {
             "assessment": parsed['success'],
             "explanation": parsed['explanation'],
@@ -104,7 +105,7 @@ Evidence (raw SPARQL results):
         return {
             "assessment": False,
             "explanation": None,
-            "failure_reasons": str(exc)
+            "failure_reasons": str(exc)[:200]
         }
 
 
@@ -207,7 +208,7 @@ def run_single_evaluation(
             answer = result.get("answer", "")
             rows = result.get("rows", [])
             exec_assessment = run_llm_judge(selected_question, rows)
-            
+
             result_entry["predicted_template"] = predicted
             result_entry["template_match"] = (predicted == expected_template)
             result_entry["execution_success"] = bool(exec_assessment['assessment']) # compare bindings and question to see if the question has likely been a success          
