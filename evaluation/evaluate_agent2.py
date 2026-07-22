@@ -136,7 +136,8 @@ def run_single_evaluation(
             result_entry["execution_success"] = True
             result_entry["execution_time_seconds"] = round(elapsed, 3)
             result_entry["sparql_query"] = sparql_query # sparql query generated
-            result_entry["sparql_success"] = bool(result.get("sparql"))
+            #result_entry["sparql_success"] = bool(result.get("sparql")) # check if there is a SPARQL query generated
+            result_entry["sparql_success"] = bool(sparql_query) # check if there is a SPARQL query generated
             result_entry["returned_rows"] = len(rows) if rows else 0
             result_entry["answer"] = answer[:500]
 
@@ -152,8 +153,8 @@ def run_single_evaluation(
 
         run_results["test_results"].append(result_entry)
         i = i+1
-        #if i == 4: 
-         #   break
+        if i == 3: 
+            break
 
     # Compute summary
     total = len(run_results["test_results"])
