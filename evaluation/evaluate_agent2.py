@@ -152,8 +152,8 @@ def run_single_evaluation(
 
         run_results["test_results"].append(result_entry)
         i = i+1
-        if i == 4: 
-            break
+        #if i == 4: 
+         #   break
 
     # Compute summary
     total = len(run_results["test_results"])
