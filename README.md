@@ -62,6 +62,7 @@ This GitHub repository is only about the agent for question answering. To see th
 
 
 ## 🏗️ Architecture
+<img width="1377" height="366" alt="langgraph_workflow" src="https://github.com/user-attachments/assets/c09ec462-0cba-4b90-bef5-d17981a854ba" />
 
 ```
 User Question
