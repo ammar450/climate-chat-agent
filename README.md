@@ -206,24 +206,24 @@ MAX_REQUESTS_PER_MINUTE=30      # Rate limit per session
 
 ## 💬 Usage Examples
 
+Currently, the agent can be used to answer the following types of questions: 
+
 - Category: Overview; Example: What variables are available?  
-Category: Overview; Example: List all locations of observations available 
-Category: Overview; Example:  Give me an overview of climate observations for 2024 
-Category: Aggregation (Multi-year); Example: Show me wind speed trends for the last 5 years  
-Category: Aggregation (single-year); Example: Calculate temperature statistics for 2024  
-Category: Aggregation (mean-year); Example: What was the average temperature in 2020? 
-Category: Aggregation (mean-month); Example: Show monthly temperature averages for 2022  
-Category: Aggregation (mean-day); Example: What are daily humidity averages for March 2000?  
-Category: Nested-aggregation; Example: What was the mean daily temperature in 2001?  
-Category: Extreme-values; Example: What were the highest temperature values in 2023?  
-Category: Subsampling; Example: Show me some sample observations 
-Category: Filtering (threshold); Example: Find temperature readings above 30 degrees in Summer 2024  
-Category: Filtering (range); Example: Find precipitation values below 12 mm and above 10 mm in 2001 
-Category: Location-based; Example: What are grids near lat: 67.8, lon: 20.3  
-Category: Location-based; Example: What was the weather like in France during 1985?  
-Category: Location-based; Example: Compare temperature across different grid points in 2019  
-
-
+- Category: Overview; Example: List all locations of observations available 
+- Category: Overview; Example:  Give me an overview of climate observations for 2024 
+- Category: Aggregation (Multi-year); Example: Show me wind speed trends for the last 5 years  
+- Category: Aggregation (single-year); Example: Calculate temperature statistics for 2024  
+- Category: Aggregation (mean-year); Example: What was the average temperature in 2020? 
+- Category: Aggregation (mean-month); Example: Show monthly temperature averages for 2022  
+- Category: Aggregation (mean-day); Example: What are daily humidity averages for March 2000?  
+- Category: Nested-aggregation; Example: What was the mean daily temperature in 2001?  
+- Category: Extreme-values; Example: What were the highest temperature values in 2023?  
+- Category: Subsampling; Example: Show me some sample observations 
+- Category: Filtering (threshold); Example: Find temperature readings above 30 degrees in Summer 2024  
+- Category: Filtering (range); Example: Find precipitation values below 12 mm and above 10 mm in 2001 
+- Category: Location-based; Example: What are grids near lat: 67.8, lon: 20.3  
+- Category: Location-based; Example: What was the weather like in France during 1985?  
+- Category: Location-based; Example: Compare temperature across different grid points in 2019  
 
 ### RAG vs Fast Mode
 
