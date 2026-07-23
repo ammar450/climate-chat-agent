@@ -124,7 +124,7 @@ Columns for the 'summary_per_template': 'Template | Count | Top failure reasons 
 Columns for the 'summary_per_category': 'Category | Count | Top failure reasons (count) | Topics
 
 If there are no errors at all, return a table with the columns plus one blank line. The blank line should be 
-visible to users. Do not add placeholder information in the tables.
+visible to users. Add : n/a in each cell of the line. Do not add placeholder information in the tables.
 
 Return ONLY a valid JSON object.
 
