@@ -208,24 +208,40 @@ MAX_REQUESTS_PER_MINUTE=30      # Rate limit per session
 
 Currently, the agent can be used to answer the following types of questions: 
 
-- Category: Overview; Example: What variables are available?  
-- Category: Overview; Example: List all locations of observations available 
-- Category: Overview; Example:  Give me an overview of climate observations for 2024 
-- Category: Aggregation (Multi-year); Example: Show me wind speed trends for the last 5 years  
-- Category: Aggregation (single-year); Example: Calculate temperature statistics for 2024  
-- Category: Aggregation (mean-year); Example: What was the average temperature in 2020? 
-- Category: Aggregation (mean-month); Example: Show monthly temperature averages for 2022  
-- Category: Aggregation (mean-day); Example: What are daily humidity averages for March 2000?  
-- Category: Nested-aggregation; Example: What was the mean daily temperature in 2001?  
-- Category: Extreme-values; Example: What were the highest temperature values in 2023?  
-- Category: Subsampling; Example: Show me some sample observations 
-- Category: Filtering (threshold); Example: Find temperature readings above 30 degrees in Summer 2024  
-- Category: Filtering (range); Example: Find precipitation values below 12 mm and above 10 mm in 2001 
-- Category: Location-based; Example: What are grids near lat: 67.8, lon: 20.3  
-- Category: Location-based; Example: What was the weather like in France during 1985?  
-- Category: Location-based; Example: Compare temperature across different grid points in 2019
+## Supported Query Categories
 
-See the [test questions](evaluation/test_questions.json), for more examples of questions.
+The following table summarizes the query categories currently supported by the application, and examples for each category.
+
+| Category | Example Query |
+|----------|---------------|
+| **Overview** | What variables are available? |
+| **Overview** | List all locations of observations available. |
+| **Overview** | Give me an overview of climate observations for 2024. |
+| **Aggregation (Multi-year)** | Show me wind speed trends for the last 5 years. |
+| **Aggregation (Single-year)** | Calculate temperature statistics for 2024. |
+| **Aggregation (Mean-year)** | What was the average temperature in 2020? |
+| **Aggregation (Mean-month)** | Show monthly temperature averages for 2022. |
+| **Aggregation (Mean-day)** | What are daily humidity averages for March 2000? |
+| **Nested Aggregation** | What was the mean daily temperature in 2001? |
+| **Extreme Values** | What were the highest temperature values in 2023? |
+| **Subsampling** | Show me some sample observations. |
+| **Filtering (Threshold)** | Find temperature readings above 30°C in Summer 2024. |
+| **Filtering (Range)** | Find precipitation values between 10 mm and 12 mm in 2001. |
+| **Location-based** | What are the grid points near latitude 67.8 and longitude 20.3? |
+| **Location-based** | What was the weather like in France during 1985? |
+| **Location-based** | Compare temperature across different grid points in 2019. |
+
+### Query Categories
+
+- **Overview** – Explore available variables, locations, and dataset summaries.
+- **Aggregation** – Compute statistics over different temporal resolutions (daily, monthly, yearly, or across multiple years).
+- **Nested Aggregation** – Perform multi-level aggregations, such as averaging daily values over a year.
+- **Extreme Values** – Identify minimum or maximum observations.
+- **Subsampling** – Retrieve representative samples from the dataset.
+- **Filtering** – Filter observations using thresholds or value ranges.
+- **Location-based** – Query observations by geographic location, country, or compare across spatial grid points.
+
+ For more examples of questions, see the [test questions](evaluation/test_questions.json).
 
 ### RAG vs Fast Mode
 
@@ -413,7 +429,7 @@ That's about 59.5°F - a mild year overall!"
 **GET /**
 Returns the web UI
 
-#### The backend NEVER exposes the SPARQL endpoint directly
+> The backend NEVER exposes the SPARQL endpoint directly
 
 ## 📝 Query Templates
 
