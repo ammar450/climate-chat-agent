@@ -7,7 +7,7 @@ Comprehensive evaluation with 5 randomized runs, cross-category analysis, and de
 | File | Purpose |
 |------|---------|
 | `evaluate_agent.py` | Main evaluation script |
-| `test_questions.json` | 16 test cases with 46 alternative phrasings |
+| `test_questions.json` | 16 test cases with 48 alternative phrasings |
 | `evaluation_results.json` | Full JSON output (generated) |
 | `evaluation_summary.csv` | CSV summary (generated) |
 | `evaluation_summary.md` | Markdown report (generated) |
