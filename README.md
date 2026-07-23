@@ -616,7 +616,7 @@ Contributions welcome! Please:
 4. Add tests if applicable
 5. Submit a Pull Request
 
-**Planned improvements:**
+**Planned improvements** (as of July 2026)
 - Enhanced understanding of the user's intent (e.g. LLM-based interpretation of user inputs)
 - Additional SPARQL query templates
 - Improved visualization of the results
