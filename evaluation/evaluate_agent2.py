@@ -108,47 +108,75 @@ Evidence (raw SPARQL results):
         }
 
 
+
 # ──────────────────────────────────────────────
-# ERROR CLASSIFICATION
+# ERROR ANALYSIS - LLM-based
 # ──────────────────────────────────────────────
 
-def classify_error(result: Dict[str, Any], exception: Optional[Exception] = None) -> str:
-    """Classify a failure into a specific error category."""
-    if exception:
-        err_str = str(exception).lower()
-        if "sparql" in err_str or "endpoint" in err_str:
-            return "SPARQL execution failure"
-        if "template" in err_str or "render" in err_str:
-            return "SPARQL generation failure"
-        if "property" in err_str or "resolver" in err_str:
-            return "Property resolution failure"
-        if "date" in err_str or "time" in err_str or "parser" in err_str:
-            return "Date parsing failure"
-        if "location" in err_str or "feature" in err_str or "coordinates" in err_str:
-            return "Location resolution failure"
-        if "federat" in err_str:
-            return "Federation failure"
-        if "format" in err_str or "evidence" in err_str or "answer" in err_str:
-            return "Formatting failure"
-        return "Unexpected exception"
+SUMMARIZATION_PROMPT = """
+You are AI assistant specialized in summarizing the input data, which is about some errors. 
 
-    answer = result.get("answer", "").lower()
-    template = result.get("used_template", "")
+You need to provide two summaries as nicely formatted markdown tables: One according to the most frequent errors according to the template, 
+and the other according to the most frequent errors according to the category. These are two views on the data. 
+Where appropriate, you can categorize them according to the unique topic that they touch.
 
-    if not template or template == "error":
-        return "Template routing failure"
+Columns for the 'summary_per_template': 'Template | Count | Top failure reasons (count) | Topics
+Columns for the 'summary_per_category': 'Category | Count | Top failure reasons (count) | Topics
 
-    if not result.get("sparql"):
-        return "SPARQL generation failure"
+Return ONLY a valid JSON object.
 
-    if not result.get("rows") or len(result.get("rows", [])) == 0:
-        if any(p in answer for p in ["no data", "i don't have", "i'm sorry", "no results"]):
-            return "Empty SPARQL results"
-        return "Formatting failure"
+The JSON object must have exactly this structure:
 
-    return "Unknown failure"
+{{
+  "summary_per_template": '<summary>',
+  "summary_per_category": '<summary>'
+}}
 
+Rules:
+- Do not wrap the JSON in markdown.
+- Do not include any extra text before or after the JSON.
+"""
 
+def analyze_errors(
+    results: List[Dict],
+    model: Optional[str] = None) -> str:
+    """
+    Use an LLM to analyze the errors that occured during the execution.
+    """
+    # extract errors from the set of results
+    errors = []
+    print(results)
+    test_results = results[0]['test_results']
+    print(test_results)
+
+    for r in test_results: 
+        error_entry = {
+            "test_id": "",
+            "category": "",
+            "expected_template": "",
+            "execution_failure_reasons": None }
+        #print(r)
+        if r['execution_failure_reasons'] != [] :
+            error_entry["test_id"] = r['test_id']
+            error_entry["category"] = r['category']
+            error_entry["expected_template"] = r['expected_template']
+            error_entry["execution_failure_reasons"] = r['execution_failure_reasons']
+            errors.append(error_entry)
+
+    errors_str = json.dumps(errors, indent=2)
+
+    # Parse model spec "provider:model_name"
+    provider, model_name = None, None
+    if model and ":" in model:
+        provider, model_name = model.split(":", 1)
+
+    messages = [{"role": "system", "content": SUMMARIZATION_PROMPT.strip()},
+                {"role": "user", "content": "Errors: \n{errors}"}]
+
+    # Run error analysis
+    error_analysis = llm_chat(messages, provider=provider, model=model_name, temperature=0.0, max_tokens=500)
+
+    return error_analysis
 # ──────────────────────────────────────────────
 # SINGLE RUN EVALUATOR
 # ──────────────────────────────────────────────
@@ -159,6 +187,7 @@ def run_single_evaluation(
     run_number: int = 1,
 ) -> Dict[str, Any]:
     """Run one evaluation pass over all test cases with random question selection."""
+    
     run_results = {
         "run_number": run_number,
         "timestamp": datetime.now().isoformat(),
@@ -227,9 +256,9 @@ def run_single_evaluation(
             result_entry["notes"] = str(e)[:200]
 
         run_results["test_results"].append(result_entry)
-        #i = i+1
-        #if i == 1: 
-         #  break
+        i = i+1
+        if i == 2: 
+           break
 
     # Compute summary
     total = len(run_results["test_results"])
@@ -389,7 +418,7 @@ def generate_csv_report(aggregate: Dict, output_path: str):
     print(f"[REPORT] CSV -> {output_path}")
 
 
-def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, output_path: str):
+def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, model: str, output_path: str):
     m = aggregate.get("aggregate_metrics", {})
     L = []
     L.append("# Climate Chat Agent — Evaluation Report")
@@ -429,12 +458,17 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, o
         errs = ", ".join(f"{k}({v})" for k, v in stats.get("common_errors", {}).items())
         L.append(f"| {tpl} | {stats['total_tested']} | {stats['successful']} | {stats['success_rate']:.1%} | {stats['avg_response_time']:.2f}s | {errs} |")
     L.append("")
+    
     L.append("## ❌ Error Analysis")
-    L.append("| Error Category | Count |")
-    L.append("|--- |--- |")
-    for err, count in aggregate.get("error_analysis", {}).items():
-        L.append(f"| {err} | {count} |")
+    
+    print(f"[EVAL] Model used for the error analysis {model}")
+
+    error_summaries = json.loads(analyze_errors(all_runs, model))
+    print(type(error_summaries), error_summaries)
+    L.append(error_summaries['summary_per_category'])
+    L.append(error_summaries['summary_per_template'])
     L.append("")
+
     L.append("## 🔀 Confusion Matrix")
     cm = aggregate.get("confusion_matrix", {})
     all_tpl = sorted(set(cm.keys()) | {p for v in cm.values() for p in v})
@@ -497,7 +531,7 @@ def main():
     os.makedirs(od, exist_ok=True)
     generate_json_report(all_runs, agg, seed, os.path.join(od, "evaluation_results.json"))
     generate_csv_report(agg, os.path.join(od, "evaluation_summary.csv"))
-    generate_markdown_report(all_runs, agg, seed, os.path.join(od, "evaluation_summary.md"))
+    generate_markdown_report(all_runs, agg, seed, args.model, os.path.join(od, "evaluation_summary.md"))
 
     m = agg["aggregate_metrics"]
     print("\n" + "=" * 60)
