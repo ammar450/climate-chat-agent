@@ -466,6 +466,8 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, m
     error_summaries = json.loads(analyze_errors(all_runs, model))
     print(type(error_summaries), error_summaries)
     L.append(error_summaries['summary_per_category'])
+    L.append("")
+
     L.append(error_summaries['summary_per_template'])
     L.append("")
 
