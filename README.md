@@ -4,7 +4,7 @@
 
 An intelligent question-answering system for European climate data using Retrieval-Augmented Generation (RAG). Combines Large Language Models with Knowledge Graphs to provide accurate, grounded answers about climate observations.
 
-> **Key Innovation:** The LLM NEVER invents numbers. All climate data comes directly from the E-OBS Knowledge Graph via validated SPARQL queries.
+> **Key Idea:** The LLM does not invent numbers. All climate data comes directly from the E-OBS Knowledge Graph via validated SPARQL queries.
 
 ---
 
