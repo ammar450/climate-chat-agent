@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "evaluation_timestamp": "2026-07-23T10:13:09.373684",
-    "random_seed": 36353,
+    "evaluation_timestamp": "2026-07-23T10:21:21.451020",
+    "random_seed": 71484,
     "num_runs": 1,
     "test_questions_file": "evaluation/test_questions.json"
   },
@@ -15,9 +15,9 @@
       "max_template_accuracy": 1.0,
       "avg_execution_success_rate": 1.0,
       "avg_sparql_success_rate": 1.0,
-      "avg_latency": 17.269,
-      "min_latency": 15.8,
-      "max_latency": 18.738,
+      "avg_latency": 17.27,
+      "min_latency": 15.914,
+      "max_latency": 18.625,
       "std_latency": 0
     },
     "overall_score": 1.0,
@@ -34,7 +34,7 @@
         "total": 2,
         "template_accuracy": 1.0,
         "execution_success_rate": 1.0,
-        "avg_execution_time": 17.269,
+        "avg_execution_time": 17.27,
         "common_errors": {}
       }
     },
@@ -43,14 +43,14 @@
         "total_tested": 1,
         "successful": 1,
         "success_rate": 1.0,
-        "avg_response_time": 18.738,
+        "avg_response_time": 18.625,
         "common_errors": {}
       },
       "list_properties": {
         "total_tested": 1,
         "successful": 1,
         "success_rate": 1.0,
-        "avg_response_time": 15.8,
+        "avg_response_time": 15.914,
         "common_errors": {}
       }
     }
@@ -58,7 +58,7 @@
   "per_run_results": [
     {
       "run_number": 1,
-      "timestamp": "2026-07-23T10:12:31.948145",
+      "timestamp": "2026-07-23T10:20:44.492468",
       "total_tests": 16,
       "test_results": [
         {
@@ -70,9 +70,9 @@
           "predicted_template": "list_properties",
           "template_match": true,
           "execution_success": true,
-          "execution_explanation": "The query successfully returned a list of available variables with their corresponding counts.",
+          "execution_explanation": "The query successfully returned a list of available variables along with their counts.",
           "execution_failure_reasons": [],
-          "execution_time_seconds": 15.8,
+          "execution_time_seconds": 15.914,
           "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?property (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:observedProperty ?property . } GROUP BY ?property ORDER BY DESC(?count)",
           "sparql_success": true,
           "returned_rows": 5,
@@ -90,7 +90,7 @@
           "execution_success": true,
           "execution_explanation": "The query successfully returned a list of locations with their corresponding observation counts.",
           "execution_failure_reasons": [],
-          "execution_time_seconds": 18.738,
+          "execution_time_seconds": 18.625,
           "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?feature (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:hasFeatureOfInterest ?feature . } GROUP BY ?feature ORDER BY DESC(?count) LIMIT 50",
           "sparql_success": true,
           "returned_rows": 10,
@@ -103,10 +103,10 @@
         "template_accuracy": 1.0,
         "execution_success_rate": 1.0,
         "sparql_success_rate": 1.0,
-        "avg_execution_time": 17.269,
-        "min_execution_time": 15.8,
-        "max_execution_time": 18.738,
-        "std_execution_time": 2.077
+        "avg_execution_time": 17.27,
+        "min_execution_time": 15.914,
+        "max_execution_time": 18.625,
+        "std_execution_time": 1.917
       }
     }
   ],
@@ -116,10 +116,10 @@
       "template_accuracy": 1.0,
       "execution_success_rate": 1.0,
       "sparql_success_rate": 1.0,
-      "avg_execution_time": 17.269,
-      "min_execution_time": 15.8,
-      "max_execution_time": 18.738,
-      "std_execution_time": 2.077
+      "avg_execution_time": 17.27,
+      "min_execution_time": 15.914,
+      "max_execution_time": 18.625,
+      "std_execution_time": 1.917
     }
   ]
 }
