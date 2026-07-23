@@ -123,7 +123,7 @@ Where appropriate, you can categorize them according to the unique topic that th
 Columns for the 'summary_per_template': 'Template | Count | Top failure reasons (count) | Topics
 Columns for the 'summary_per_category': 'Category | Count | Top failure reasons (count) | Topics
 
-If there are no errors at all, return empty tables. Do not add placeholder information in the tables.
+If there are no errors at all, return a table with one empty line (all cells should have "-"). Do not add placeholder information in the tables.
 
 Return ONLY a valid JSON object.
 
@@ -438,13 +438,13 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, m
     L.append("")
     L.append("## 🏷️ Category-wise Analysis")
     L.append("| Category | Tests | Templ Acc | Exec Success | Avg Time | ")
-    L.append("|--- |--- |--- |--- |--- |--- |")
+    L.append("|--- |--- |--- |--- |--- |")
     for cat, stats in aggregate.get("category_analysis", {}).items():
         L.append(f"| {cat} | {stats['total']} | {stats['template_accuracy']:.1%} | {stats['execution_success_rate']:.1%} | {stats['avg_execution_time']:.2f}s |")
     L.append("")
     L.append("## 📐 Template-wise Analysis")
     L.append("| Template | Tested | Success | Rate | Avg Time | ")
-    L.append("|--- |--- |--- |--- |--- |--- |")
+    L.append("|--- |--- |--- |--- |--- |")
     for tpl, stats in aggregate.get("template_analysis", {}).items():
         L.append(f"| {tpl} | {stats['total_tested']} | {stats['successful']} | {stats['success_rate']:.1%} | {stats['avg_response_time']:.2f}s | ")
     L.append("")
