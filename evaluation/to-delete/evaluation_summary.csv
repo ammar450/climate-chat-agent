@@ -5,13 +5,13 @@ min_template_accuracy,1.0
 max_template_accuracy,1.0
 avg_execution_success_rate,1.0
 avg_sparql_success_rate,1.0
-avg_latency,17.04
-min_latency,15.5
-max_latency,18.615
-std_latency,0.024
+avg_latency,17.005
+min_latency,15.547
+max_latency,18.548
+std_latency,0.203
 overall_score,1.0
 
 Category,Total,TemplateAccuracy,ExecSuccessRate,AvgTime
-overview,4,1.0,1.0,17.04
+overview,4,1.0,1.0,17.005
 
 ErrorCategory,Count
