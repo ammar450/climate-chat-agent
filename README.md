@@ -88,7 +88,7 @@ User Interface
 
 ---
 
-## �🚀 Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 
@@ -96,9 +96,7 @@ User Interface
 - **Either:**
   - [Ollama](https://ollama.com/download) installed locally, OR
   - SAIA API key (OpenAI-compatible)
----
-
-## 
+ 
 ### Installation
 
 1. **Install dependencies**
