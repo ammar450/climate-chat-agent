@@ -206,10 +206,6 @@ MAX_REQUESTS_PER_MINUTE=30      # Rate limit per session
 
 ## 💬 Usage Examples
 
-Currently, the agent can be used to answer the following types of questions: 
-
-## Supported Query Categories
-
 The following table summarizes the query categories currently supported by the application, and examples for each category.
 
 | Category | Example Query |
