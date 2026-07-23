@@ -481,13 +481,16 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, m
         row = f"| {exp} | " + " | ".join(str(cm[exp].get(p, 0)) for p in all_tpl) + " |"
         L.append(row)
     L.append("")
-    L.append("## 📝 Detailed Results (Run 1)")
-    L.append("| ID | Cat | Question | Expected | Predicted | Match | Rows | Time |")
-    L.append("|--- |--- |--- |--- |--- |--- |--- |--- |")
-    for tr in all_runs[0]["test_results"]:
-        q = tr["selected_question"][:60]
-        mch = "✅" if tr["template_match"] else "❌"
-        L.append(f"| {tr['test_id']} | {tr['category']} | {q} | {tr['expected_template']} | {tr['predicted_template']} | {mch} | {tr['returned_rows']} | {tr['execution_time_seconds']:.2f}s |")
+
+    for i in range(len(all_runs)): 
+        L.append(f"## 📝 Detailed Results (Run {i+1})")
+        L.append("| ID | Cat | Question | Expected | Predicted | Match | Rows | Time |")
+        L.append("|--- |--- |--- |--- |--- |--- |--- |--- |")
+        for tr in all_runs[i]["test_results"]:
+            q = tr["selected_question"][:60]
+            mch = "✅" if tr["template_match"] else "❌"
+            L.append(f"| {tr['test_id']} | {tr['category']} | {q} | {tr['expected_template']} | {tr['predicted_template']} | {mch} | {tr['returned_rows']} | {tr['execution_time_seconds']:.2f}s |")
+    
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(L))
     print(f"[REPORT] MD -> {output_path}")
