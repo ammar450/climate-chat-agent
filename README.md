@@ -144,6 +144,8 @@ uvicorn main:app --reload
 ```
 http://127.0.0.1:8000
 ```
+[**→ Complete setup guide**](SETUP.md)
+
 
 ## ⚙️ Configuration
 
@@ -511,16 +513,6 @@ SPARQL_ENDPOINT= https://obs.knowledgehub.nfdi4earth.de/sparql
 GRAPH_IRI=climateobservations/eobs-v31
 ```
 
-**Dataset Details:**
-- **Source:** E-OBS (European Observations) gridded climate dataset
-- **Coverage:** 1950-01-01 to 2024-12-31 (75 years)
-- **Format:** SOSA (Sensor Observation, Sample, and Actuator) ontology
-- **Time Property:** `sosa:resultTime` (observation timestamp)
-- **Result Structure:** `sosa:hasResult` → `qudt:numericValue`
-- **Scale:** 3.38 billion triples, 328 million observations
-- **Variables:** 5 climate properties (temperature, precipitation, humidity, wind, solar)
-- **Geographic Coverage:** European and Mediterranean regions (gridded)
-
 **Data Structure Example:**
 ```turtle
 <observation/temp_48.62_43.62_20240101T000000>
@@ -597,37 +589,6 @@ Visit http://127.0.0.1:8000/health to check:
 2. **Limit results**: Smaller LIMIT values = faster queries
 3. **Specific queries**: More specific questions = better results
 4. **Rate limiting**: Prevents overload, keeps system responsive
-
----
-
-## ⚡ Quick Start
-
-### Prerequisites
-
-- Python 3.9+
-- LLM backend: Ollama (local) or OpenAI API key
-
-### Installation
-
-```bash
-# 1. Clone repository
-git clone <repository-url>
-cd climate-chat-agent
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Configure environment
-cp .env.example .env
-# Edit .env with your LLM provider settings
-
-# 4. Run the application
-python main.py
-```
-
-Access the chat interface at `http://localhost:8000`
-
-[**→ Complete setup guide**](SETUP.md)
 
 ---
 
