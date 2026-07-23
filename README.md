@@ -6,6 +6,8 @@ An intelligent question-answering system for European climate data using Retriev
 
 > **Key Idea:** The LLM does not invent numbers. All climate data comes directly from the E-OBS Knowledge Graph via validated SPARQL queries.
 
+This GitHub repository is only about the agent for question answering. To see the code for the RDF generation pipeline, https://github.com/ammar450/eobs-pipeline/ .
+
 ---
 
 ## 🚀 Quick Links
