@@ -420,8 +420,8 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, m
     L.append(f"**Runs:** {len(all_runs)} × {aggregate.get('total_tests_per_run', 0)} test cases")
     L.append("")
     
-    L.append(f"> Statistics across all {len(all_runs)} runs")
     L.append("---")
+    L.append(f"# Statistics across all {len(all_runs)} runs")
 
     L.append("## 📊 Aggregate Metrics")
     L.append("| Metric | Value |")
@@ -469,10 +469,8 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, m
         L.append(row)
     L.append("")
     
-   
-    L.append("> Statistics per run")
     L.append("---")
-
+    L.append("# Statistics per run")
     L.append("## 📋 Per-Run Summary")
     L.append("| Run | Templ Acc | Generation Success | Execution Success | Avg Time |")
     L.append("|--- |--- |--- |--- |--- |")
