@@ -206,32 +206,24 @@ MAX_REQUESTS_PER_MINUTE=30      # Rate limit per session
 
 ## 💬 Usage Examples
 
-### Basic Queries
-- "What variables are available?"
-- "Show me temperature data"
-- "List all locations"
+- Category: Overview; Example: What variables are available?  
+Category: Overview; Example: List all locations of observations available 
+Category: Overview; Example:  Give me an overview of climate observations for 2024 
+Category: Aggregation (Multi-year); Example: Show me wind speed trends for the last 5 years  
+Category: Aggregation (single-year); Example: Calculate temperature statistics for 2024  
+Category: Aggregation (mean-year); Example: What was the average temperature in 2020? 
+Category: Aggregation (mean-month); Example: Show monthly temperature averages for 2022  
+Category: Aggregation (mean-day); Example: What are daily humidity averages for March 2000?  
+Category: Nested-aggregation; Example: What was the mean daily temperature in 2001?  
+Category: Extreme-values; Example: What were the highest temperature values in 2023?  
+Category: Subsampling; Example: Show me some sample observations 
+Category: Filtering (threshold); Example: Find temperature readings above 30 degrees in Summer 2024  
+Category: Filtering (range); Example: Find precipitation values below 12 mm and above 10 mm in 2001 
+Category: Location-based; Example: What are grids near lat: 67.8, lon: 20.3  
+Category: Location-based; Example: What was the weather like in France during 1985?  
+Category: Location-based; Example: Compare temperature across different grid points in 2019  
 
-### Time-Based Queries
-- "What was the average temperature in March 1950?"
-- "Show temperature for 1950-03-15" (specific date)
-- "Climate overview for 1950" (all variables)
-- "Daily temperature in January 2024"
 
-### Location-Based Queries (New!)
-- "Show temperature for Germany in 1950"
-- "Climate data for France"
-- "Temperature at lat: 52.5, lon: 13.4"
-- "Weather in Italy during 2023"
-
-### Statistical Queries
-- "Show me the highest humidity values"
-- "Average precipitation in 1950"
-- "Temperature statistics for 2024"
-
-### Response Formats
-- "Explain simply: what was the temperature in 1950?" (layman response)
-- "Technical details for temperature in March 1950" (technical response)
-- Default: Auto-detects based on your question
 
 ### RAG vs Fast Mode
 
@@ -267,7 +259,7 @@ LLM outputs:
 ### 2. SPARQL Retrieval
 ```sparql
 SELECT (AVG(?value) as ?avg) (SAMPLE(?unit) as ?unit)
-FROM <http://eobs/gridded>
+FROM <climateobservations/eobs-v31>
 WHERE {
   ?obs sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/air_temperature> ;
        sosa:resultTime ?time ;
@@ -279,7 +271,6 @@ WHERE {
 }
 }
 ```
-
 Returns: `avg=15.3, unit=degC`
 
 ### 3. Context Building
@@ -593,9 +584,7 @@ To extend the system:
 
 MIT License - see LICENSE file for details
 
-
-
-### Troubleshooting
+### 💻 Troubleshooting
 | Issue | Solution |
 |-------|----------|
 | Rate limit exceeded | Wait 1 minute or increase MAX_REQUESTS_PER_MINUTE |
@@ -637,52 +626,10 @@ Access the chat interface at `http://localhost:8000`
 
 ---
 
-## 💻 Usage Examples
-
-### Basic Queries
-
-```
-"What variables are available?"
-→ Lists: Temperature, Precipitation, Sea level pressure
-
-"What was the temperature in Berlin on 2020-06-15?"
-→ Returns temperature observation with coordinates
-
-"Average precipitation in July 2019"
-→ Computes monthly average from daily data
-```
-
-### Time-Based Queries
-
-```
-"Highest temperature in 2020"
-"Precipitation last week"
-"Compare January 2020 vs January 2010"
-```
-
-### Location-Based Queries
-
-```
-"Temperature in Paris yesterday"
-"Average temperature in Germany in 2019"
-"Precipitation at 52.5°N 13.4°E"
-```
-
-### Statistical Queries
-
-```
-"Standard deviation of temperature in 2020"
-"How many observations are there?"
-"Temperature variability in Berlin"
-```
-
-[**→ More examples in the Usage section above**]
-
----
 
 ## 🧪 Testing & Evaluation
 
-The project includes a comprehensive evaluation framework with 30 test questions:
+The project includes an evaluation framework with 46 test questions:
 
 ```bash
 # Run full evaluation
@@ -693,51 +640,6 @@ python evaluation/evaluate_agent.py --question-id 5
 
 # Windows users - interactive menu
 evaluation\run_evaluation.bat
-```
-
-**Current Performance:**
-- ✅ **86.67% success rate** (26/30 tests passing)
-- ✅ **46.67% template match rate** (14/30 exact template matches)
-- ✅ All 18 query templates validated
-- ✅ Coverage across 11 categories and 3 difficulty levels
-
-[**→ Evaluation documentation**](evaluation/README.md)
-
----
-
-## 🔒 Security Features
-
-- ✅ **Query Validation** - Only SELECT queries allowed
-- ✅ **Rate Limiting** - 100 requests/minute per IP
-- ✅ **Backend-Only SPARQL** - No direct endpoint exposure
-- ✅ **Query Timeouts** - 30-second maximum execution
-- ✅ **Result Limits** - Maximum 500 results per query
-- ✅ **Input Sanitization** - All inputs validated and sanitized
-
----
-
-## 📁 Project Structure
-
-```
-climate-chat-agent/
-├── main.py                    # FastAPI application
-├── requirements.txt           # Python dependencies
-├── .env.example              # Configuration template
-├── README.md                 # This file
-├── SETUP.md                  # Installation guide
-├── API.md                    # API documentation
-├── DEVELOPMENT.md            # Development guide
-├── src/                      # Source code
-│   ├── agent/               # LangGraph agent
-│   ├── formatting/          # Response formatters
-│   ├── llm/                 # LLM providers
-│   ├── parsers/             # Query parsers
-│   ├── query/               # SPARQL client
-│   └── utils/               # Utilities
-├── static/                   # Web interface
-├── tests/                    # Unit tests
-├── evaluation/               # Evaluation framework
-└── docs/                     # Additional documentation
 ```
 
 ---
@@ -808,8 +710,5 @@ MIT License - see LICENSE file for details.
 
 ## 🙏 Acknowledgments
 
-The work has been funded by the European Project EOSC Data Commons.
+The work has been funded by the European Project EOSC Data Commons. If you use the EOBS dataset, please cite
 
----
-
-**Built with:** Python • FastAPI • LangGraph • SPARQL • Virtuoso • Ollama/OpenAI
