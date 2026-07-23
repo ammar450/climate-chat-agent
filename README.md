@@ -225,7 +225,7 @@ Currently, the agent can be used to answer the following types of questions:
 - Category: Location-based; Example: What was the weather like in France during 1985?  
 - Category: Location-based; Example: Compare temperature across different grid points in 2019
 
-See the [tests questions](), for more examples of questions.
+See the [test questions](evaluation/test_questions.json), for more examples of questions.
 
 ### RAG vs Fast Mode
 
@@ -631,7 +631,7 @@ Access the chat interface at `http://localhost:8000`
 
 ## 🧪 Testing & Evaluation
 
-The project includes an evaluation framework with 46 test questions:
+Currently, the project includes an evaluation framework with 48 [test questions](evaluation/test_questions.json):
 
 ```bash
 # Run full evaluation
@@ -656,12 +656,11 @@ Contributions welcome! Please:
 4. Add tests if applicable
 5. Submit a Pull Request
 
-**Areas for contribution:**
+**Planned improvements:**
+- Enhanced understanding of the user's intent (e.g. LLM-based interpretation of user inputs)
 - Additional SPARQL query templates
-- Support for more climate variables
-- Enhanced NLP understanding
-- Improved visualization
-- Documentation improvements
+- Improved visualization of the results
+- Integration of additional knowledge graphs beyond Wikidata for federated search
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed guidelines.
 
