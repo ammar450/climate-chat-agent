@@ -582,27 +582,7 @@ Visit http://127.0.0.1:8000/health to check:
 - Query contains forbidden keywords
 - Check that you're using SELECT only
 
-## 📊 Performance Tips
-
-1. **Use caching**: Common queries (list properties/features) are cached
-2. **Limit results**: Smaller LIMIT values = faster queries
-3. **Specific queries**: More specific questions = better results
-4. **Rate limiting**: Prevents overload, keeps system responsive
-
-## 🤝 Contributing
-
-To extend the system:
-
-1. **Add new templates** in `query_templates.py`
-2. **Add new intents** in `agent.py` pattern matching
-3. **Add new formatters** in `answer_formatter.py`
-4. **Update UI** in `static/index.html`
-
-## 📄 License
-
-MIT License - see LICENSE file for details
-
-### 💻 Troubleshooting
+## 💻 Troubleshooting
 | Issue | Solution |
 |-------|----------|
 | Rate limit exceeded | Wait 1 minute or increase MAX_REQUESTS_PER_MINUTE |
@@ -610,6 +590,13 @@ MIT License - see LICENSE file for details
 | Date out of range | Use dates between 1950-01-01 and 2024-12-31 |
 | Country not found | Use European/Mediterranean countries or coordinates |
 | API key error | Check OPENAI_API_KEY in .env (never commit!) |
+
+## 📊 Performance Tips
+
+1. **Use caching**: Common queries (list properties/features) are cached
+2. **Limit results**: Smaller LIMIT values = faster queries
+3. **Specific queries**: More specific questions = better results
+4. **Rate limiting**: Prevents overload, keeps system responsive
 
 ---
 
