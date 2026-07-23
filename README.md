@@ -37,13 +37,27 @@ An intelligent question-answering system for European climate data using Retriev
 
 **E-OBS Knowledge Graph** - European Climate Observations
 
-- **328 million observations** across Europe (1950-2024)
-- **5 climate variables:** Temperature (daily/min/max), Precipitation, Sea level pressure
+- **5 climate variables:** precipitation (Unit: millimeters (mm)), mean temperature (Unit: degrees Celsius (°C)), relative humidity (Unit: percentage (%)), radiation (Unit: watts per square meter (W/m²)) and wind speed (Unit: meters per second (m/s))
 - **0.1° × 0.1° spatial resolution** (~11km grid)
-- **Daily temporal resolution**
-- **Coverage:** 25°N-75°N, 25°W-45°E
+- **Geographic Coverage:** European and Mediterranean gridded points
+- **Temporal Coverage:** January 1, 1950 - December 31, 2024 (75 years)
+- **Total Observations:** 328+ million SOSA observations
+- **Knowledge Graph Size:** 3.38 billion RDF triples
+- **Temporal Resolution:** Daily observations
+- **Interoperability:** The data has been annotated using the SOSA/SSN ontology
 
+**Data Quality:**
+- Gridded interpolation from weather station networks
+- Quality-controlled by E-OBS project
+- Regular updates with latest observations
+- Compliant with CF (Climate and Forecast) conventions
+
+**Access:**
+- SPARQL endpoint: `https://obs.knowledgehub.nfdi4earth.de/sparql`
+- Named graph: `<climateobservations/eobs-v31>`
+- Query timeout: 400 seconds (Virtuoso limit)
 ---
+
 
 ## 🏗️ Architecture
 
@@ -74,53 +88,7 @@ User Interface
 
 ---
 
-## 📊 Dataset Information
-
-### E-OBS Gridded Climate Data
-
-This application queries the **E-OBS (European Observations)** gridded climate dataset, a comprehensive collection of daily climate observations across Europe and the Mediterranean region.
-
-**Dataset Specifications:**
-- **Temporal Coverage:** January 1, 1950 - December 31, 2024 (75 years)
-- **Total Observations:** 328+ million SOSA observations
-- **Knowledge Graph Size:** 3.38 billion RDF triples
-- **Geographic Coverage:** European and Mediterranean gridded points
-- **Temporal Resolution:** Daily observations
-- **Format:** Semantic sensor data using SOSA/SSN ontology
-
-**Available Climate Variables (5):**
-1. **Air Temperature** (`air_temperature`)
-   - ~167 million observations
-   - Unit: degrees Celsius (°C)
-   
-2. **Precipitation Amount** (`precipitation_amount`)
-   - ~67 million observations
-   - Unit: millimeters (mm)
-   
-3. **Relative Humidity** (`relative_humidity`)
-   - ~51 million observations
-   - Unit: percentage (%)
-   
-4. **Wind Speed** (`wind_speed`)
-   - ~24 million observations
-   - Unit: meters per second (m/s)
-   
-5. **Solar Radiation** (`surface_downwelling_shortwave_flux_in_air`)
-   - ~43 million observations
-   - Unit: watts per square meter (W/m²)
-
-**Data Quality:**
-- Gridded interpolation from weather station networks
-- Quality-controlled by E-OBS project
-- Regular updates with latest observations
-- Compliant with CF (Climate and Forecast) conventions
-
-**Access:**
-- SPARQL endpoint: `http://141.76.19.254:8890/sparql/`
-- Named graph: `<http://eobs/gridded>`
-- Query timeout: 400 seconds (Virtuoso limit)
-
-## �🚀 Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 
@@ -128,9 +96,7 @@ This application queries the **E-OBS (European Observations)** gridded climate d
 - **Either:**
   - [Ollama](https://ollama.com/download) installed locally, OR
   - SAIA API key (OpenAI-compatible)
----
-
-## 
+ 
 ### Installation
 
 1. **Install dependencies**
@@ -176,6 +142,8 @@ uvicorn main:app --reload
 ```
 http://127.0.0.1:8000
 ```
+[**→ Complete setup guide**](SETUP.md)
+
 
 ## ⚙️ Configuration
 
@@ -238,32 +206,38 @@ MAX_REQUESTS_PER_MINUTE=30      # Rate limit per session
 
 ## 💬 Usage Examples
 
-### Basic Queries
-- "What variables are available?"
-- "Show me temperature data"
-- "List all locations"
+The following table summarizes the query categories currently supported by the application, and examples for each category.
 
-### Time-Based Queries
-- "What was the average temperature in March 1950?"
-- "Show temperature for 1950-03-15" (specific date)
-- "Climate overview for 1950" (all variables)
-- "Daily temperature in January 2024"
+| Category | Example Query |
+|----------|---------------|
+| **Overview** | What variables are available? |
+| **Overview** | List all locations of observations available. |
+| **Overview** | Give me an overview of climate observations for 2024. |
+| **Aggregation (Multi-year)** | Show me wind speed trends for the last 5 years. |
+| **Aggregation (Single-year)** | Calculate temperature statistics for 2024. |
+| **Aggregation (Mean-year)** | What was the average temperature in 2020? |
+| **Aggregation (Mean-month)** | Show monthly temperature averages for 2022. |
+| **Aggregation (Mean-day)** | What are daily humidity averages for March 2000? |
+| **Nested Aggregation** | What was the mean daily temperature in 2001? |
+| **Extreme Values** | What were the highest temperature values in 2023? |
+| **Subsampling** | Show me some sample observations. |
+| **Filtering (Threshold)** | Find temperature readings above 30°C in Summer 2024. |
+| **Filtering (Range)** | Find precipitation values between 10 mm and 12 mm in 2001. |
+| **Location-based** | What are the grid points near latitude 67.8 and longitude 20.3? |
+| **Location-based** | What was the weather like in France during 1985? |
+| **Location-based** | Compare temperature across different grid points in 2019. |
 
-### Location-Based Queries (New!)
-- "Show temperature for Germany in 1950"
-- "Climate data for France"
-- "Temperature at lat: 52.5, lon: 13.4"
-- "Weather in Italy during 2023"
+### Query Categories
 
-### Statistical Queries
-- "Show me the highest humidity values"
-- "Average precipitation in 1950"
-- "Temperature statistics for 2024"
+- **Overview** – Explore available variables, locations, and dataset summaries.
+- **Aggregation** – Compute statistics over different temporal resolutions (daily, monthly, yearly, or across multiple years).
+- **Nested Aggregation** – Perform multi-level aggregations, such as averaging daily values over a year.
+- **Extreme Values** – Identify minimum or maximum observations.
+- **Subsampling** – Retrieve representative samples from the dataset.
+- **Filtering** – Filter observations using thresholds or value ranges.
+- **Location-based** – Query observations by geographic location, country, or compare across spatial grid points.
 
-### Response Formats
-- "Explain simply: what was the temperature in 1950?" (layman response)
-- "Technical details for temperature in March 1950" (technical response)
-- Default: Auto-detects based on your question
+ For more examples of questions, see the [test questions](evaluation/test_questions.json).
 
 ### RAG vs Fast Mode
 
@@ -299,7 +273,7 @@ LLM outputs:
 ### 2. SPARQL Retrieval
 ```sparql
 SELECT (AVG(?value) as ?avg) (SAMPLE(?unit) as ?unit)
-FROM <http://eobs/gridded>
+FROM <climateobservations/eobs-v31>
 WHERE {
   ?obs sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/air_temperature> ;
        sosa:resultTime ?time ;
@@ -311,7 +285,6 @@ WHERE {
 }
 }
 ```
-
 Returns: `avg=15.3, unit=degC`
 
 ### 3. Context Building
@@ -452,7 +425,7 @@ That's about 59.5°F - a mild year overall!"
 **GET /**
 Returns the web UI
 
-### Backend NEVER exposes SPARQL endpoint directly
+> The backend NEVER exposes the SPARQL endpoint directly
 
 ## 📝 Query Templates
 
@@ -530,19 +503,9 @@ climate-chat-agent/
 **Current Configuration:**
 ```bash
 # E-OBS Gridded Climate Dataset (1950-2024)
-SPARQL_ENDPOINT=http://141.76.19.254:8890/sparql/
-GRAPH_IRI=http://eobs/gridded
+SPARQL_ENDPOINT= https://obs.knowledgehub.nfdi4earth.de/sparql
+GRAPH_IRI=climateobservations/eobs-v31
 ```
-
-**Dataset Details:**
-- **Source:** E-OBS (European Observations) gridded climate dataset
-- **Coverage:** 1950-01-01 to 2024-12-31 (75 years)
-- **Format:** SOSA (Sensor Observation, Sample, and Actuator) ontology
-- **Time Property:** `sosa:resultTime` (observation timestamp)
-- **Result Structure:** `sosa:hasResult` → `qudt:numericValue`
-- **Scale:** 3.38 billion triples, 328 million observations
-- **Variables:** 5 climate properties (temperature, precipitation, humidity, wind, solar)
-- **Geographic Coverage:** European and Mediterranean regions (gridded)
 
 **Data Structure Example:**
 ```turtle
@@ -605,71 +568,7 @@ Visit http://127.0.0.1:8000/health to check:
 - Query contains forbidden keywords
 - Check that you're using SELECT only
 
-## 📊 Performance Tips
-
-1. **Use caching**: Common queries (list properties/features) are cached
-2. **Limit results**: Smaller LIMIT values = faster queries
-3. **Specific queries**: More specific questions = better results
-4. **Rate limiting**: Prevents overload, keeps system responsive
-
-## 🤝 Contributing
-
-To extend the system:
-
-1. **Add new templates** in `query_templates.py`
-2. **Add new intents** in `agent.py` pattern matching
-3. **Add new formatters** in `answer_formatter.py`
-4. **Update UI** in `static/index.html`
-
-## 📄 License
-
-MIT License - see LICENSE file for details
-
-
-## \ud83d\udcda Quick Reference
-
-### Data Constraints
-- **Time Period**: 1950-01-01 to 2024-12-31 (75 years)
-- **Geographic Coverage**: European and Mediterranean regions
-- **Available Countries**: Germany, France, Italy, Spain, UK, Greece, Poland, and 40+ more
-- **Date Formats**: YYYY-MM-DD, "March 1950", "in 1950"
-- **Coordinate Formats**: lat:X lon:Y, decimal pairs, degrees N/S E/W
-
-### Example Queries by Category
-
-**Variables & Locations**
-```
-What variables are available?
-List all locations
-```
-
-**Simple Queries**
-```
-Show temperature in 1950
-Average humidity in March 1950
-Climate overview for 2024
-```
-
-**Location-Based**
-```
-Temperature for Germany in 1950
-Climate in France during 2023
-Data at lat: 52.5, lon: 13.4
-```
-
-**Advanced**
-```
-Daily temperature statistics for January 1950
-Monthly precipitation averages in 2024
-Highest temperature values in 1950
-Explain simply: what was the climate like in 1950?
-```
-
-### Response Format Keywords
-- **Layman**: explain, simply, easy, basic
-- **Technical**: detailed, technical, advanced, debug
-
-### Troubleshooting
+## 💻 Troubleshooting
 | Issue | Solution |
 |-------|----------|
 | Rate limit exceeded | Wait 1 minute or increase MAX_REQUESTS_PER_MINUTE |
@@ -678,85 +577,19 @@ Explain simply: what was the climate like in 1950?
 | Country not found | Use European/Mediterranean countries or coordinates |
 | API key error | Check OPENAI_API_KEY in .env (never commit!) |
 
----
+## 📊 Performance Tips
 
-## ⚡ Quick Start
-
-### Prerequisites
-
-- Python 3.9+
-- LLM backend: Ollama (local) or OpenAI API key
-
-### Installation
-
-```bash
-# 1. Clone repository
-git clone <repository-url>
-cd climate-chat-agent
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Configure environment
-cp .env.example .env
-# Edit .env with your LLM provider settings
-
-# 4. Run the application
-python main.py
-```
-
-Access the chat interface at `http://localhost:8000`
-
-[**→ Complete setup guide**](SETUP.md)
+1. **Use caching**: Common queries (list properties/features) are cached
+2. **Limit results**: Smaller LIMIT values = faster queries
+3. **Specific queries**: More specific questions = better results
+4. **Rate limiting**: Prevents overload, keeps system responsive
 
 ---
 
-## 💻 Usage Examples
-
-### Basic Queries
-
-```
-"What variables are available?"
-→ Lists: Temperature, Precipitation, Sea level pressure
-
-"What was the temperature in Berlin on 2020-06-15?"
-→ Returns temperature observation with coordinates
-
-"Average precipitation in July 2019"
-→ Computes monthly average from daily data
-```
-
-### Time-Based Queries
-
-```
-"Highest temperature in 2020"
-"Precipitation last week"
-"Compare January 2020 vs January 2010"
-```
-
-### Location-Based Queries
-
-```
-"Temperature in Paris yesterday"
-"Average temperature in Germany in 2019"
-"Precipitation at 52.5°N 13.4°E"
-```
-
-### Statistical Queries
-
-```
-"Standard deviation of temperature in 2020"
-"How many observations are there?"
-"Temperature variability in Berlin"
-```
-
-[**→ More examples in the Usage section above**]
-
----
 
 ## 🧪 Testing & Evaluation
 
-The project includes a comprehensive evaluation framework with 30 test questions:
+Currently, the project includes an evaluation framework with 48 [test questions](evaluation/test_questions.json):
 
 ```bash
 # Run full evaluation
@@ -767,51 +600,6 @@ python evaluation/evaluate_agent.py --question-id 5
 
 # Windows users - interactive menu
 evaluation\run_evaluation.bat
-```
-
-**Current Performance:**
-- ✅ **86.67% success rate** (26/30 tests passing)
-- ✅ **46.67% template match rate** (14/30 exact template matches)
-- ✅ All 18 query templates validated
-- ✅ Coverage across 11 categories and 3 difficulty levels
-
-[**→ Evaluation documentation**](evaluation/README.md)
-
----
-
-## 🔒 Security Features
-
-- ✅ **Query Validation** - Only SELECT queries allowed
-- ✅ **Rate Limiting** - 100 requests/minute per IP
-- ✅ **Backend-Only SPARQL** - No direct endpoint exposure
-- ✅ **Query Timeouts** - 30-second maximum execution
-- ✅ **Result Limits** - Maximum 500 results per query
-- ✅ **Input Sanitization** - All inputs validated and sanitized
-
----
-
-## 📁 Project Structure
-
-```
-climate-chat-agent/
-├── main.py                    # FastAPI application
-├── requirements.txt           # Python dependencies
-├── .env.example              # Configuration template
-├── README.md                 # This file
-├── SETUP.md                  # Installation guide
-├── API.md                    # API documentation
-├── DEVELOPMENT.md            # Development guide
-├── src/                      # Source code
-│   ├── agent/               # LangGraph agent
-│   ├── formatting/          # Response formatters
-│   ├── llm/                 # LLM providers
-│   ├── parsers/             # Query parsers
-│   ├── query/               # SPARQL client
-│   └── utils/               # Utilities
-├── static/                   # Web interface
-├── tests/                    # Unit tests
-├── evaluation/               # Evaluation framework
-└── docs/                     # Additional documentation
 ```
 
 ---
@@ -826,12 +614,11 @@ Contributions welcome! Please:
 4. Add tests if applicable
 5. Submit a Pull Request
 
-**Areas for contribution:**
+**Planned improvements:**
+- Enhanced understanding of the user's intent (e.g. LLM-based interpretation of user inputs)
 - Additional SPARQL query templates
-- Support for more climate variables
-- Enhanced NLP understanding
-- Improved visualization
-- Documentation improvements
+- Improved visualization of the results
+- Integration of additional knowledge graphs beyond Wikidata for federated search
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed guidelines.
 
@@ -882,8 +669,19 @@ MIT License - see LICENSE file for details.
 
 ## 🙏 Acknowledgments
 
-The work has been funded by the European Project EOSC Data Commons.
+The work has been funded by the European Project EOSC Data Commons. A dump of the knowledge graph is available at https://doi.org/10.34740/kaggle/dsv/16870986. 
 
----
+If you reuse the EOBS knowledge graph, please cite:
 
-**Built with:** Python • FastAPI • LangGraph • SPARQL • Virtuoso • Ollama/OpenAI
+```bash
+
+@inproceedings{yousafEOBSKnowledgeGraph2026,
+	address = {Ghent, Belgium},
+	title = {The {EOBS} knowledge graph: {A} knowledge graph of {European} climate observations},
+	booktitle = {Companion Proceedings of SEMANTiCS 2026},
+	author = {Yousaf, Ammar and Degbelo, Auriol},
+	year = {2026},
+}
+
+```
+
