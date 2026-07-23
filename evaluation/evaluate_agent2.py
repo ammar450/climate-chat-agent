@@ -143,26 +143,27 @@ def analyze_errors(
     results: List[Dict],
     model: Optional[str] = None) -> str:
     """
-    Use an LLM to analyze the errors that occured during the execution.
+    Use an LLM to analyze the errors that occured during the execution (across all runs)
     """
     # extract errors from the set of results
     errors = []
 
-    test_results = results[0]['test_results']
+    for run in results: 
+        test_results = run['test_results']
 
-    for r in test_results: 
-        error_entry = {
-            "test_id": "",
-            "category": "",
-            "expected_template": "",
-            "execution_failure_reasons": None }
-        #print(r)
-        if r['execution_failure_reasons'] != [] :
-            error_entry["test_id"] = r['test_id']
-            error_entry["category"] = r['category']
-            error_entry["expected_template"] = r['expected_template']
-            error_entry["execution_failure_reasons"] = r['execution_failure_reasons']
-            errors.append(error_entry)
+        for r in test_results: 
+            error_entry = {
+                "test_id": "",
+                "category": "",
+                "expected_template": "",
+                "execution_failure_reasons": None }
+            #print(r)
+            if r['execution_failure_reasons'] != [] :
+                error_entry["test_id"] = r['test_id']
+                error_entry["category"] = r['category']
+                error_entry["expected_template"] = r['expected_template']
+                error_entry["execution_failure_reasons"] = r['execution_failure_reasons']
+                errors.append(error_entry)
 
     errors_str = json.dumps(errors, indent=2)
 
@@ -339,7 +340,6 @@ def aggregate_runs(all_runs: List[Dict[str, Any]], test_cases: List[Dict]) -> Di
             "template_accuracy": round(stats["template_match"] / t, 4) if t else 0,
             "execution_success_rate": round(stats["exec_success"] / t, 4) if t else 0,
             "avg_execution_time": round(statistics.mean(stats["times"]), 3) if stats["times"] else 0,
-            "common_errors": dict(stats["errors"].most_common(3)),
         }
 
     # Template-wise
@@ -359,17 +359,8 @@ def aggregate_runs(all_runs: List[Dict[str, Any]], test_cases: List[Dict]) -> Di
             "total_tested": t, "successful": stats["success"],
             "success_rate": round(stats["success"] / t, 4) if t else 0,
             "avg_response_time": round(statistics.mean(stats["times"]), 3) if stats["times"] else 0,
-            "common_errors": dict(stats["errors"].most_common(3)),
         }
 
-    # Error analysis
-    '''
-    error_counts = Counter()
-    for run in all_runs:
-        for tr in run["test_results"]:
-            if tr["error_category"]: error_counts[tr["error_category"]] += 1
-    agg["error_analysis"] = dict(error_counts.most_common())
-    '''
     return agg
 
 
@@ -446,18 +437,16 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, m
         L.append(f"| {run['run_number']} | {s['template_accuracy']:.1%} | {s['sparql_success_rate']:.1%} | {s['execution_success_rate']:.1%} | {s['avg_execution_time']:.2f}s |")
     L.append("")
     L.append("## 🏷️ Category-wise Analysis")
-    L.append("| Category | Tests | Templ Acc | Exec Success | Avg Time | Common Errors |")
+    L.append("| Category | Tests | Templ Acc | Exec Success | Avg Time | ")
     L.append("|--- |--- |--- |--- |--- |--- |")
     for cat, stats in aggregate.get("category_analysis", {}).items():
-        errs = ", ".join(f"{k}({v})" for k, v in stats.get("common_errors", {}).items())
-        L.append(f"| {cat} | {stats['total']} | {stats['template_accuracy']:.1%} | {stats['execution_success_rate']:.1%} | {stats['avg_execution_time']:.2f}s | {errs} |")
+        L.append(f"| {cat} | {stats['total']} | {stats['template_accuracy']:.1%} | {stats['execution_success_rate']:.1%} | {stats['avg_execution_time']:.2f}s |")
     L.append("")
     L.append("## 📐 Template-wise Analysis")
-    L.append("| Template | Tested | Success | Rate | Avg Time | Common Errors |")
+    L.append("| Template | Tested | Success | Rate | Avg Time | ")
     L.append("|--- |--- |--- |--- |--- |--- |")
     for tpl, stats in aggregate.get("template_analysis", {}).items():
-        errs = ", ".join(f"{k}({v})" for k, v in stats.get("common_errors", {}).items())
-        L.append(f"| {tpl} | {stats['total_tested']} | {stats['successful']} | {stats['success_rate']:.1%} | {stats['avg_response_time']:.2f}s | {errs} |")
+        L.append(f"| {tpl} | {stats['total_tested']} | {stats['successful']} | {stats['success_rate']:.1%} | {stats['avg_response_time']:.2f}s | ")
     L.append("")
     
     L.append("## ❌ Error Analysis")
