@@ -223,7 +223,9 @@ Currently, the agent can be used to answer the following types of questions:
 - Category: Filtering (range); Example: Find precipitation values below 12 mm and above 10 mm in 2001 
 - Category: Location-based; Example: What are grids near lat: 67.8, lon: 20.3  
 - Category: Location-based; Example: What was the weather like in France during 1985?  
-- Category: Location-based; Example: Compare temperature across different grid points in 2019  
+- Category: Location-based; Example: Compare temperature across different grid points in 2019
+
+See the [tests questions](), for more examples of questions.
 
 ### RAG vs Fast Mode
 
@@ -489,8 +491,8 @@ climate-chat-agent/
 **Current Configuration:**
 ```bash
 # E-OBS Gridded Climate Dataset (1950-2024)
-SPARQL_ENDPOINT=http://141.76.19.254:8890/sparql/
-GRAPH_IRI=http://eobs/gridded
+SPARQL_ENDPOINT= https://obs.knowledgehub.nfdi4earth.de/sparql
+GRAPH_IRI=climateobservations/eobs-v31
 ```
 
 **Dataset Details:**
@@ -710,5 +712,19 @@ MIT License - see LICENSE file for details.
 
 ## 🙏 Acknowledgments
 
-The work has been funded by the European Project EOSC Data Commons. If you use the EOBS dataset, please cite
+The work has been funded by the European Project EOSC Data Commons. A dump of the knowledge graph is available at https://doi.org/10.34740/kaggle/dsv/16870986. 
+
+If you reuse the EOBS knowledge graph, please cite:
+
+```bash
+
+@inproceedings{yousafEOBSKnowledgeGraph2026,
+	address = {Ghent, Belgium},
+	title = {The {EOBS} knowledge graph: {A} knowledge graph of {European} climate observations},
+	booktitle = {Companion Proceedings of SEMANTiCS 2026},
+	author = {Yousaf, Ammar and Degbelo, Auriol},
+	year = {2026},
+}
+
+```
 
