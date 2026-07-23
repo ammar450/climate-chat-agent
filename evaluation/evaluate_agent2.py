@@ -123,7 +123,8 @@ Where appropriate, you can categorize them according to the unique topic that th
 Columns for the 'summary_per_template': 'Template | Count | Top failure reasons (count) | Topics
 Columns for the 'summary_per_category': 'Category | Count | Top failure reasons (count) | Topics
 
-If there are no errors at all, return a table with the colums plus one empty line (all cells should have "-"). Do not add placeholder information in the tables.
+If there are no errors at all, return a table with the columns plus one blank line. The blank line should be 
+visible to users. Do not add placeholder information in the tables.
 
 Return ONLY a valid JSON object.
 
