@@ -511,15 +511,23 @@ GRAPH_IRI=climateobservations/eobs-v31
 
 **Data Structure Example:**
 ```turtle
-<observation/temp_48.62_43.62_20240101T000000>
-  a sosa:Observation ;
-  sosa:resultTime "2024-01-01T00:00:00"^^xsd:dateTime ;
-  sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/air_temperature> ;
-  sosa:hasFeatureOfInterest <http://www.w3.org/2003/01/geo/wgs84_pos#grid_48.62_43.62> ;
-  sosa:hasResult [
-    qudt:numericValue 15.3 ;
-    qudt:unit <http://qudt.org/vocab/unit/DEG_C>
-  ] .
+eobs:hu_25p38_m13p38_19500101T000000
+    a sosa:Observation ;
+    sosa:hasFeatureOfInterest eobs:grid_25p38_m13p38 ;
+    sosa:hasResult [
+        a qudt:QuantityValue ;
+        qudt:numericValue 4.62e+01 ;
+        qudt:unit unit:PERCENT
+    ] ;
+    sosa:observedProperty cf:relative_humidity ;
+    sosa:resultTime "1950-01-01T00:00:00"^^xsd:dateTime .
+
+eobs:grid_25p38_m13p38
+    a sosa:FeatureOfInterest ;
+    geo:hasGeometry [
+        a geo:Geometry ;
+        geo:asWKT "POINT(-13.38 25.38)"^^geo:wktLiteral
+    ] .
 ```
 
 **To use a different SPARQL endpoint:**
