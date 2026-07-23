@@ -419,6 +419,10 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, m
     L.append(f"**Random Seed:** {seed}  ")
     L.append(f"**Runs:** {len(all_runs)} × {aggregate.get('total_tests_per_run', 0)} test cases")
     L.append("")
+    
+    L.append(f"> Statistics across all {len(all_runs)} runs")
+    L.append("---")
+
     L.append("## 📊 Aggregate Metrics")
     L.append("| Metric | Value |")
     L.append("|--- |--- |")
@@ -429,13 +433,6 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, m
     L.append(f"| Avg Latency | {m.get('avg_latency', 0):.2f}s |")
     L.append(f"| Latency Range | {m.get('min_latency', 0):.2f}s – {m.get('max_latency', 0):.2f}s |")
     L.append(f"| **Overall Score** | **{aggregate.get('overall_score', 0):.1%}** |")
-    L.append("")
-    L.append("## 📋 Per-Run Summary")
-    L.append("| Run | Templ Acc | Generation Success | Execution Success | Avg Time |")
-    L.append("|--- |--- |--- |--- |--- |")
-    for run in all_runs:
-        s = run["summary"]
-        L.append(f"| {run['run_number']} | {s['template_accuracy']:.1%} | {s['sparql_success_rate']:.1%} | {s['execution_success_rate']:.1%} | {s['avg_execution_time']:.2f}s |")
     L.append("")
     L.append("## 🏷️ Category-wise Analysis")
     L.append("| Category | Tests | Templ Acc | Exec Success | Avg Time | ")
@@ -470,6 +467,18 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, m
     for exp in sorted(cm.keys()):
         row = f"| {exp} | " + " | ".join(str(cm[exp].get(p, 0)) for p in all_tpl) + " |"
         L.append(row)
+    L.append("")
+    
+   
+    L.append("> Statistics per run")
+    L.append("---")
+
+    L.append("## 📋 Per-Run Summary")
+    L.append("| Run | Templ Acc | Generation Success | Execution Success | Avg Time |")
+    L.append("|--- |--- |--- |--- |--- |")
+    for run in all_runs:
+        s = run["summary"]
+        L.append(f"| {run['run_number']} | {s['template_accuracy']:.1%} | {s['sparql_success_rate']:.1%} | {s['execution_success_rate']:.1%} | {s['avg_execution_time']:.2f}s |")
     L.append("")
 
     for i in range(len(all_runs)): 
