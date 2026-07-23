@@ -37,13 +37,27 @@ An intelligent question-answering system for European climate data using Retriev
 
 **E-OBS Knowledge Graph** - European Climate Observations
 
-- **328 million observations** across Europe (1950-2024)
-- **5 climate variables:** Temperature (daily/min/max), Precipitation, Sea level pressure
+- **5 climate variables:** precipitation (Unit: millimeters (mm)), mean temperature (Unit: degrees Celsius (°C)), relative humidity (Unit: percentage (%)), radiation (Unit: watts per square meter (W/m²)) and wind speed (Unit: meters per second (m/s))
 - **0.1° × 0.1° spatial resolution** (~11km grid)
-- **Daily temporal resolution**
-- **Coverage:** 25°N-75°N, 25°W-45°E
+- **Geographic Coverage:** European and Mediterranean gridded points
+- **Temporal Coverage:** January 1, 1950 - December 31, 2024 (75 years)
+- **Total Observations:** 328+ million SOSA observations
+- **Knowledge Graph Size:** 3.38 billion RDF triples
+- **Temporal Resolution:** Daily observations
+- **Interoperability:** The data has been annotated using the SOSA/SSN ontology
 
+**Data Quality:**
+- Gridded interpolation from weather station networks
+- Quality-controlled by E-OBS project
+- Regular updates with latest observations
+- Compliant with CF (Climate and Forecast) conventions
+
+**Access:**
+- SPARQL endpoint: `https://obs.knowledgehub.nfdi4earth.de/sparql`
+- Named graph: `<climateobservations/eobs-v31>`
+- Query timeout: 400 seconds (Virtuoso limit)
 ---
+
 
 ## 🏗️ Architecture
 
@@ -73,52 +87,6 @@ User Interface
 [**→ Full architecture details**](docs/ARCHITECTURE.md)
 
 ---
-
-## 📊 Dataset Information
-
-### E-OBS Gridded Climate Data
-
-This application queries the **E-OBS (European Observations)** gridded climate dataset, a comprehensive collection of daily climate observations across Europe and the Mediterranean region.
-
-**Dataset Specifications:**
-- **Temporal Coverage:** January 1, 1950 - December 31, 2024 (75 years)
-- **Total Observations:** 328+ million SOSA observations
-- **Knowledge Graph Size:** 3.38 billion RDF triples
-- **Geographic Coverage:** European and Mediterranean gridded points
-- **Temporal Resolution:** Daily observations
-- **Format:** Semantic sensor data using SOSA/SSN ontology
-
-**Available Climate Variables (5):**
-1. **Air Temperature** (`air_temperature`)
-   - ~167 million observations
-   - Unit: degrees Celsius (°C)
-   
-2. **Precipitation Amount** (`precipitation_amount`)
-   - ~67 million observations
-   - Unit: millimeters (mm)
-   
-3. **Relative Humidity** (`relative_humidity`)
-   - ~51 million observations
-   - Unit: percentage (%)
-   
-4. **Wind Speed** (`wind_speed`)
-   - ~24 million observations
-   - Unit: meters per second (m/s)
-   
-5. **Solar Radiation** (`surface_downwelling_shortwave_flux_in_air`)
-   - ~43 million observations
-   - Unit: watts per square meter (W/m²)
-
-**Data Quality:**
-- Gridded interpolation from weather station networks
-- Quality-controlled by E-OBS project
-- Regular updates with latest observations
-- Compliant with CF (Climate and Forecast) conventions
-
-**Access:**
-- SPARQL endpoint: `http://141.76.19.254:8890/sparql/`
-- Named graph: `<http://eobs/gridded>`
-- Query timeout: 400 seconds (Virtuoso limit)
 
 ## �🚀 Quick Start
 
@@ -452,7 +420,7 @@ That's about 59.5°F - a mild year overall!"
 **GET /**
 Returns the web UI
 
-### Backend NEVER exposes SPARQL endpoint directly
+#### The backend NEVER exposes the SPARQL endpoint directly
 
 ## 📝 Query Templates
 
@@ -626,48 +594,6 @@ To extend the system:
 MIT License - see LICENSE file for details
 
 
-## \ud83d\udcda Quick Reference
-
-### Data Constraints
-- **Time Period**: 1950-01-01 to 2024-12-31 (75 years)
-- **Geographic Coverage**: European and Mediterranean regions
-- **Available Countries**: Germany, France, Italy, Spain, UK, Greece, Poland, and 40+ more
-- **Date Formats**: YYYY-MM-DD, "March 1950", "in 1950"
-- **Coordinate Formats**: lat:X lon:Y, decimal pairs, degrees N/S E/W
-
-### Example Queries by Category
-
-**Variables & Locations**
-```
-What variables are available?
-List all locations
-```
-
-**Simple Queries**
-```
-Show temperature in 1950
-Average humidity in March 1950
-Climate overview for 2024
-```
-
-**Location-Based**
-```
-Temperature for Germany in 1950
-Climate in France during 2023
-Data at lat: 52.5, lon: 13.4
-```
-
-**Advanced**
-```
-Daily temperature statistics for January 1950
-Monthly precipitation averages in 2024
-Highest temperature values in 1950
-Explain simply: what was the climate like in 1950?
-```
-
-### Response Format Keywords
-- **Layman**: explain, simply, easy, basic
-- **Technical**: detailed, technical, advanced, debug
 
 ### Troubleshooting
 | Issue | Solution |
