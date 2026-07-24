@@ -1,12 +1,12 @@
 {
   "metadata": {
-    "evaluation_timestamp": "2026-07-23T15:17:47.779506",
-    "random_seed": 25110,
-    "num_runs": 2,
+    "evaluation_timestamp": "2026-07-24T15:22:06.265691",
+    "random_seed": 42,
+    "num_runs": 5,
     "test_questions_file": "evaluation/test_questions.json"
   },
   "aggregate_metrics": {
-    "num_runs": 2,
+    "num_runs": 5,
     "total_tests_per_run": 2,
     "aggregate_metrics": {
       "avg_template_accuracy": 1.0,
@@ -15,61 +15,61 @@
       "max_template_accuracy": 1.0,
       "avg_execution_success_rate": 1.0,
       "avg_sparql_success_rate": 1.0,
-      "avg_latency": 16.865,
-      "min_latency": 15.244,
-      "max_latency": 18.381,
-      "std_latency": 0.075
+      "avg_latency": 16.573,
+      "min_latency": 15.083,
+      "max_latency": 19.1,
+      "std_latency": 0.751
     },
     "overall_score": 1.0,
     "confusion_matrix": {
       "list_properties": {
-        "list_properties": 2
+        "list_properties": 5
       },
       "list_features_of_interest": {
-        "list_features_of_interest": 2
+        "list_features_of_interest": 5
       }
     },
     "category_analysis": {
       "overview": {
-        "total": 4,
+        "total": 10,
         "template_accuracy": 1.0,
         "execution_success_rate": 1.0,
-        "avg_execution_time": 16.865
+        "avg_execution_time": 16.573
       }
     },
     "template_analysis": {
       "list_features_of_interest": {
-        "total_tested": 2,
-        "successful": 2,
+        "total_tested": 5,
+        "successful": 5,
         "success_rate": 1.0,
-        "avg_response_time": 18.34
+        "avg_response_time": 17.656
       },
       "list_properties": {
-        "total_tested": 2,
-        "successful": 2,
+        "total_tested": 5,
+        "successful": 5,
         "success_rate": 1.0,
-        "avg_response_time": 15.389
+        "avg_response_time": 15.49
       }
     }
   },
   "per_run_results": [
     {
       "run_number": 1,
-      "timestamp": "2026-07-23T15:16:35.701766",
+      "timestamp": "2026-07-24T15:19:05.246986",
       "total_tests": 16,
       "test_results": [
         {
           "test_id": 1,
           "category": "overview",
           "difficulty": "easy",
-          "selected_question": "Which variables can be queried?",
+          "selected_question": "Provide an overview of observation variables in the dataset",
           "expected_template": "list_properties",
           "predicted_template": "list_properties",
           "template_match": true,
           "execution_success": true,
-          "execution_explanation": "The query successfully returned a list of variables that can be queried, along with their respective counts.",
+          "execution_explanation": "The query successfully retrieved an overview of observation variables, including their URIs and counts.",
           "execution_failure_reasons": [],
-          "execution_time_seconds": 15.535,
+          "execution_time_seconds": 16.677,
           "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?property (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:observedProperty ?property . } GROUP BY ?property ORDER BY DESC(?count)",
           "sparql_success": true,
           "returned_rows": 5,
@@ -80,14 +80,14 @@
           "test_id": 2,
           "category": "overview",
           "difficulty": "easy",
-          "selected_question": "What are locations of observations available in the dataset?",
+          "selected_question": "List all locations of observations available",
           "expected_template": "list_features_of_interest",
           "predicted_template": "list_features_of_interest",
           "template_match": true,
           "execution_success": true,
-          "execution_explanation": "The query successfully retrieved a list of locations of observations along with their respective counts.",
+          "execution_explanation": "The query successfully returned a list of locations with their corresponding observation counts.",
           "execution_failure_reasons": [],
-          "execution_time_seconds": 18.3,
+          "execution_time_seconds": 19.1,
           "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?feature (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:hasFeatureOfInterest ?feature . } GROUP BY ?feature ORDER BY DESC(?count) LIMIT 50",
           "sparql_success": true,
           "returned_rows": 10,
@@ -100,29 +100,29 @@
         "template_accuracy": 1.0,
         "execution_success_rate": 1.0,
         "sparql_success_rate": 1.0,
-        "avg_execution_time": 16.918,
-        "min_execution_time": 15.535,
-        "max_execution_time": 18.3,
-        "std_execution_time": 1.955
+        "avg_execution_time": 17.889,
+        "min_execution_time": 16.677,
+        "max_execution_time": 19.1,
+        "std_execution_time": 1.713
       }
     },
     {
       "run_number": 2,
-      "timestamp": "2026-07-23T15:17:11.775384",
+      "timestamp": "2026-07-24T15:19:44.431951",
       "total_tests": 16,
       "test_results": [
         {
           "test_id": 1,
           "category": "overview",
           "difficulty": "easy",
-          "selected_question": "Which variables can be queried?",
+          "selected_question": "What variables are available?",
           "expected_template": "list_properties",
           "predicted_template": "list_properties",
           "template_match": true,
           "execution_success": true,
-          "execution_explanation": "The query successfully returned a list of variables that can be queried, along with their respective counts.",
+          "execution_explanation": "The query successfully returned a list of available variables with their corresponding counts.",
           "execution_failure_reasons": [],
-          "execution_time_seconds": 15.244,
+          "execution_time_seconds": 15.083,
           "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?property (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:observedProperty ?property . } GROUP BY ?property ORDER BY DESC(?count)",
           "sparql_success": true,
           "returned_rows": 5,
@@ -138,9 +138,9 @@
           "predicted_template": "list_features_of_interest",
           "template_match": true,
           "execution_success": true,
-          "execution_explanation": "The query successfully retrieved a list of grids available in the dataset along with their respective counts.",
+          "execution_explanation": "The query successfully retrieved a list of grids available in the dataset, along with their respective counts.",
           "execution_failure_reasons": [],
-          "execution_time_seconds": 18.381,
+          "execution_time_seconds": 17.507,
           "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?feature (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:hasFeatureOfInterest ?feature . } GROUP BY ?feature ORDER BY DESC(?count) LIMIT 50",
           "sparql_success": true,
           "returned_rows": 10,
@@ -153,10 +153,169 @@
         "template_accuracy": 1.0,
         "execution_success_rate": 1.0,
         "sparql_success_rate": 1.0,
-        "avg_execution_time": 16.812,
-        "min_execution_time": 15.244,
-        "max_execution_time": 18.381,
-        "std_execution_time": 2.218
+        "avg_execution_time": 16.295,
+        "min_execution_time": 15.083,
+        "max_execution_time": 17.507,
+        "std_execution_time": 1.714
+      }
+    },
+    {
+      "run_number": 3,
+      "timestamp": "2026-07-24T15:20:20.278347",
+      "total_tests": 16,
+      "test_results": [
+        {
+          "test_id": 1,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "Which variables can be queried?",
+          "expected_template": "list_properties",
+          "predicted_template": "list_properties",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully returned a list of variables that can be queried, along with their respective counts.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 15.265,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?property (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:observedProperty ?property . } GROUP BY ?property ORDER BY DESC(?count)",
+          "sparql_success": true,
+          "returned_rows": 5,
+          "answer": "Query type: list_properties\nResult count: 5\nAvailable climate variables:\n  1. Air Temperature (177784295 observations)\n  2. Precipitation Amount (59441640 observations)\n  3. Relative Humidity (42603920 observations)\n  4. Surface Downwelling Shortwave Flux In Air (37308459 observations)\n  5. Wind Speed (24136086 observations)",
+          "notes": ""
+        },
+        {
+          "test_id": 2,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "List all locations of observations available",
+          "expected_template": "list_features_of_interest",
+          "predicted_template": "list_features_of_interest",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully returned a list of locations with their corresponding observation counts.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 17.473,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?feature (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:hasFeatureOfInterest ?feature . } GROUP BY ?feature ORDER BY DESC(?count) LIMIT 50",
+          "sparql_success": true,
+          "returned_rows": 10,
+          "answer": "Query type: list_features_of_interest\nResult count: 50\nHere are the available observation locations:\n  1. https://w3id.org/climateobservations/eobs-v31/data/grid_43p38_16p62\n  2. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_m0p62\n  3. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_0p88\n  4. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_3p12\n  5. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_m1p38\n  6. https://w3id.org/climateobserva",
+          "notes": ""
+        }
+      ],
+      "summary": {
+        "total": 2,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "sparql_success_rate": 1.0,
+        "avg_execution_time": 16.369,
+        "min_execution_time": 15.265,
+        "max_execution_time": 17.473,
+        "std_execution_time": 1.561
+      }
+    },
+    {
+      "run_number": 4,
+      "timestamp": "2026-07-24T15:20:56.478067",
+      "total_tests": 16,
+      "test_results": [
+        {
+          "test_id": 1,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "What variables are available?",
+          "expected_template": "list_properties",
+          "predicted_template": "list_properties",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully retrieved a list of available variables along with their counts.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 15.253,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?property (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:observedProperty ?property . } GROUP BY ?property ORDER BY DESC(?count)",
+          "sparql_success": true,
+          "returned_rows": 5,
+          "answer": "Query type: list_properties\nResult count: 5\nAvailable climate variables:\n  1. Air Temperature (177784295 observations)\n  2. Precipitation Amount (59441640 observations)\n  3. Relative Humidity (42603920 observations)\n  4. Surface Downwelling Shortwave Flux In Air (37308459 observations)\n  5. Wind Speed (24136086 observations)",
+          "notes": ""
+        },
+        {
+          "test_id": 2,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "List all locations of observations available",
+          "expected_template": "list_features_of_interest",
+          "predicted_template": "list_features_of_interest",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully returned a list of locations with their corresponding observation counts.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 17.394,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?feature (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:hasFeatureOfInterest ?feature . } GROUP BY ?feature ORDER BY DESC(?count) LIMIT 50",
+          "sparql_success": true,
+          "returned_rows": 10,
+          "answer": "Query type: list_features_of_interest\nResult count: 50\nHere are the available observation locations:\n  1. https://w3id.org/climateobservations/eobs-v31/data/grid_43p38_16p62\n  2. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_m0p62\n  3. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_0p88\n  4. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_3p12\n  5. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_m1p38\n  6. https://w3id.org/climateobserva",
+          "notes": ""
+        }
+      ],
+      "summary": {
+        "total": 2,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "sparql_success_rate": 1.0,
+        "avg_execution_time": 16.323,
+        "min_execution_time": 15.253,
+        "max_execution_time": 17.394,
+        "std_execution_time": 1.514
+      }
+    },
+    {
+      "run_number": 5,
+      "timestamp": "2026-07-24T15:21:31.316098",
+      "total_tests": 16,
+      "test_results": [
+        {
+          "test_id": 1,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "Provide an overview of observation variables in the dataset",
+          "expected_template": "list_properties",
+          "predicted_template": "list_properties",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully retrieved an overview of observation variables along with their counts.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 15.173,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?property (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:observedProperty ?property . } GROUP BY ?property ORDER BY DESC(?count)",
+          "sparql_success": true,
+          "returned_rows": 5,
+          "answer": "Query type: list_properties\nResult count: 5\nAvailable climate variables:\n  1. Air Temperature (177784295 observations)\n  2. Precipitation Amount (59441640 observations)\n  3. Relative Humidity (42603920 observations)\n  4. Surface Downwelling Shortwave Flux In Air (37308459 observations)\n  5. Wind Speed (24136086 observations)",
+          "notes": ""
+        },
+        {
+          "test_id": 2,
+          "category": "overview",
+          "difficulty": "easy",
+          "selected_question": "List all locations of observations available",
+          "expected_template": "list_features_of_interest",
+          "predicted_template": "list_features_of_interest",
+          "template_match": true,
+          "execution_success": true,
+          "execution_explanation": "The query successfully returned a list of locations with their corresponding observation counts.",
+          "execution_failure_reasons": [],
+          "execution_time_seconds": 16.806,
+          "sparql_query": "PREFIX sosa: <http://www.w3.org/ns/sosa/> SELECT DISTINCT ?feature (COUNT(*) AS ?count) FROM <climateobservations/eobs-v31> WHERE {   ?obs a sosa:Observation ;        sosa:hasFeatureOfInterest ?feature . } GROUP BY ?feature ORDER BY DESC(?count) LIMIT 50",
+          "sparql_success": true,
+          "returned_rows": 10,
+          "answer": "Query type: list_features_of_interest\nResult count: 50\nHere are the available observation locations:\n  1. https://w3id.org/climateobservations/eobs-v31/data/grid_43p38_16p62\n  2. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_m0p62\n  3. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_0p88\n  4. https://w3id.org/climateobservations/eobs-v31/data/grid_39p62_3p12\n  5. https://w3id.org/climateobservations/eobs-v31/data/grid_41p12_m1p38\n  6. https://w3id.org/climateobserva",
+          "notes": ""
+        }
+      ],
+      "summary": {
+        "total": 2,
+        "template_accuracy": 1.0,
+        "execution_success_rate": 1.0,
+        "sparql_success_rate": 1.0,
+        "avg_execution_time": 15.989,
+        "min_execution_time": 15.173,
+        "max_execution_time": 16.806,
+        "std_execution_time": 1.155
       }
     }
   ],
@@ -166,20 +325,50 @@
       "template_accuracy": 1.0,
       "execution_success_rate": 1.0,
       "sparql_success_rate": 1.0,
-      "avg_execution_time": 16.918,
-      "min_execution_time": 15.535,
-      "max_execution_time": 18.3,
-      "std_execution_time": 1.955
+      "avg_execution_time": 17.889,
+      "min_execution_time": 16.677,
+      "max_execution_time": 19.1,
+      "std_execution_time": 1.713
     },
     {
       "total": 2,
       "template_accuracy": 1.0,
       "execution_success_rate": 1.0,
       "sparql_success_rate": 1.0,
-      "avg_execution_time": 16.812,
-      "min_execution_time": 15.244,
-      "max_execution_time": 18.381,
-      "std_execution_time": 2.218
+      "avg_execution_time": 16.295,
+      "min_execution_time": 15.083,
+      "max_execution_time": 17.507,
+      "std_execution_time": 1.714
+    },
+    {
+      "total": 2,
+      "template_accuracy": 1.0,
+      "execution_success_rate": 1.0,
+      "sparql_success_rate": 1.0,
+      "avg_execution_time": 16.369,
+      "min_execution_time": 15.265,
+      "max_execution_time": 17.473,
+      "std_execution_time": 1.561
+    },
+    {
+      "total": 2,
+      "template_accuracy": 1.0,
+      "execution_success_rate": 1.0,
+      "sparql_success_rate": 1.0,
+      "avg_execution_time": 16.323,
+      "min_execution_time": 15.253,
+      "max_execution_time": 17.394,
+      "std_execution_time": 1.514
+    },
+    {
+      "total": 2,
+      "template_accuracy": 1.0,
+      "execution_success_rate": 1.0,
+      "sparql_success_rate": 1.0,
+      "avg_execution_time": 15.989,
+      "min_execution_time": 15.173,
+      "max_execution_time": 16.806,
+      "std_execution_time": 1.155
     }
   ]
 }
