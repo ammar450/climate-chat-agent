@@ -259,9 +259,9 @@ def run_single_evaluation(
             result_entry["notes"] = str(e)[:200]
 
         run_results["test_results"].append(result_entry)
-        i = i+1
-        if i == 2: 
-           break
+       # i = i+1
+        #if i == 2: 
+         #  break
 
     # Compute summary
     total = len(run_results["test_results"])
