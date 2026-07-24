@@ -1,3 +1,12 @@
+"""
+Fall-back solution, if the markdown generation fails. 
+It can be run just on the json output from the experiments to see which errors were occuring most frequently.
+
+Usage:
+    python evaluation/generate_markdown_report.py                
+
+"""
+
 import os
 import sys
 import re
