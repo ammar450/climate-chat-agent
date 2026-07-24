@@ -96,27 +96,11 @@ def analyze_errors(
     return error_analysis
 
 
-def aggregate(data, group_key):
-    groups = defaultdict(lambda: {"count": 0, "reason_counts": Counter()})
-    
-    for entry in data:
-        key = entry[group_key]
-        groups[key]["count"] += 1
-        for reason in entry["execution_failure_reasons"]:
-            groups[key]["reason_counts"][reason] += 1
-    
-    # Convert to a clean list, sorted by count desc
-    result = []
-    for key, info in sorted(groups.items(), key=lambda x: -x[1]["count"]):
-        top_reasons = info["reason_counts"].most_common(5)  # cap so it can't grow unbounded
-        result.append({
-            "key": key,
-            "count": info["count"],
-            "top_failure_reasons": [{"reason": r, "count": c} for r, c in top_reasons]
-        })
-    return result
+import re
 
-
+def strip_markdown_fence(text):
+    text = text.strip()
+    return re.sub(r"^```(?:markdown)?\s*\n?|\n?```$", "", text).strip()
 
 
 def generate_markdown_report(input_dir: str, model: str, output_dir: str):
@@ -129,7 +113,7 @@ def generate_markdown_report(input_dir: str, model: str, output_dir: str):
     with open(input_file, "r", encoding="utf-8") as f:
         data = json.load(f)
    
-    all_runs = data #['per_run_results']
+    all_runs = data 
     
     L = []
 
@@ -137,8 +121,9 @@ def generate_markdown_report(input_dir: str, model: str, output_dir: str):
     
     print(f"[EVAL] Model used for the error analysis {model}")
     test = analyze_errors(all_runs, model)
-    print(type(test))
-    print(test)
+
+    clean_output = strip_markdown_fence(test)
+
 
     L.append(test)
     L.append("")
