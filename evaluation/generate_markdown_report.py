@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import json
 import time
 import random
@@ -10,15 +11,11 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 from collections import defaultdict, Counter
 
-
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.agent.graph_agent import run_agent
 from src.llm.llm_client import chat as llm_chat, LLMError
-
-
-
 
 # ──────────────────────────────────────────────
 # ERROR ANALYSIS - LLM-based
@@ -49,7 +46,6 @@ Do not wrap it in code fences or backticks. Do not add any commentary before or 
 """
 
 
-
 def analyze_errors(
     results: List[Dict],
     model: Optional[str] = None) -> str:
@@ -58,6 +54,7 @@ def analyze_errors(
     """
 
     all_runs = results['per_run_results']
+
     # extract errors from the set of results
     errors = []
 
@@ -95,9 +92,6 @@ def analyze_errors(
 
     return error_analysis
 
-
-import re
-
 def strip_markdown_fence(text):
     text = text.strip()
     return re.sub(r"^```(?:markdown)?\s*\n?|\n?```$", "", text).strip()
@@ -120,12 +114,11 @@ def generate_markdown_report(input_dir: str, model: str, output_dir: str):
     L.append("## ❌ Error Analysis")
     
     print(f"[EVAL] Model used for the error analysis {model}")
-    test = analyze_errors(all_runs, model)
 
-    clean_output = strip_markdown_fence(test)
+    raw_output = analyze_errors(all_runs, model)
+    clean_output = strip_markdown_fence(raw_output)
 
-
-    L.append(test)
+    L.append(clean_output)
     L.append("")
 
     os.makedirs(output_dir, exist_ok=True)
@@ -134,7 +127,6 @@ def generate_markdown_report(input_dir: str, model: str, output_dir: str):
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(L))
     print(f"[REPORT] MD -> {output_path}")
-
 
 
 generate_markdown_report("evaluation/to-delete/", "gpt-5.4-nano", "evaluation/to-delete2/")

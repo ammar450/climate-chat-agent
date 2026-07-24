@@ -17,6 +17,7 @@ Usage:
 
 import os
 import sys
+import re
 import json
 import time
 import random
@@ -126,18 +127,14 @@ Columns for the 'summary_per_category': 'Category | Count | Top failure reasons 
 If there are no errors at all, return a table with the columns plus one line. The line should be 
 visible to users. Add n/a in each cell of the line. Do not add placeholder information in the tables.
 
-Return ONLY a valid JSON object.
+<output_format>
 
-The JSON object must have exactly this structure:
+The result must have exactly this structure: " <table 1> \n <table 2> "
+Return only the raw markdown content as a plain string. 
+Do not wrap it in code fences or backticks. Do not add any commentary before or after.
 
-{{
-  "summary_per_template": '<summary>',
-  "summary_per_category": '<summary>'
-}}
+</output_format>
 
-Rules:
-- Do not wrap the JSON in markdown.
-- Do not include any extra text before or after the JSON.
 """
 
 def analyze_errors(
@@ -411,6 +408,11 @@ def generate_csv_report(aggregate: Dict, output_path: str):
     print(f"[REPORT] CSV -> {output_path}")
 
 
+def strip_markdown_fence(text):
+    text = text.strip()
+    return re.sub(r"^```(?:markdown)?\s*\n?|\n?```$", "", text).strip()
+
+
 def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, model: str, output_path: str):
     m = aggregate.get("aggregate_metrics", {})
     L = []
@@ -451,12 +453,9 @@ def generate_markdown_report(all_runs: List[Dict], aggregate: Dict, seed: int, m
     
     print(f"[EVAL] Model used for the error analysis {model}")
 
-    error_summaries = json.loads(analyze_errors(all_runs, model))
-    print(type(error_summaries), error_summaries)
-    L.append(error_summaries['summary_per_category'])
-    L.append("")
-
-    L.append(error_summaries['summary_per_template'])
+    raw_error_summaries = analyze_errors(all_runs, model)
+    clean_error_summaries = strip_markdown_fence(raw_error_summaries)
+    L.append(clean_error_summaries)
     L.append("")
 
     L.append("## 🔀 Confusion Matrix")
