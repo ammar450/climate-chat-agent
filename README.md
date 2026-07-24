@@ -62,6 +62,7 @@ This GitHub repository is only about the agent for question answering. To see th
 
 
 ## 🏗️ Architecture
+<img width="1377" height="366" alt="langgraph_workflow" src="https://github.com/user-attachments/assets/c09ec462-0cba-4b90-bef5-d17981a854ba" />
 
 ```
 User Question
@@ -511,15 +512,23 @@ GRAPH_IRI=climateobservations/eobs-v31
 
 **Data Structure Example:**
 ```turtle
-<observation/temp_48.62_43.62_20240101T000000>
-  a sosa:Observation ;
-  sosa:resultTime "2024-01-01T00:00:00"^^xsd:dateTime ;
-  sosa:observedProperty <http://vocab.nerc.ac.uk/standard_name/air_temperature> ;
-  sosa:hasFeatureOfInterest <http://www.w3.org/2003/01/geo/wgs84_pos#grid_48.62_43.62> ;
-  sosa:hasResult [
-    qudt:numericValue 15.3 ;
-    qudt:unit <http://qudt.org/vocab/unit/DEG_C>
-  ] .
+eobs:hu_25p38_m13p38_19500101T000000
+    a sosa:Observation ;
+    sosa:hasFeatureOfInterest eobs:grid_25p38_m13p38 ;
+    sosa:hasResult [
+        a qudt:QuantityValue ;
+        qudt:numericValue 4.62e+01 ;
+        qudt:unit unit:PERCENT
+    ] ;
+    sosa:observedProperty cf:relative_humidity ;
+    sosa:resultTime "1950-01-01T00:00:00"^^xsd:dateTime .
+
+eobs:grid_25p38_m13p38
+    a sosa:FeatureOfInterest ;
+    geo:hasGeometry [
+        a geo:Geometry ;
+        geo:asWKT "POINT(-13.38 25.38)"^^geo:wktLiteral
+    ] .
 ```
 
 **To use a different SPARQL endpoint:**
@@ -616,7 +625,7 @@ Contributions welcome! Please:
 4. Add tests if applicable
 5. Submit a Pull Request
 
-**Planned improvements:**
+**Planned improvements** (as of July 2026)
 - Enhanced understanding of the user's intent (e.g. LLM-based interpretation of user inputs)
 - Additional SPARQL query templates
 - Improved visualization of the results
@@ -680,10 +689,11 @@ If you reuse the EOBS knowledge graph, please cite:
 @inproceedings{yousafEOBSKnowledgeGraph2026,
 	address = {Ghent, Belgium},
 	title = {The {EOBS} knowledge graph: {A} knowledge graph of {European} climate observations},
-	booktitle = {Companion Proceedings of SEMANTiCS 2026},
+	booktitle = {{SEMANTiCS} 2026 - {Poster} and {Demo} {Track}},
 	author = {Yousaf, Ammar and Degbelo, Auriol},
 	year = {2026},
 }
+
 
 ```
 
