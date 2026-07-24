@@ -39,41 +39,16 @@ visible to users. Add n/a in each cell of the line. Do not add placeholder infor
 
 <output_format>
 
-The result must have exactly this structure:
+The result must have exactly this structure: " <table 1> \n <table 2> "
 
-" <table 1> \n <table 2> "
+Return only the raw markdown content as a plain string. 
+Do not wrap it in code fences or backticks. Do not add any commentary before or after.
 
 </output_format>
 
 """
 
 
-NEW_PROMPT = """
-You are an AI assistant specialized in summarizing input data about errors.
-
-You need to produce two summaries as structured data: one grouped by template, 
-and one grouped by category. Where appropriate, group rows further by unique topic.
-
-Return ONLY a valid JSON object with exactly this structure (double quotes only, 
-no trailing commas, no markdown fences, no text before or after):
-
-{{
-  "summary_per_template": [
-    {{"template": "string", "count": number, "top_failure_reasons": "string", "topics": "string"}}
-  ],
-  "summary_per_category": [
-    {{"category": "string", "count": number, "top_failure_reasons": "string", "topics": "string"}}
-  ]
-}}
-
-Rules:
-- If there are no errors at all, return exactly one row per list with all fields set to "n/a".
-- Do not invent or add placeholder data otherwise.
-- "top_failure_reasons" should list the most frequent reasons with their counts in parentheses, 
-  e.g. "timeout (5), invalid_input (3)".
-- Every string value must be a single line — do not include literal newlines inside any string.
-- Output must be parseable by a standard JSON parser. Double-check quoting and escaping before responding.
-"""
 
 def analyze_errors(
     results: List[Dict],
