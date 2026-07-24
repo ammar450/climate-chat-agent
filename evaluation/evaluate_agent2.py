@@ -174,7 +174,7 @@ def analyze_errors(
         provider, model_name = model.split(":", 1)
 
     messages = [{"role": "system", "content": SUMMARIZATION_PROMPT.strip()},
-                {"role": "user", "content": "Errors: \n{errors}"}]
+                {"role": "user", "content": f"Errors: \n{errors_str}"}]
 
     # Run error analysis
     error_analysis = llm_chat(messages, provider=provider, model=model_name, temperature=0.0, max_tokens=500)
