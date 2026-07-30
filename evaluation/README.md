@@ -33,8 +33,8 @@ python evaluation/evaluate_agent.py --model ollama:llama3.2
 | Metric | Description |
 |--------|-------------|
 | Template Accuracy | % correct template selected |
+| Creation Success | % queries that were created |
 | Execution Success | % queries that ran successfully |
-| Answer Correctness | correct / partially_correct / incorrect |
 | Latency | avg, min, max, std execution time |
 | Overall Score | weighted: 35% template + 25% execution + 40% correctness |
 
@@ -51,20 +51,11 @@ overview, aggregation, filtering, location-based, nested-aggregation, extreme-va
 
 - Detects unsupported claims or hallucinations
 - Validates units, time periods, and locations
-- Returns a label (correct/partially_correct/incorrect) and score (0.0-1.0)
-
-**Note**: LLM-as-judge requires an LLM provider to be configured (OpenAI or Ollama). It adds ~2-5 seconds per test.
 
 ### Run All Tests with Report
 
 ```bash
 python evaluation/evaluate_agent.py --report
-```
-
-### Run All Tests with LLM Judge and Save Report
-
-```bash
-python evaluation/evaluate_agent.py --report --llm-judge --output judge_report.json
 ```
 
 ### Run Specific Test by ID
@@ -104,35 +95,7 @@ python evaluation/evaluate_agent.py --output evaluation_report.json
 5. **Category Performance**: Success rates broken down by question category
 6. **Difficulty Performance**: Success rates by difficulty level
 
-### LLM-as-Judge Metrics (When `--llm-judge` flag is used)
-
-Additional AI-powered evaluation metrics:
-
-7. **LLM Judge Score**: Average score from 0.0 to 1.0 across all evaluated answers
-8. **Correctness Rate**: Percentage of answers judged as "correct"
-9. **Judge Labels**:
-   - **`correct`** (score ~1.0): Answer accurately reflects evidence, covers expected items, no unsupported claims
-   - **`partially_correct`** (score ~0.5): Answer mostly correct but missing some coverage or has minor issues
-   - **`incorrect`** (score ~0.0): Answer contradicts evidence, has major hallucinations, or misses critical information
-   - **`judge_error`**: Judge failed to evaluate (LLM error or invalid JSON response)
-   - **`not_evaluated`**: Query execution failed, so answer wasn't evaluated
-
-10. **Missing Coverage**: List of expected coverage items not addressed in the answer
-11. **Incorrect Claims**: List of unsupported or contradictory statements in the answer
-
-### Judge Evaluation Criteria
-
-The LLM judge evaluates based on:
-- ✅ **Groundedness**: Every claim must be supported by the provided evidence
-- ✅ **Completeness**: Expected coverage items should be addressed (explicitly or implicitly)
-- ✅ **Accuracy**: Units, time periods, locations, and climate variables must be correct
-- ✅ **Semantic Equivalence**: Exact wording not required, semantically equivalent answers are accepted
-- ❌ **No External Knowledge**: Judge only uses provided evidence, not external knowledge
-- ❌ **No Hallucinations**: Unsupported claims result in lower scores
-
 ## 📝 Sample Output
-
-### Rule-Based Evaluation
 
 ```
 ################################################################################
@@ -157,59 +120,6 @@ The LLM judge evaluates based on:
   EASY: 6/6 passed (100.0%)
   MEDIUM: 9/10 passed (90.0%)
   HARD: 12/14 passed (85.7%)
-```
-
-### With LLM-as-Judge
-
-```
-================================================================================
-🤖 LLM-AS-JUDGE MODE ENABLED
-================================================================================
-
-================================================================================
-Test 1: What variables are available?
-Expected template: list_properties
-Category: discovery | Difficulty: easy
-================================================================================
-
-✓ Template Match: PASS
-  Expected: list_properties
-  Got: list_properties
-
-✓ Execution: PASS
-  Result count: 5
-  Execution time: 14.349s
-
-📝 Answer: Here are the available climate variables...
-
-🤖 Running LLM-as-judge evaluation...
-  Label: correct
-  Score: 1.0
-  Reason: Answer accurately lists all climate variables from evidence, includes counts, and matches...
-
-################################################################################
-# EVALUATION REPORT
-# Generated: 2026-05-02T15:30:00
-################################################################################
-
-📊 OVERALL SUMMARY
-  Total Tests: 30
-  Template Match Rate: 93.3% (28/30)
-  Success Rate: 90.0% (27/30)
-  Tests with Results: 27
-  Avg Execution Time: 2.451s
-
-🤖 LLM-AS-JUDGE SUMMARY
-  Average Score: 0.867
-  Correctness Rate: 80.0%
-  Correct: 24
-  Partially Correct: 2
-  Incorrect: 1
-  Not Evaluated: 3
-
-📁 BY CATEGORY
-  DISCOVERY: 3/3 passed (100.0%), template match: 100.0%
-  ...
 ```
 
 ## 🔍 Test Question Structure
