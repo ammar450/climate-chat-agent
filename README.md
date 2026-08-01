@@ -43,8 +43,8 @@ This GitHub repository is only about the agent for question answering. To see th
 - **0.1° × 0.1° spatial resolution** (~11km grid)
 - **Geographic Coverage:** European and Mediterranean gridded points
 - **Temporal Coverage:** January 1, 1950 - December 31, 2024 (75 years)
-- **Total Observations:** 328+ million SOSA observations
-- **Knowledge Graph Size:** 3.38 billion RDF triples
+- **Total Observations:** 363+ million SOSA observations
+- **Knowledge Graph Size:** 3.2 billion RDF triples
 - **Temporal Resolution:** Daily observations
 - **Interoperability:** The data has been annotated using the SOSA/SSN ontology
 
@@ -688,8 +688,8 @@ If you reuse the EOBS knowledge graph, please cite:
 
 @inproceedings{yousafEOBSKnowledgeGraph2026,
 	address = {Ghent, Belgium},
-	title = {The {EOBS} knowledge graph: {A} knowledge graph of {European} climate observations},
-	booktitle = {{SEMANTiCS} 2026 - {Poster} and {Demo} {Track}},
+	title = {The EOBS knowledge graph: A knowledge graph of European climate observations},
+	booktitle = {SEMANTiCS 2026 - Poster and Demo Track},
 	author = {Yousaf, Ammar and Degbelo, Auriol},
 	year = {2026},
 }
