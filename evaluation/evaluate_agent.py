@@ -502,7 +502,7 @@ def main():
     parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducibility")
     parser.add_argument("--model", type=str, default="gpt-5.4-nano", help="LLM model")
     parser.add_argument("--test-file", type=str, default="evaluation/test_questions.json")
-    parser.add_argument("--output-dir", type=str, default="evaluation/results-07-2026")
+    parser.add_argument("--output-dir", type=str, default="evaluation/results-08-2026")
     args = parser.parse_args()
 
     seed = args.seed if args.seed is not None else random.randint(1, 99999)
